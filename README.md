@@ -6,14 +6,14 @@ converted into an image and inserted in the document.
 
 Syntax:
 
-  :::markdown
+    :::markdown
     ::uml:: [format="png|svg"] [classes="class1 class2 ..."] [alt="text for alt"]
       PlantUML script diagram
     ::end-uml::
 
 Example:
 
-  :::markdown
+    :::markdown
     ::uml:: format="png" classes="uml myDiagram" alt="My super diagram"
       Goofy ->  MickeyMouse: calls
       Goofy <-- MickeyMouse: responds
@@ -30,7 +30,7 @@ manager, you can create a shell script and place it somewhere in the classpath. 
 save te following into `/usr/local/bin/plantuml` (supposing [PlantUML][] installed into
 `/opt/plantuml`):
 
-   :::
+    :::
      #!/bin/bash
      java -jar /opt/plantuml/plantuml.jar ${@}
 
