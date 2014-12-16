@@ -167,7 +167,7 @@ class PlantUMLMarkdownExtension(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
         blockprocessor = PlantUMLBlockProcessor(md.parser)
         blockprocessor.config = self.getConfigs()
-        md.parser.blockprocessors.add('plantuml', blockprocessor, '_begin')
+        md.parser.blockprocessors.add('plantuml', blockprocessor, '>code')
 
 
 def makeExtension(*args, **kwargs):
