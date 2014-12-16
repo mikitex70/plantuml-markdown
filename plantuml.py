@@ -102,7 +102,7 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
         etree.SubElement(parent, "img", src=imageurl, alt=alt, classes=classes)
 
     def generate_uml_image(self, path, plantuml_code, imgformat):
-        tf = tempfile.NamedTemporaryFile(delete=True)
+        tf = tempfile.NamedTemporaryFile(delete=False)
         tf.write('@startuml\n')
         tf.write(plantuml_code.encode('utf8'))
         tf.write('\n@enduml')
@@ -131,6 +131,8 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
             raise Exception('Failed to run plantuml: %s' % exc)
         else:
             if p.returncode == 0:
+                # diagram was correctly generated, we can remove the temporary file
+                os.remove(tf.name)
                 # renaming output image using an hash code, just to not pullate
                 # output directory with a growing number of images
                 name = os.path.join(path, os.path.basename(name))
@@ -144,6 +146,7 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
                 os.rename(name, newname)
                 return 'images/' + os.path.basename(newname)
             else:
+                # the temporary file is still available as aid understanding errors
                 raise RuntimeError('Error in "uml" directive: %s' % err)
 
 
