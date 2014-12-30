@@ -31,8 +31,8 @@ save te following into `/usr/local/bin/plantuml` (supposing [PlantUML][] install
 `/opt/plantuml`):
 
     :::
-     #!/bin/bash
-     java -jar /opt/plantuml/plantuml.jar ${@}
+    #!/bin/bash
+    java -jar /opt/plantuml/plantuml.jar ${@}
 
 For [Gentoo Linux][Gentoo] there is an ebuild at http://gpo.zugaina.org/dev-util/plantuml/RDep: you can download
 the ebuild and the `files` subfolder or you can add the `zugaina` repository with [layman][]

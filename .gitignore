@@ -52,4 +52,5 @@ docs/_build/
 
 # PyBuilder
 target/
-/.directory
+.directory
+.idea
