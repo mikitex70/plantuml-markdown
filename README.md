@@ -41,6 +41,29 @@ For [Gentoo Linux][Gentoo] there is an ebuild at http://gpo.zugaina.org/dev-util
 the ebuild and the `files` subfolder or you can add the `zugaina` repository with [layman][]
 (reccomended).
 
+To use the plugin with [Python-Markdown][] you have two choices:
+
+* copy the file `plantuml.py` in the `extensions` folder of [Python-Markdown][]. For example, for Python 2.7 you must
+  do:
+  
+  ```console
+  $ sudo cp plantuml.py /usr/lib/python27/site-packages/markdown/extensions/
+  ```
+* copy the file somewhere in your home. A good choice may be the `user-site` path, for example (`bash` syntax):
+
+  ```console
+  $ export INSTALLPATH="`python -m site --user-site`/plantuml-markdown"
+  $ mkdir -p "$INSTALLPATH"
+  $ cp plantuml.py "$INSTALLPATH/mdx_plantuml.py"
+  $ export PYTHONPATH="$INSTALLPATH"
+  ```
+  
+  You must export `PYTHONPATH` before running `markdown_py`, or you can put the definition in `~/.bashrc`.
+
+After installed, you can use this plugin by activating it in the `markdownm_py` command. For example:
+
+    markdown_py -x plantuml mydoc.md > out.html
+
 [Python-Markdown]: http://pythonhosted.org/Markdown/
 [PlantUML]: http://plantuml.sourceforge.net/
 [Graphviz]: http://www.graphviz.org
