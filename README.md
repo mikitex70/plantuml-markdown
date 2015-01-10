@@ -6,18 +6,20 @@ converted into an image and inserted in the document.
 
 Syntax:
 
-    :::markdown
+```markdown
     ::uml:: [format="png|svg"] [classes="class1 class2 ..."] [alt="text for alt"]
       PlantUML script diagram
     ::end-uml::
+```
 
 Example:
 
-    :::markdown
+```markdown
     ::uml:: format="png" classes="uml myDiagram" alt="My super diagram"
       Goofy ->  MickeyMouse: calls
       Goofy <-- MickeyMouse: responds
     ::end-uml::
+```
 
 Options are optional, but if present must be specified in the order format, classes, alt.
 The option value may be enclosed in single or double quotes.
@@ -30,9 +32,10 @@ manager, you can create a shell script and place it somewhere in the classpath. 
 save te following into `/usr/local/bin/plantuml` (supposing [PlantUML][] installed into
 `/opt/plantuml`):
 
-    :::
+```
     #!/bin/bash
     java -jar /opt/plantuml/plantuml.jar ${@}
+```
 
 For [Gentoo Linux][Gentoo] there is an ebuild at http://gpo.zugaina.org/dev-util/plantuml/RDep: you can download
 the ebuild and the `files` subfolder or you can add the `zugaina` repository with [layman][]
