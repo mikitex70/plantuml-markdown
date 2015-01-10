@@ -133,15 +133,16 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
             if p.returncode == 0:
                 # diagram was correctly generated, we can remove the temporary file
                 os.remove(tf.name)
+                # make sure output path exists
+                if not os.path.exists(path):
+                    os.makedirs(path)
                 # renaming output image using an hash code, just to not pullate
                 # output directory with a growing number of images
                 name = os.path.join(path, os.path.basename(name))
                 newname = os.path.join(path, "%08x" % (adler32(plantuml_code) & 0xffffffff))+imgext
 
-                try:        # for Windows
+                if not os.path.exists(newname):
                     os.remove(newname)
-                except IOError:
-                    logger.debug('File '+newname+' does not exist, not deleted')
 
                 os.rename(name, newname)
                 return 'images/' + os.path.basename(newname)
