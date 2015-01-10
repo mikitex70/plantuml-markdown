@@ -101,11 +101,13 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
         # Create image tag and append to the document
         etree.SubElement(parent, "img", src=imageurl, alt=alt, classes=classes)
 
+    @staticmethod
     def generate_uml_image(self, path, plantuml_code, imgformat):
+        plantuml_code = plantuml_code.encode('utf8')
         tf = tempfile.NamedTemporaryFile(delete=False)
-        tf.write('@startuml\n')
-        tf.write(plantuml_code.encode('utf8'))
-        tf.write('\n@enduml')
+        tf.write('@startuml\n'.encode('utf8'))
+        tf.write(plantuml_code)
+        tf.write('\n@enduml'.encode('utf8'))
         tf.flush()
 
         if imgformat == 'png':
