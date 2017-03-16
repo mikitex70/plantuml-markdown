@@ -102,7 +102,7 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
         etree.SubElement(parent, "img", src=imageurl, alt=alt, classes=classes)
 
     @staticmethod
-    def generate_uml_image(self, path, plantuml_code, imgformat):
+    def generate_uml_image(path, plantuml_code, imgformat):
         plantuml_code = plantuml_code.encode('utf8')
         tf = tempfile.NamedTemporaryFile(delete=False)
         tf.write('@startuml\n'.encode('utf8'))
