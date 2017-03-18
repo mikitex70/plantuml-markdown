@@ -144,7 +144,7 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
                 name = os.path.join(path, os.path.basename(name))
                 newname = os.path.join(path, "%08x" % (adler32(plantuml_code) & 0xffffffff))+imgext
 
-                if not os.path.exists(newname):
+                if os.path.exists(newname):
                     os.remove(newname)
 
                 os.rename(name, newname)
