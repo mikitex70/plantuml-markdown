@@ -103,13 +103,6 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
 
     @staticmethod
     def generate_uml_image(path, plantuml_code, imgformat):
-        plantuml_code = plantuml_code.encode('utf8')
-        tf = tempfile.NamedTemporaryFile(delete=False)
-        tf.write('@startuml\n'.encode('utf8'))
-        tf.write(plantuml_code)
-        tf.write('\n@enduml'.encode('utf8'))
-        tf.flush()
-
         if imgformat == 'png':
             imgext = ".png"
             outopt = "-tpng"
@@ -120,6 +113,20 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
             logger.error("Bad uml image format '"+imgformat+"', using png")
             imgext = ".png"
             outopt = "-tpng"
+
+        plantuml_code = plantuml_code.encode('utf8')
+        newname = os.path.join(path, "%08x" % (adler32(plantuml_code) & 0xffffffff))+imgext
+        
+        if os.path.exists(newname):
+            # Image already generated, return immediately
+            return 'images/' + os.path.basename(newname)
+
+        # Image missing, generate it
+        tf = tempfile.NamedTemporaryFile(delete=False)
+        tf.write('@startuml\n'.encode('utf8'))
+        tf.write(plantuml_code)
+        tf.write('\n@enduml'.encode('utf8'))
+        tf.flush()
 
         # make a name
         name = tf.name+imgext
@@ -140,17 +147,9 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
                     os.makedirs(path)
                 # renaming output image using an hash code, just to not pollute
                 # output directory with a growing number of images
-                '''
                 name = os.path.join(path, os.path.basename(name))
-                newname = os.path.join(path, "%08x" % (adler32(plantuml_code) & 0xffffffff))+imgext
-
-                if os.path.exists(newname):
-                    os.remove(newname)
-
                 os.rename(name, newname)
                 return 'images/' + os.path.basename(newname)
-                '''
-                return 'images/' + os.path.basename(name)
             else:
                 # the temporary file is still available as aid understanding errors
                 raise RuntimeError('Error in "uml" directive: %s' % err)
