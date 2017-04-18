@@ -46,6 +46,7 @@
 
 import os
 import re
+import base64
 import tempfile
 from subprocess import Popen, PIPE
 from zlib import adler32
@@ -88,70 +89,54 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
         else:
             if not blocks:
                 raise RuntimeError("UML block not closed")
-
         # Remove block header and footer
         text = re.sub(self.RE, "", re.sub(self.RE_END, "", text))
 
-        path = os.path.abspath(self.config['outpath'])
-        if not os.path.exists(path):
-            os.makedirs(path)
+        diagram = self.generate_uml_image(text, imgformat)
 
-        # Generate image from PlantUML script
-        imageurl = self.config['siteurl']+self.generate_uml_image(path, text, imgformat)
-        # Create image tag and append to the document
-        etree.SubElement(parent, "img", src=imageurl, alt=alt, classes=classes)
+        p = etree.SubElement(parent, 'p')
+        if imgformat == 'png':
+            data = 'data:image/png;base64,{0}'.format(
+                base64.b64encode(diagram).decode('ascii')
+            )
+            img = etree.SubElement(p, 'img')
+            img.attrib['src'] = data
+        elif imgformat == 'svg':
+            data = 'data:image/svg+xml;utf8,{0}'.format(diagram)
+            img = etree.SubElement(p, 'img')
+            img.attrib['src'] = data
+        elif imgformat == 'txt':
+            #print "(%s)" % diagram
+            pre = etree.SubElement(parent, 'pre')
+            code = etree.SubElement(pre, 'code')
+            code.attrib['class'] = 'text'
+            code.text = diagram
 
     @staticmethod
-    def generate_uml_image(path, plantuml_code, imgformat):
+    def generate_uml_image(plantuml_code, imgformat):
         if imgformat == 'png':
-            imgext = ".png"
             outopt = "-tpng"
         elif imgformat == 'svg':
-            imgext = ".svg"
             outopt = "-tsvg"
+        elif imgformat == 'txt':
+            outopt = "-ttxt"
         else:
             logger.error("Bad uml image format '"+imgformat+"', using png")
-            imgext = ".png"
             outopt = "-tpng"
 
         plantuml_code = plantuml_code.encode('utf8')
-        newname = os.path.join(path, "%08x" % (adler32(plantuml_code) & 0xffffffff))+imgext
         
-        if os.path.exists(newname):
-            # Image already generated, return immediately
-            return 'images/' + os.path.basename(newname)
-
-        # Image missing, generate it
-        tf = tempfile.NamedTemporaryFile(delete=False)
-        tf.write('@startuml\n'.encode('utf8'))
-        tf.write(plantuml_code)
-        tf.write('\n@enduml'.encode('utf8'))
-        tf.flush()
-
-        # make a name
-        name = tf.name+imgext
-        # build cmd line
-        cmdline = ['plantuml', '-o', path, outopt, tf.name]
-
+        cmdline = ['plantuml', '-p', outopt ]
+    
         try:
-            p = Popen(cmdline, stdout=PIPE, stderr=PIPE)
-            out, err = p.communicate()
+            p = Popen(cmdline, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            out, err = p.communicate(input=plantuml_code)
         except Exception as exc:
             raise Exception('Failed to run plantuml: %s' % exc)
         else:
             if p.returncode == 0:
-                # diagram was correctly generated, we can remove the temporary file
-                os.remove(tf.name)
-                # make sure output path exists
-                if not os.path.exists(path):
-                    os.makedirs(path)
-                # renaming output image using an hash code, just to not pollute
-                # output directory with a growing number of images
-                name = os.path.join(path, os.path.basename(name))
-                os.rename(name, newname)
-                return 'images/' + os.path.basename(newname)
+                return out
             else:
-                # the temporary file is still available as aid understanding errors
                 raise RuntimeError('Error in "uml" directive: %s' % err)
 
 
