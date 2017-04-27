@@ -52,22 +52,23 @@ from subprocess import Popen, PIPE
 from zlib import adler32
 import logging
 import markdown
-from markdown.util import etree
+from markdown.util import etree, AtomicString
 
 
-logger = logging.getLogger('MARKDOWN')
+#logger = logging.getLogger('MARKDOWN')
+#logger.setLevel(logging.DEBUG)
 
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#blockparser
 class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
     # Regular expression inspired by the codehilite Markdown plugin
-    RE = re.compile(r'''::uml::
+    RE = re.compile(r'''```.*\n\s*::uml::
                         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
                         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
                         \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
                     ''', re.VERBOSE)
     # Regular expression for identify end of UML script
-    RE_END = re.compile(r'::end-uml::\s*$')
+    RE_END = re.compile(r'.*::end-uml::')
 
     def test(self, parent, block):
         return self.RE.search(block)
@@ -89,11 +90,12 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
         else:
             if not blocks:
                 raise RuntimeError("UML block not closed")
+
         # Remove block header and footer
         text = re.sub(self.RE, "", re.sub(self.RE_END, "", text))
-
+        text = "\n".join(text.split('\n')[:-1]) # Skip last line (the one containing ```)
         diagram = self.generate_uml_image(text, imgformat)
-
+        
         p = etree.SubElement(parent, 'p')
         if imgformat == 'png':
             data = 'data:image/png;base64,{0}'.format(
@@ -102,15 +104,19 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
             img = etree.SubElement(p, 'img')
             img.attrib['src'] = data
         elif imgformat == 'svg':
-            data = 'data:image/svg+xml;utf8,{0}'.format(diagram)
+            diagram = re.sub(r"^.*\n", "", diagram)
+            # Firefox handles only base64 encoded SVGs
+            data = 'data:image/svg+xml;base64,{0}'.format(
+                base64.b64encode(diagram).decode('ascii')
+            )
             img = etree.SubElement(p, 'img')
             img.attrib['src'] = data
         elif imgformat == 'txt':
-            #print "(%s)" % diagram
+            #logger.debug(diagram)
             pre = etree.SubElement(parent, 'pre')
             code = etree.SubElement(pre, 'code')
             code.attrib['class'] = 'text'
-            code.text = diagram
+            code.text = AtomicString(diagram)
 
     @staticmethod
     def generate_uml_image(plantuml_code, imgformat):
@@ -127,7 +133,7 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
         plantuml_code = plantuml_code.encode('utf8')
         
         cmdline = ['plantuml', '-p', outopt ]
-    
+
         try:
             p = Popen(cmdline, stdin=PIPE, stdout=PIPE, stderr=PIPE)
             out, err = p.communicate(input=plantuml_code)
@@ -147,9 +153,7 @@ class PlantUMLMarkdownExtension(markdown.Extension):
         self.config = {
             'classes': ["uml", "Space separated list of classes for the generated image. Defaults to 'uml'."],
             'alt': ["uml diagram", "Text to show when image is not available. Defaults to 'uml diagram'"],
-            'format': ["png", "Format of image to generate (png or svg). Defaults to 'png'."],
-            'outpath': ["images", "Directory where to put generated images. Defaults to 'images'."],
-            'siteurl': ["", "URL of document, used as a prefix for the image diagram. Defaults to empty string."]
+            'format': ["png", "Format of image to generate (png, svg or txt). Defaults to 'png'."]
         }
 
         super(PlantUMLMarkdownExtension, self).__init__(*args, **kwargs)
