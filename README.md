@@ -7,7 +7,7 @@ converted into an image and inserted in the document.
 Syntax:
 
 ```markdown
-    ::uml:: [format="png|svg"] [classes="class1 class2 ..."] [alt="text for alt"]
+    ::uml:: [format="png|svg|txt"] [classes="class1 class2 ..."] [alt="text for alt"]
       PlantUML script diagram
     ::end-uml::
 ```
