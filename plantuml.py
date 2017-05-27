@@ -93,7 +93,7 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
 
         # Remove block header and footer
         text = re.sub(self.RE, "", re.sub(self.RE_END, "", text))
-        text = "\n".join(text.split('\n')[:-1]) # Skip last line (the one containing ```)
+        text = "\n".join(text.split('\n'))
         diagram = self.generate_uml_image(text, imgformat)
         
         p = etree.SubElement(parent, 'p')
