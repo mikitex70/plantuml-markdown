@@ -62,7 +62,7 @@ from markdown.util import etree, AtomicString
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#blockparser
 class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
     # Regular expression inspired by the codehilite Markdown plugin
-    RE = re.compile(r'''```.*\n\s*::uml::
+    RE = re.compile(r'''\s*::uml::
                         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
                         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
                         \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
