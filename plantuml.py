@@ -104,7 +104,6 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
             img = etree.SubElement(p, 'img')
             img.attrib['src'] = data
         elif imgformat == 'svg':
-            diagram = re.sub(r"^.*\n", "", diagram)
             # Firefox handles only base64 encoded SVGs
             data = 'data:image/svg+xml;base64,{0}'.format(
                 base64.b64encode(diagram).decode('ascii')
