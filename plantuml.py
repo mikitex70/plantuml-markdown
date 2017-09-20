@@ -66,7 +66,7 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
                         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
                         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
                         \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
-                    ''', re.VERBOSE)
+                    ''', re.VERBOSE+re.UNICODE)
     # Regular expression for identify end of UML script
     RE_END1 = re.compile(r'.*::end-uml::')
     RE_END2 = re.compile(r'.*```$')
