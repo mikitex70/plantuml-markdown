@@ -106,14 +106,18 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
                 base64.b64encode(diagram).decode('ascii')
             )
             img = etree.SubElement(p, 'img')
-            img.attrib['src'] = data
+            img.attrib['src'    ] = data
+            img.attrib['classes'] = classes
+            img.attrib['alt'    ] = alt
         elif imgformat == 'svg':
             # Firefox handles only base64 encoded SVGs
             data = 'data:image/svg+xml;base64,{0}'.format(
                 base64.b64encode(diagram).decode('ascii')
             )
             img = etree.SubElement(p, 'img')
-            img.attrib['src'] = data
+            img.attrib['src'    ] = data
+            img.attrib['classes'] = classes
+            img.attrib['alt'    ] = alt
         elif imgformat == 'txt':
             #logger.debug(diagram)
             pre = etree.SubElement(parent, 'pre')
