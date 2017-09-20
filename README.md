@@ -7,7 +7,7 @@ converted into an image and inserted in the document.
 Syntax:
 
 ```markdown
-    ::uml:: [format="png|svg|txt"] [classes="class1 class2 ..."] [alt="text for alt"]
+    ::uml:: [format="png|svg|txt"] [classes="class1 class2 ..."] [alt="text for alt"] [title="Text for title"]
       PlantUML script diagram
     ::end-uml::
 ```
@@ -15,7 +15,7 @@ Syntax:
 Example:
 
 ```markdown
-    ::uml:: format="png" classes="uml myDiagram" alt="My super diagram"
+    ::uml:: format="png" classes="uml myDiagram" alt="My super diagram placeholder" title="My super diagram"
       Goofy ->  MickeyMouse: calls
       Goofy <-- MickeyMouse: responds
     ::end-uml::
@@ -23,7 +23,7 @@ Example:
 
 The GitLab/GitHub block syntax is also recognized. Example:
 
-    ```plantuml format="png" classes="uml myDiagram" alt="My super diagram"
+    ```plantuml format="png" classes="uml myDiagram" alt="My super diagram placeholder" title="My super diagram"
       Goofy ->  MickeyMouse: calls
       Goofy <-- MickeyMouse: responds
     ```

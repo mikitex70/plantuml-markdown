@@ -66,6 +66,7 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
                         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
                         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
                         \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
+                        \s*(title=(?P<quot3>"|')(?P<title>[\w\s"']+)(?P=quot3))?
                     ''', re.VERBOSE+re.UNICODE)
     # Regular expression for identify end of UML script
     RE_END1 = re.compile(r'.*::end-uml::')
@@ -84,6 +85,7 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
         imgformat = m.group('format') if m.group('format') else self.config['format']
         classes = m.group('classes') if m.group('classes') else self.config['classes']
         alt = m.group('alt') if m.group('alt') else self.config['alt']
+        title = m.group('title') if m.group('title') else self.config['title']
 
         # Read blocks until end marker found
         end_re = self.RE_END1 if delimiter == '::uml::' else self.RE_END2
@@ -109,6 +111,7 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
             img.attrib['src'    ] = data
             img.attrib['classes'] = classes
             img.attrib['alt'    ] = alt
+            img.attrib['title'  ] = title
         elif imgformat == 'svg':
             # Firefox handles only base64 encoded SVGs
             data = 'data:image/svg+xml;base64,{0}'.format(
@@ -118,6 +121,7 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
             img.attrib['src'    ] = data
             img.attrib['classes'] = classes
             img.attrib['alt'    ] = alt
+            img.attrib['title'  ] = title
         elif imgformat == 'txt':
             #logger.debug(diagram)
             pre = etree.SubElement(parent, 'pre')
@@ -160,7 +164,8 @@ class PlantUMLMarkdownExtension(markdown.Extension):
         self.config = {
             'classes': ["uml", "Space separated list of classes for the generated image. Defaults to 'uml'."],
             'alt': ["uml diagram", "Text to show when image is not available. Defaults to 'uml diagram'"],
-            'format': ["png", "Format of image to generate (png, svg or txt). Defaults to 'png'."]
+            'format': ["png", "Format of image to generate (png, svg or txt). Defaults to 'png'."],
+            'title': ["", "Tooltip for the diagram"]
         }
 
         super(PlantUMLMarkdownExtension, self).__init__(*args, **kwargs)
