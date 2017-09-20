@@ -62,13 +62,14 @@ from markdown.util import etree, AtomicString
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#blockparser
 class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
     # Regular expression inspired by the codehilite Markdown plugin
-    RE = re.compile(r'''\s*::uml::
+    RE = re.compile(r'''\s*(?P<delimiter>(::uml::)|(```(plant)?uml))
                         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
                         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
                         \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
                     ''', re.VERBOSE)
     # Regular expression for identify end of UML script
-    RE_END = re.compile(r'.*::end-uml::')
+    RE_END1 = re.compile(r'.*::end-uml::')
+    RE_END2 = re.compile(r'.*```$')
 
     def test(self, parent, block):
         return self.RE.search(block)
@@ -79,12 +80,15 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
 
         # Parse configuration params
         m = self.RE.search(block)
+        delimiter = m.group('delimiter')
         imgformat = m.group('format') if m.group('format') else self.config['format']
         classes = m.group('classes') if m.group('classes') else self.config['classes']
         alt = m.group('alt') if m.group('alt') else self.config['alt']
 
         # Read blocks until end marker found
-        while blocks and not self.RE_END.search(block):
+        end_re = self.RE_END1 if delimiter == '::uml::' else self.RE_END2
+
+        while blocks and not end_re.search(block):
             block = blocks.pop(0)
             text += '\n' + block
         else:
@@ -92,7 +96,7 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
                 raise RuntimeError("UML block not closed")
 
         # Remove block header and footer
-        text = re.sub(self.RE, "", re.sub(self.RE_END, "", text))
+        text = re.sub(self.RE, "", re.sub(end_re, "", text))
         text = "\n".join(text.split('\n'))
         diagram = self.generate_uml_image(text, imgformat)
         

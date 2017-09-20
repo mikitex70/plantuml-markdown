@@ -21,6 +21,13 @@ Example:
     ::end-uml::
 ```
 
+The GitLab/GitHub block syntax is also recognized. Example:
+
+    ```plantuml format="png" classes="uml myDiagram" alt="My super diagram"
+      Goofy ->  MickeyMouse: calls
+      Goofy <-- MickeyMouse: responds
+    ```
+
 Options are optional, but if present must be specified in the order format, classes, alt.
 The option value may be enclosed in single or double quotes.
 
