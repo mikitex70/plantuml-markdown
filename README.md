@@ -28,7 +28,7 @@ The GitLab/GitHub block syntax is also recognized. Example:
       Goofy <-- MickeyMouse: responds
     ```
 
-Options are optional, but if present must be specified in the order format, classes, alt.
+Options are optional, but if present must be specified in the order `format`, `classes`, `alt`, `title`.
 The option value may be enclosed in single or double quotes.
 
 Installation
