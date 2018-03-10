@@ -44,12 +44,9 @@
    [layman]: http://wiki.gentoo.org/wiki/Layman
 """
 
-import os
 import re
 import base64
-import tempfile
 from subprocess import Popen, PIPE
-from zlib import adler32
 import logging
 import markdown
 from markdown.util import etree, AtomicString
@@ -94,7 +91,7 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
             block = blocks.pop(0)
             text += '\n' + block
         else:
-            if not blocks:
+            if not blocks and not end_re.search(block):
                 raise RuntimeError("UML block not closed")
 
         # Remove block header and footer
