@@ -57,49 +57,75 @@ from markdown.util import etree, AtomicString
 
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#blockparser
-class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
+class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
     # Regular expression inspired by the codehilite Markdown plugin
-    RE = re.compile(r'''\s*(?P<delimiter>(::uml::)|(```(plant)?uml))
-                        \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
-                        \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
-                        \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
-                        \s*(title=(?P<quot3>"|')(?P<title>[\w\s"']+)(?P=quot3))?
-                    ''', re.VERBOSE+re.UNICODE)
+    #RE = re.compile(r'''\s*(?P<delimiter>(::uml::)|(```(plant)?uml))
+    #                    \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
+    #                    \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
+    #                    \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
+    #                    \s*(title=(?P<quot3>"|')(?P<title>[\w\s"']+)(?P=quot3))?
+    #                ''', re.VERBOSE+re.UNICODE)
     # Regular expression for identify end of UML script
-    RE_END1 = re.compile(r'.*::end-uml::')
-    RE_END2 = re.compile(r'.*```$')
+    #RE_END1 = re.compile(r'.*::end-uml::')
+    #RE_END2 = re.compile(r'.*```$')
 
-    def test(self, parent, block):
-        return self.RE.search(block)
+    BLOCK_RE = re.compile(r'''
+        \s*::uml:: 
+        # args
+        \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
+        \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
+        \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
+        \s*(title=(?P<quot3>"|')(?P<title>[\w\s"']+)(?P=quot3))?
+        \s*\n
+        (?P<code>.*?)(?<=\n)
+        ::end-uml::[ ]*$
+        ''', re.MULTILINE | re.DOTALL | re.VERBOSE)
 
-    def run(self, parent, blocks):
-        block = blocks.pop(0)
-        text = block
+    FENCED_BLOCK_RE = re.compile(r'''
+        (?P<fence>^(?:~{3,}|`{3,}))[ ]*         # Opening ``` or ~~~
+        (\{?\.?(plant)?uml)[ ]*        # Optional {, and lang
+        # args
+        \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
+        \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
+        \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
+        \s*(title=(?P<quot3>"|')(?P<title>[\w\s"']+)(?P=quot3))?
+        [ ]*
+        }?[ ]*\n                                # Optional closing }
+        (?P<code>.*?)(?<=\n)
+        (?P=fence)[ ]*$
+        ''', re.MULTILINE | re.DOTALL | re.VERBOSE)
+
+    def __init__(self, md):
+        super().__init__(md)
+
+    def run(self, lines):
+        text = '\n'.join(lines)
+        did_replace = True
+
+        while did_replace:
+            text, did_replace = self._replace_block(text)
+
+        return text.split('\n')
+
+    def _replace_block(self, text):
+        # Parse configuration params
+        m = self.FENCED_BLOCK_RE.search(text)
+        if not m:
+            m = self.BLOCK_RE.search(text)
+            if not m:
+                return text, False
 
         # Parse configuration params
-        m = self.RE.search(block)
-        delimiter = m.group('delimiter')
         imgformat = m.group('format') if m.group('format') else self.config['format']
         classes = m.group('classes') if m.group('classes') else self.config['classes']
         alt = m.group('alt') if m.group('alt') else self.config['alt']
         title = m.group('title') if m.group('title') else self.config['title']
 
-        # Read blocks until end marker found
-        end_re = self.RE_END1 if delimiter == '::uml::' else self.RE_END2
-
-        while blocks and not end_re.search(block):
-            block = blocks.pop(0)
-            text += '\n' + block
-        else:
-            if not blocks and not end_re.search(block):
-                raise RuntimeError("UML block not closed")
-
-        # Remove block header and footer
-        text = re.sub(self.RE, "", re.sub(end_re, "", text))
-        text = "\n".join(text.split('\n'))
-        diagram = self.generate_uml_image(text, imgformat)
+        # Extract diagram source end convert it
+        code = m.group('code')
+        diagram = self.generate_uml_image(code, imgformat)
         
-        p = etree.SubElement(parent, 'p')
+        p = etree.Element('p')
         if imgformat == 'png':
             data = 'data:image/png;base64,{0}'.format(
                 base64.b64encode(diagram).decode('ascii')
@@ -121,10 +147,12 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
             img.attrib['title'  ] = title
         elif imgformat == 'txt':
             #logger.debug(diagram)
-            pre = etree.SubElement(parent, 'pre')
+            pre = etree.SubElement(p, 'pre')
             code = etree.SubElement(pre, 'code')
             code.attrib['class'] = 'text'
             code.text = AtomicString(diagram)
+
+        return text[:m.start()] + '\n' + etree.tostring(p).decode() + '\n' + text[m.end():], True
 
     @staticmethod
     def generate_uml_image(plantuml_code, imgformat):
@@ -148,10 +176,10 @@ class PlantUMLBlockProcessor(markdown.blockprocessors.BlockProcessor):
         except Exception as exc:
             raise Exception('Failed to run plantuml: %s' % exc)
         else:
-            if p.returncode == 0:
-                return out
-            else:
-                raise RuntimeError('Error in "uml" directive: %s' % err)
+            if p.returncode != 0:
+                # plantuml returns a nice image in case of syntax error so log but still return out
+                print('Error in "uml" directive: %s' % err)
+            return out
 
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#extendmarkdown
@@ -168,9 +196,10 @@ class PlantUMLMarkdownExtension(markdown.Extension):
         super(PlantUMLMarkdownExtension, self).__init__(*args, **kwargs)
 
     def extendMarkdown(self, md, md_globals):
-        blockprocessor = PlantUMLBlockProcessor(md.parser)
+        blockprocessor = PlantUMLPreprocessor(md)
         blockprocessor.config = self.getConfigs()
-        md.parser.blockprocessors.add('plantuml', blockprocessor, '>code')
+        # need to go before both fenced_code_block and things like retext's PosMapMarkPreprocessor
+        md.preprocessors.add('plantuml', blockprocessor, '_begin')
 
 
 def makeExtension(*args, **kwargs):
