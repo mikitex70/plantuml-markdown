@@ -35,7 +35,7 @@
 
    For [Gentoo Linux][Gentoo] there is an ebuild at http://gpo.zugaina.org/dev-util/plantuml/RDep: you can download
    the ebuild and the `files` subfolder or you can add the `zugaina` repository with [layman][]
-   (reccomended).
+   (recommended).
 
    [Python-Markdown]: http://pythonhosted.org/Markdown/
    [PlantUML]: http://plantuml.sourceforge.net/
@@ -58,19 +58,9 @@ from markdown.util import etree, AtomicString
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#blockparser
 class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
-    # Regular expression inspired by the codehilite Markdown plugin
-    #RE = re.compile(r'''\s*(?P<delimiter>(::uml::)|(```(plant)?uml))
-    #                    \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
-    #                    \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
-    #                    \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
-    #                    \s*(title=(?P<quot3>"|')(?P<title>[\w\s"']+)(?P=quot3))?
-    #                ''', re.VERBOSE+re.UNICODE)
-    # Regular expression for identify end of UML script
-    #RE_END1 = re.compile(r'.*::end-uml::')
-    #RE_END2 = re.compile(r'.*```$')
-
+    # Regular expression inspired from fenced_code
     BLOCK_RE = re.compile(r'''
-        \s*::uml:: 
+        ::uml:: 
         # args
         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
@@ -83,7 +73,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
     FENCED_BLOCK_RE = re.compile(r'''
         (?P<fence>^(?:~{3,}|`{3,}))[ ]*         # Opening ``` or ~~~
-        (\{?\.?(plant)?uml)[ ]*        # Optional {, and lang
+        (\{?\.?(plant)?uml)[ ]*                 # Optional {, and lang
         # args
         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
@@ -116,43 +106,42 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 return text, False
 
         # Parse configuration params
-        imgformat = m.group('format') if m.group('format') else self.config['format']
+        img_format = m.group('format') if m.group('format') else self.config['format']
         classes = m.group('classes') if m.group('classes') else self.config['classes']
         alt = m.group('alt') if m.group('alt') else self.config['alt']
         title = m.group('title') if m.group('title') else self.config['title']
 
         # Extract diagram source end convert it
         code = m.group('code')
-        diagram = self.generate_uml_image(code, imgformat)
+        diagram = self.generate_uml_image(code, img_format)
         
-        p = etree.Element('p')
-        if imgformat == 'png':
+        if img_format == 'png':
             data = 'data:image/png;base64,{0}'.format(
                 base64.b64encode(diagram).decode('ascii')
             )
-            img = etree.SubElement(p, 'img')
+            img = etree.Element('img')
             img.attrib['src'    ] = data
             img.attrib['classes'] = classes
             img.attrib['alt'    ] = alt
             img.attrib['title'  ] = title
-        elif imgformat == 'svg':
+        elif img_format == 'svg':
             # Firefox handles only base64 encoded SVGs
             data = 'data:image/svg+xml;base64,{0}'.format(
                 base64.b64encode(diagram).decode('ascii')
             )
-            img = etree.SubElement(p, 'img')
+            img = etree.Element('img')
             img.attrib['src'    ] = data
             img.attrib['classes'] = classes
             img.attrib['alt'    ] = alt
             img.attrib['title'  ] = title
-        elif imgformat == 'txt':
+        elif img_format == 'txt':
             #logger.debug(diagram)
-            pre = etree.SubElement(p, 'pre')
-            code = etree.SubElement(pre, 'code')
+            img = etree.Element('pre')
+            code = etree.SubElement(img, 'code')
             code.attrib['class'] = 'text'
             code.text = AtomicString(diagram)
 
-        return text[:m.start()] + '\n' + etree.tostring(p).decode() + '\n' + text[m.end():], True
+        return text[:m.start()] + etree.tostring(img).decode() + text[m.end():], True
 
     @staticmethod
     def generate_uml_image(plantuml_code, imgformat):
