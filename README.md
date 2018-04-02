@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mikitex70/plantuml-markdown.svg?branch=master)](https://travis-ci.org/mikitex70/plantuml-markdown)
+
 [PlantUML][] Extension for [Python-Markdown][]
 ==============================================
 
@@ -70,6 +72,21 @@ To use the plugin with [Python-Markdown][] you have two choices:
 After installed, you can use this plugin by activating it in the `markdownm_py` command. For example:
 
     markdown_py -x plantuml mydoc.md > out.html
+
+Running tests
+-------------
+
+The test execution requires a specific version of [PlantUML] (the image generated can be different with different [PlantUML] versions).
+
+To run the tests, execute the following command:
+
+```bash
+PATH="$PATH:$PWD/test" python -m unittest discover -v -s test
+```
+
+This command uses a custom version of the `plantuml` command which will download the expected version of [PlantUML] for
+tests execution without clobbering the system.
+
 
 [Python-Markdown]: http://pythonhosted.org/Markdown/
 [PlantUML]: http://plantuml.sourceforge.net/

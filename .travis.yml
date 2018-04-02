@@ -1,15 +1,14 @@
+sudo: true
 language: python
 
 python:
-  - 2.7
-  - 3.3
-  - 3.4
   - 3.5
-  - 3.6
-  - pypy
 
 install:
+  - sudo apt-get install graphviz
   - pip install Markdown
+  - wget 'http://sourceforge.net/projects/plantuml/files/plantuml.1.2018.2.jar/download' -O /tmp/plantuml.1.2018.2.jar
 
 script:
-  - python -m unittest discover -v -s tests
+  - test/plantuml -v
+  - PATH="$PWD/test:$PATH" python -m unittest discover -v -s test

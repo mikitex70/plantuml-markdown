@@ -1,7 +1,7 @@
 import unittest
 
-from tests.markdown_builder import MarkdownBuilder
-from tests.test_plantuml import PlantumlTest
+from test.markdown_builder import MarkdownBuilder
+from test.test_plantuml import PlantumlTest
 
 
 class PlantumlTest_legacy(PlantumlTest):
