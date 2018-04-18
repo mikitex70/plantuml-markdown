@@ -7,7 +7,7 @@ from test.test_plantuml import PlantumlTest
 class PlantumlTest_fenced(PlantumlTest):
 
     def setUp(self):
-        super().setUp()
+        super(PlantumlTest_fenced, self).setUp()
         # Setup testing with backticks fenced block delimiter
         self.text_builder = MarkdownBuilder()
 

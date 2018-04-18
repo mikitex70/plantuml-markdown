@@ -86,7 +86,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         ''', re.MULTILINE | re.DOTALL | re.VERBOSE)
 
     def __init__(self, md):
-        super().__init__(md)
+        super(PlantUMLPreprocessor, self).__init__(md)
 
     def run(self, lines):
         text = '\n'.join(lines)
@@ -135,11 +135,11 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             img.attrib['alt'    ] = alt
             img.attrib['title'  ] = title
         elif img_format == 'txt':
-            #logger.debug(diagram)
+            # logger.debug(diagram)
             img = etree.Element('pre')
             code = etree.SubElement(img, 'code')
             code.attrib['class'] = 'text'
-            code.text = AtomicString(diagram)
+            code.text = AtomicString(diagram.decode('UTF-8'))
 
         return text[:m.start()] + etree.tostring(img).decode() + text[m.end():], True
 
@@ -152,7 +152,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         elif imgformat == 'txt':
             outopt = "-ttxt"
         else:
-            logger.error("Bad uml image format '"+imgformat+"', using png")
+            # logger.error("Bad uml image format '"+imgformat+"', using png")
             outopt = "-tpng"
 
         plantuml_code = plantuml_code.encode('utf8')
@@ -168,6 +168,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             if p.returncode != 0:
                 # plantuml returns a nice image in case of syntax error so log but still return out
                 print('Error in "uml" directive: %s' % err)
+
             return out
 
 

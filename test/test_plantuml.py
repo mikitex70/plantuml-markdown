@@ -10,7 +10,7 @@ class PlantumlTest(unittest.TestCase):
     def setUpClass(cls):
         if cls is PlantumlTest:
             raise unittest.SkipTest("Base class")
-        super().setUpClass()
+        super(PlantumlTest, cls).setUpClass()
 
     def setUp(self):
         self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code', 'plantuml'])
@@ -19,7 +19,7 @@ class PlantumlTest(unittest.TestCase):
     def _load_file(self, filename):
         dir_path = os.path.dirname(os.path.realpath(__file__))
         with open(os.path.join(dir_path, 'data', filename), 'r') as f:
-            return f.read()[:-1]  # skip the las newline
+            return f.read()[:-1]  # skip the last newline
 
     FAKE_IMAGE = 'ABCDEF=='
     BASE64_REGEX = re.compile(
