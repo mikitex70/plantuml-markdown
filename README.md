@@ -88,7 +88,7 @@ This command uses a custom version of the `plantuml` command which will download
 tests execution without clobbering the system.
 
 
-[Python-Markdown]: http://pythonhosted.org/Markdown/
+[Python-Markdown]: https://python-markdown.github.io/
 [PlantUML]: http://plantuml.sourceforge.net/
 [Graphviz]: http://www.graphviz.org
 [Gentoo]: http://www.gentoo.org
