@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
     
 setuptools.setup(
     name="plantuml-markdown",
-    version="1.2.3rc2",
+    version="1.2.3",
     author="Michele Tessaro",
     author_email="michele.tessaro@email.it",
     description="A PlantUML plugin for Markdown",
