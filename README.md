@@ -30,7 +30,7 @@ The GitLab/GitHub block syntax is also recognized. Example:
       Goofy <-- MickeyMouse: responds
     ```
 
-Options are optional, but if present must be specified in the order `format`, `classes`, `alt`, `title`.
+Options are optional (otherwise the wouldn't be options), but if present must be specified in the order `format`, `classes`, `alt`, `title`.
 The option value may be enclosed in single or double quotes.
 
 Installation
@@ -50,8 +50,9 @@ For [Gentoo Linux][Gentoo] there is an ebuild at http://gpo.zugaina.org/dev-util
 the ebuild and the `files` subfolder or you can add the `zugaina` repository with [layman][]
 (reccomended).
 
-To use the plugin with [Python-Markdown][] you have two choices:
+To use the plugin with [Python-Markdown][] you have three choices:
 
+* do a simple `pip install plantuml-markdown`, and the plugin should be ready to be used
 * copy the file `plantuml.py` in the `extensions` folder of [Python-Markdown][]. For example, for Python 2.7 you must
   do:
   
