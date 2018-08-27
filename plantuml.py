@@ -44,6 +44,7 @@
    [layman]: http://wiki.gentoo.org/wiki/Layman
 """
 
+import os
 import re
 import base64
 from subprocess import Popen, PIPE
@@ -157,10 +158,11 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         plantuml_code = plantuml_code.encode('utf8')
         
-        cmdline = ['plantuml', '-p', outopt ]
+        cmdline = ['plantuml', '-p', outopt]
 
         try:
-            p = Popen(cmdline, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            # On Windows run batch files through a shell so the extension can be resolved
+            p = Popen(cmdline, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=(os.name == 'nt'))
             out, err = p.communicate(input=plantuml_code)
         except Exception as exc:
             raise Exception('Failed to run plantuml: %s' % exc)
