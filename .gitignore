@@ -58,3 +58,4 @@ target/
 env_test
 .env
 .eggs
+.env*
