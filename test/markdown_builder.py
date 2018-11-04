@@ -14,7 +14,7 @@ class MarkdownBuilder:
         Clears the current diagram definition
         """
         self._format = ""
-        self._classes = ""
+        self._class = ""
         self._alt = ""
         self._title = ""
         self._diagram_buffer = ""
@@ -26,7 +26,7 @@ class MarkdownBuilder:
         """
         if self._diagram_buffer:
             delim = re.sub(r'(\W{3,})(\w+)', r'\1{\2', self._delimiter) if self._extended_syntax else self._delimiter
-            args = self._format+self._classes+self._alt+self._title
+            args = self._format + self._class + self._alt + self._title
             self._buffer += delim+args+('}' if self._extended_syntax else '')
             self._buffer += "\n"+self._diagram_buffer+"\n"+self._end_delimiter+"\n"
 
@@ -65,7 +65,7 @@ class MarkdownBuilder:
         :param class_list: The text for the classes argument
         :return: The object itself
         """
-        self._classes = " classes='%s'" % class_list
+        self._class = " classes='%s'" % class_list
         return self
 
     def format(self, fmt):

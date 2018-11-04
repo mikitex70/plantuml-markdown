@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.6 (2018-11-04)
+
+### Fix
+
+* Fixed wrong `classes` HTML attribute (fixes #16) [Michele Tessaro]
+
+  Fixed a type on the generated HTML code, the `class` attribute was
+  mispelled to `classes`.
+
+
 ## 1.2.5 (2018-08-27)
 
 ### Fix
