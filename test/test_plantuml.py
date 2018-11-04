@@ -35,7 +35,7 @@ class PlantumlTest(unittest.TestCase):
         """
         text = self.text_builder.diagram("A --> B").title("Diagram test").build()
         self.assertEqual(
-            '<p><img alt="uml diagram" classes="uml" src="data:image/png;base64,%s" title="Diagram test" /></p>' % self.FAKE_IMAGE,
+            '<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" title="Diagram test" /></p>' % self.FAKE_IMAGE,
             self._stripImageData(self.md.convert(text)))
 
     def test_arg_alt(self):
@@ -44,7 +44,7 @@ class PlantumlTest(unittest.TestCase):
         """
         text = self.text_builder.diagram("A --> B").alt("Diagram test").build()
         self.assertEqual(
-            '<p><img alt="Diagram test" classes="uml" src="data:image/png;base64,%s" title="" /></p>' % self.FAKE_IMAGE,
+            '<p><img alt="Diagram test" class="uml" src="data:image/png;base64,%s" title="" /></p>' % self.FAKE_IMAGE,
             self._stripImageData(self.md.convert(text)))
 
     def test_arg_classes(self):
@@ -53,7 +53,7 @@ class PlantumlTest(unittest.TestCase):
         """
         text = self.text_builder.diagram("A --> B").classes("class1 class2").build()
         self.assertEqual(
-            '<p><img alt="uml diagram" classes="class1 class2" src="data:image/png;base64,%s" title="" /></p>' % self.FAKE_IMAGE,
+            '<p><img alt="uml diagram" class="class1 class2" src="data:image/png;base64,%s" title="" /></p>' % self.FAKE_IMAGE,
             self._stripImageData(self.md.convert(text)))
 
     def test_arg_format_png(self):

@@ -122,7 +122,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             )
             img = etree.Element('img')
             img.attrib['src'    ] = data
-            img.attrib['classes'] = classes
+            img.attrib['class'  ] = classes
             img.attrib['alt'    ] = alt
             img.attrib['title'  ] = title
         elif img_format == 'svg':
@@ -132,7 +132,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             )
             img = etree.Element('img')
             img.attrib['src'    ] = data
-            img.attrib['classes'] = classes
+            img.attrib['class'  ] = classes
             img.attrib['alt'    ] = alt
             img.attrib['title'  ] = title
         elif img_format == 'txt':
