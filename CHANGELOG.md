@@ -1,6 +1,25 @@
 # Changelog
 
+## 1.3.0 (2018-11-17)
+
+### New
+
+* Added support for clickable SVGs (closes #17) [Michele Tessaro]
+
+  Added two new output formats:
+  * `svg_object`: generated an `object` tag for displaing svg images
+  * `svg_inline`: embedded the svg source image directly in the document
+
+### Fix
+
+* Fixed error when the output format is not recognized. [Michele Tessaro]
+
+
 ## 1.2.6 (2018-11-04)
+
+### Changes
+
+* Update documentation. [Michele Tessaro]
 
 ### Fix
 
