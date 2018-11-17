@@ -33,6 +33,14 @@ The GitLab/GitHub block syntax is also recognized. Example:
 Options are optional (otherwise the wouldn't be options), but if present must be specified in the order `format`, `classes`, `alt`, `title`.
 The option value may be enclosed in single or double quotes.
 
+Supported values for `format` parameter are:
+
+* `png`: HTML `img` tag with embedded png image
+* `svg`: HTML `img` tag with embedded svg image (links are not navigable)
+* `svg_object`: HTML `object` tag with embedded svg image (links are navigable)
+* `svg_inline`: HTML5 `svg` tag with inline svg image source (links are navigable, can be manipulated with CSS rules)
+* `txt`: plain text diagrams.
+
 Installation
 ------------
 You need to install [PlantUML][] (see the site for details) and [Graphviz][] 2.26.3 or later.
@@ -84,7 +92,7 @@ To use the plugin with [Python-Markdown][] you have three choices:
   
   You must export `PYTHONPATH` before running `markdown_py`, or you can put the definition in `~/.bashrc`.
 
-After installed, you can use this plugin by activating it in the `markdownm_py` command. For example:
+After installed, you can use this plugin by activating it in the `markdown_py` command. For example:
 
     markdown_py -x plantuml mydoc.md > out.html
 
