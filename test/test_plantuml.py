@@ -29,6 +29,30 @@ class PlantumlTest(unittest.TestCase):
     def _stripImageData(cls, html):
         return cls.BASE64_REGEX.sub(r'\1%s' % cls.FAKE_IMAGE, html)
 
+    FAKE_SVG = '...svg-body...'
+    SVG_REGEX = re.compile(r'<(?:\w+:)?svg(?:( alt=".*?")|( class=".*?")|( title=".*?")|(?:.*?))+>.*</(?:\w+:)?svg>')
+
+    @classmethod
+    def _stripSvgData(cls, html):
+        """
+        Simplifies SVG tags to easy comparing.
+        :param html: source HTML
+        :return: HTML code with simplified svg tags
+        """
+        def sort_attributes(groups):
+            """
+            Sorts attributes in a specific order.
+            :param groups: matched attributed groups
+            :return: a SVG tag string source
+            """
+            alt = next(x for x in groups if x.startswith(' alt='))
+            title = next(x for x in groups if x.startswith(' title='))
+            classes = next(x for x in groups if x.startswith(' class='))
+
+            return "<svg{}{}{}>{}</svg>".format(alt, title, classes, cls.FAKE_SVG)
+
+        return cls.SVG_REGEX.sub(lambda x: sort_attributes(x.groups()), html)
+
     def test_arg_title(self):
         """
         Test for the correct parsing of the title argument
@@ -37,6 +61,15 @@ class PlantumlTest(unittest.TestCase):
         self.assertEqual(
             '<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" title="Diagram test" /></p>' % self.FAKE_IMAGE,
             self._stripImageData(self.md.convert(text)))
+
+    def test_arg_title_inline_svg(self):
+        """
+        Test for setting title attribute in inline SVG
+        """
+        text = self.text_builder.diagram("A --> B").format("svg_inline").title("Diagram test").build()
+        self.assertEqual(
+            '<p><svg alt="uml diagram" title="Diagram test" class="uml">%s</svg></p>' % self.FAKE_SVG,
+            self._stripSvgData(self.md.convert(text)))
 
     def test_arg_alt(self):
         """
@@ -47,6 +80,15 @@ class PlantumlTest(unittest.TestCase):
             '<p><img alt="Diagram test" class="uml" src="data:image/png;base64,%s" title="" /></p>' % self.FAKE_IMAGE,
             self._stripImageData(self.md.convert(text)))
 
+    def test_arg_alt_inline_svg(self):
+        """
+        Test for setting alt attribute in inline SVG
+        """
+        text = self.text_builder.diagram("A --> B").format("svg_inline").alt("Diagram test").build()
+        self.assertEqual(
+            '<p><svg alt="Diagram test" title="" class="uml">%s</svg></p>' % self.FAKE_SVG,
+            self._stripSvgData(self.md.convert(text)))
+
     def test_arg_classes(self):
         """
         Test for the correct parsing of the classes argument
@@ -55,6 +97,15 @@ class PlantumlTest(unittest.TestCase):
         self.assertEqual(
             '<p><img alt="uml diagram" class="class1 class2" src="data:image/png;base64,%s" title="" /></p>' % self.FAKE_IMAGE,
             self._stripImageData(self.md.convert(text)))
+
+    def test_arg_classes_inline_svg(self):
+        """
+        Test for setting class attribute in inline SVG
+        """
+        text = self.text_builder.diagram("A --> B").format("svg_inline").classes("class1 class2").build()
+        self.assertEqual(
+            '<p><svg alt="uml diagram" title="" class="class1 class2">%s</svg></p>' % self.FAKE_SVG,
+            self._stripSvgData(self.md.convert(text)))
 
     def test_arg_format_png(self):
         """
@@ -71,6 +122,22 @@ class PlantumlTest(unittest.TestCase):
         text = self.text_builder.diagram("A --> B").format("svg").build()
         self.assertEqual(self._stripImageData(self._load_file('svg_diag.html')),
                          self._stripImageData(self.md.convert(text)))
+
+    def test_arg_format_svg_object(self):
+        """
+        Test for the correct parsing of the format argument, generating a svg image
+        """
+        text = self.text_builder.diagram("A --> B").format("svg_object").build()
+        self.assertEqual(self._stripImageData(self._load_file('svg_object_diag.html')),
+                         self._stripImageData(self.md.convert(text)))
+
+    def test_arg_format_svg_inline(self):
+        """
+        Test for the correct parsing of the format argument, generating a svg image
+        """
+        text = self.text_builder.diagram("A --> B").format("svg_inline").build()
+        self.assertEqual(self._stripSvgData(self._load_file('svg_inline_diag.html')),
+                         self._stripSvgData(self.md.convert(text)))
 
     def test_arg_format_txt(self):
         """

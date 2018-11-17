@@ -22,6 +22,15 @@
    Options are optional, but if present must be specified in the order format, classes, alt.
    The option value may be enclosed in single or double quotes.
 
+
+   Supported values for `format` parameter are:
+
+   * `png`: HTML `img` tag with embedded png image
+   * `svg`: HTML `img` tag with embedded svg image (links are not navigable)
+   * `svg_object`: HTML `object` tag with embedded svg image (links are navigable)
+   * `svg_inline`: HTML5 `svg` tag with inline svg image source (links are navigable, can be manipulated with CSS rules)
+   * `txt`: plain text diagrams.
+
    Installation
    ------------
    You need to install [PlantUML][] (see the site for details) and [Graphviz][] 2.26.3 or later.
@@ -48,7 +57,7 @@ import os
 import re
 import base64
 from subprocess import Popen, PIPE
-import logging
+#import logging
 import markdown
 from markdown.util import etree, AtomicString
 
@@ -98,6 +107,9 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         return text.split('\n')
 
+    # regex for removing some parts from the plantuml generated svg
+    ADAPT_SVG_REGEX = re.compile(r'^<\?xml .*?\?><svg(.*?)xmlns=".*?"(.*?)>')
+
     def _replace_block(self, text):
         # Parse configuration params
         m = self.FENCED_BLOCK_RE.search(text)
@@ -116,31 +128,34 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         code = m.group('code')
         diagram = self.generate_uml_image(code, img_format)
         
-        if img_format == 'png':
-            data = 'data:image/png;base64,{0}'.format(
-                base64.b64encode(diagram).decode('ascii')
-            )
-            img = etree.Element('img')
-            img.attrib['src'    ] = data
-            img.attrib['class'  ] = classes
-            img.attrib['alt'    ] = alt
-            img.attrib['title'  ] = title
-        elif img_format == 'svg':
-            # Firefox handles only base64 encoded SVGs
-            data = 'data:image/svg+xml;base64,{0}'.format(
-                base64.b64encode(diagram).decode('ascii')
-            )
-            img = etree.Element('img')
-            img.attrib['src'    ] = data
-            img.attrib['class'  ] = classes
-            img.attrib['alt'    ] = alt
-            img.attrib['title'  ] = title
-        elif img_format == 'txt':
+        if img_format == 'txt':
             # logger.debug(diagram)
             img = etree.Element('pre')
             code = etree.SubElement(img, 'code')
             code.attrib['class'] = 'text'
             code.text = AtomicString(diagram.decode('UTF-8'))
+        else:
+            if img_format == 'svg':
+                # Firefox handles only base64 encoded SVGs
+                data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
+                img = etree.Element('img')
+                img.attrib['src'] = data
+            elif img_format == 'svg_object':
+                # Firefox handles only base64 encoded SVGs
+                data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
+                img = etree.Element('object')
+                img.attrib['data'] = data
+            elif img_format == 'svg_inline':
+                data = self.ADAPT_SVG_REGEX.sub('<svg\\1\\2>', diagram.decode('UTF-8'))
+                img = etree.fromstring(data)
+            else:  # png format, explicitly set or as a default when format is not recognized
+                data = 'data:image/png;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
+                img = etree.Element('img')
+                img.attrib['src'] = data
+
+            img.attrib['class'] = classes
+            img.attrib['alt'] = alt
+            img.attrib['title'] = title
 
         return text[:m.start()] + etree.tostring(img).decode() + text[m.end():], True
 
@@ -148,7 +163,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
     def generate_uml_image(plantuml_code, imgformat):
         if imgformat == 'png':
             outopt = "-tpng"
-        elif imgformat == 'svg':
+        elif imgformat in ['svg', 'svg_object', 'svg_inline']:
             outopt = "-tsvg"
         elif imgformat == 'txt':
             outopt = "-ttxt"
