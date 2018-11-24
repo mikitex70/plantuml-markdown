@@ -57,13 +57,13 @@ import os
 import re
 import base64
 from subprocess import Popen, PIPE
-#import logging
+import logging
 import markdown
 from markdown.util import etree, AtomicString
 
 
-#logger = logging.getLogger('MARKDOWN')
-#logger.setLevel(logging.DEBUG)
+logger = logging.getLogger('MARKDOWN')
+logger.setLevel(logging.DEBUG)
 
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#blockparser
@@ -108,7 +108,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         return text.split('\n')
 
     # regex for removing some parts from the plantuml generated svg
-    ADAPT_SVG_REGEX = re.compile(r'^<\?xml .*?\?><svg(.*?)xmlns=".*?"(.*?)>')
+    ADAPT_SVG_REGEX = re.compile(r'^<\?xml .*?\?><svg(.*?)xmlns=".*?" (.*?)>')
 
     def _replace_block(self, text):
         # Parse configuration params
@@ -146,7 +146,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 img = etree.Element('object')
                 img.attrib['data'] = data
             elif img_format == 'svg_inline':
-                data = self.ADAPT_SVG_REGEX.sub('<svg\\1\\2>', diagram.decode('UTF-8'))
+                data = self.ADAPT_SVG_REGEX.sub('<svg \\1\\2>', diagram.decode('UTF-8'))
                 img = etree.fromstring(data)
             else:  # png format, explicitly set or as a default when format is not recognized
                 data = 'data:image/png;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
@@ -199,6 +199,9 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'format': ["png", "Format of image to generate (png, svg or txt). Defaults to 'png'."],
             'title': ["", "Tooltip for the diagram"]
         }
+
+        # Fix to make links navigable in SVG diagrams
+        etree.register_namespace('xlink', 'http://www.w3.org/1999/xlink')
 
         super(PlantUMLMarkdownExtension, self).__init__(*args, **kwargs)
 
