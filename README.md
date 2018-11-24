@@ -9,7 +9,7 @@ converted into an image and inserted in the document.
 Syntax:
 
 ```markdown
-    ::uml:: [format="png|svg|txt"] [classes="class1 class2 ..."] [alt="text for alt"] [title="Text for title"]
+    ::uml:: [format="png|svg|txt"] [classes="class1 class2 ..."] [alt="text for alt"] [title="Text for title"] width="300px" height="300px"
       PlantUML script diagram
     ::end-uml::
 ```
@@ -17,7 +17,7 @@ Syntax:
 Example:
 
 ```markdown
-    ::uml:: format="png" classes="uml myDiagram" alt="My super diagram placeholder" title="My super diagram"
+    ::uml:: format="png" classes="uml myDiagram" alt="My super diagram placeholder" title="My super diagram" width="300px" height="300px"
       Goofy ->  MickeyMouse: calls
       Goofy <-- MickeyMouse: responds
     ::end-uml::
@@ -25,12 +25,12 @@ Example:
 
 The GitLab/GitHub block syntax is also recognized. Example:
 
-    ```plantuml format="png" classes="uml myDiagram" alt="My super diagram placeholder" title="My super diagram"
+    ```plantuml format="png" classes="uml myDiagram" alt="My super diagram placeholder" title="My super diagram" width="300px" height="300px"
       Goofy ->  MickeyMouse: calls
       Goofy <-- MickeyMouse: responds
     ```
 
-Options are optional (otherwise the wouldn't be options), but if present must be specified in the order `format`, `classes`, `alt`, `title`.
+Options are optional (otherwise the wouldn't be options), but if present must be specified in the order `format`, `classes`, `alt`, `title`, `width`, `height`.
 The option value may be enclosed in single or double quotes.
 
 Supported values for `format` parameter are:
@@ -40,6 +40,8 @@ Supported values for `format` parameter are:
 * `svg_object`: HTML `object` tag with embedded svg image (links are navigable)
 * `svg_inline`: HTML5 `svg` tag with inline svg image source (links are navigable, can be manipulated with CSS rules)
 * `txt`: plain text diagrams.
+
+The `width` and `height` options must include a [CSS unit](https://www.w3schools.com/cssref/css_units.asp).
 
 Installation
 ------------

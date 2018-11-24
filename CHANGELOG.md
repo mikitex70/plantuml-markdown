@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.4.0 (2018-11-24)
+
+### New
+
+* Added `width` and `height` attributes. [Michele Tessaro]
+
+  The new attributes `width` and `height` can be used to limit image size:
+  if the image dimension is bigger than values specified, they will be
+  shrinked keeping the aspect ratio.
+  If there is not enought space in the page fot the diagram, the image
+  will be reduced.
+
+### Fix
+
+* Fixed navigable links in inline SVG (resolves #18) [Michele Tessaro]
+
+
 ## 1.3.0 (2018-11-17)
 
 ### New
