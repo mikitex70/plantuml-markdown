@@ -57,13 +57,13 @@ import os
 import re
 import base64
 from subprocess import Popen, PIPE
-#import logging
+import logging
 import markdown
 from markdown.util import etree, AtomicString
 
 
-#logger = logging.getLogger('MARKDOWN')
-#logger.setLevel(logging.DEBUG)
+logger = logging.getLogger('MARKDOWN')
+logger.setLevel(logging.DEBUG)
 
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#blockparser
@@ -76,6 +76,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
         \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
         \s*(title=(?P<quot3>"|')(?P<title>[\w\s"']+)(?P=quot3))?
+        \s*(width=(?P<quot4>"|')(?P<width>[\w\s"']+)(?P=quot4))?
+        \s*(height=(?P<quot5>"|')(?P<height>[\w\s"']+)(?P=quot5))?
         \s*\n
         (?P<code>.*?)(?<=\n)
         ::end-uml::[ ]*$
@@ -89,6 +91,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
         \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
         \s*(title=(?P<quot3>"|')(?P<title>[\w\s"']+)(?P=quot3))?
+        \s*(width=(?P<quot4>"|')(?P<width>[\w\s"']+)(?P=quot4))?
+        \s*(height=(?P<quot5>"|')(?P<height>[\w\s"']+)(?P=quot5))?
         [ ]*
         }?[ ]*\n                                # Optional closing }
         (?P<code>.*?)(?<=\n)
@@ -108,7 +112,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         return text.split('\n')
 
     # regex for removing some parts from the plantuml generated svg
-    ADAPT_SVG_REGEX = re.compile(r'^<\?xml .*?\?><svg(.*?)xmlns=".*?"(.*?)>')
+    ADAPT_SVG_REGEX = re.compile(r'^<\?xml .*?\?><svg(.*?)xmlns=".*?" (.*?)>')
 
     def _replace_block(self, text):
         # Parse configuration params
@@ -123,6 +127,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         classes = m.group('classes') if m.group('classes') else self.config['classes']
         alt = m.group('alt') if m.group('alt') else self.config['alt']
         title = m.group('title') if m.group('title') else self.config['title']
+        width = m.group('width') if m.group('width') else None
+        height = m.group('height') if m.group('height') else None
 
         # Extract diagram source end convert it
         code = m.group('code')
@@ -135,7 +141,13 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             code.attrib['class'] = 'text'
             code.text = AtomicString(diagram.decode('UTF-8'))
         else:
-            if img_format == 'svg':
+            # These are images
+            if img_format == 'svg_inline':
+                data = self.ADAPT_SVG_REGEX.sub('<svg \\1\\2>', diagram.decode('UTF-8'))
+                img = etree.fromstring(data)
+                # remove width and height in style attribute
+                img.attrib['style'] = re.sub(r'\b(?:width|height):\d+px;', '', img.attrib['style'])
+            elif img_format == 'svg':
                 # Firefox handles only base64 encoded SVGs
                 data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
                 img = etree.Element('img')
@@ -145,13 +157,23 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
                 img = etree.Element('object')
                 img.attrib['data'] = data
-            elif img_format == 'svg_inline':
-                data = self.ADAPT_SVG_REGEX.sub('<svg\\1\\2>', diagram.decode('UTF-8'))
-                img = etree.fromstring(data)
             else:  # png format, explicitly set or as a default when format is not recognized
                 data = 'data:image/png;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
                 img = etree.Element('img')
                 img.attrib['src'] = data
+
+            styles = []
+            if width:
+                styles.append("max-width:"+width)
+            if height:
+                styles.append("max-height:"+height)
+
+            if styles:
+                style = img.attrib['style']+';' if 'style' in img.attrib and img.attrib['style'] != '' else ''
+                img.attrib['style'] = style+";".join(styles)
+                img.attrib['width'] = '100%'
+                if 'height' in img.attrib:
+                    img.attrib.pop('height')
 
             img.attrib['class'] = classes
             img.attrib['alt'] = alt
@@ -199,6 +221,9 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'format': ["png", "Format of image to generate (png, svg or txt). Defaults to 'png'."],
             'title': ["", "Tooltip for the diagram"]
         }
+
+        # Fix to make links navigable in SVG diagrams
+        etree.register_namespace('xlink', 'http://www.w3.org/1999/xlink')
 
         super(PlantUMLMarkdownExtension, self).__init__(*args, **kwargs)
 

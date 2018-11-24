@@ -4,7 +4,7 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-with open(path.join(here, "README.md"), "r") as f:
+with open(path.join(here, "README.md")) as f:
     long_description = f.read()
 
 with open(path.join(here, 'requirements.txt')) as f:
@@ -15,7 +15,7 @@ with open(path.join(here, 'test-requirements.txt')) as f:
 
 setuptools.setup(
     name="plantuml-markdown",
-    version="1.3.0",
+    version="1.4.0",
     author="Michele Tessaro",
     author_email="michele.tessaro@email.it",
     description="A PlantUML plugin for Markdown",
