@@ -53,10 +53,12 @@
    [layman]: http://wiki.gentoo.org/wiki/Layman
 """
 
+from __future__ import absolute_import
 import os
 import re
 import base64
 from subprocess import Popen, PIPE
+from plantuml import PlantUML
 import logging
 import markdown
 from markdown.util import etree, AtomicString
@@ -130,9 +132,24 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         width = m.group('width') if m.group('width') else None
         height = m.group('height') if m.group('height') else None
 
+        # Convert image type in PlantUML image format
+        if img_format == 'png':
+            requested_format = "png"
+        elif img_format in ['svg', 'svg_object', 'svg_inline']:
+            requested_format = "svg"
+        elif img_format == 'txt':
+            requested_format = "txt"
+        else:
+            # logger.error("Bad uml image format '"+imgformat+"', using png")
+            requested_format = "png"
+
         # Extract diagram source end convert it
         code = m.group('code')
-        diagram = self.generate_uml_image(code, img_format)
+
+        if self.config['server']:
+            diagram = self._render_remote_uml_image(code, requested_format)
+        else:
+            diagram = self._render_local_uml_image(code, requested_format)
         
         if img_format == 'txt':
             # logger.debug(diagram)
@@ -182,20 +199,9 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         return text[:m.start()] + etree.tostring(img).decode() + text[m.end():], True
 
     @staticmethod
-    def generate_uml_image(plantuml_code, imgformat):
-        if imgformat == 'png':
-            outopt = "-tpng"
-        elif imgformat in ['svg', 'svg_object', 'svg_inline']:
-            outopt = "-tsvg"
-        elif imgformat == 'txt':
-            outopt = "-ttxt"
-        else:
-            # logger.error("Bad uml image format '"+imgformat+"', using png")
-            outopt = "-tpng"
-
+    def _render_local_uml_image(plantuml_code, img_format):
         plantuml_code = plantuml_code.encode('utf8')
-        
-        cmdline = ['plantuml', '-p', outopt]
+        cmdline = ['plantuml', '-p', "-t" + img_format]
 
         try:
             # On Windows run batch files through a shell so the extension can be resolved
@@ -210,29 +216,33 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
             return out
 
+    def _render_remote_uml_image(self, plantuml_code, img_format):
+        return PlantUML("%s/%s/" % (self.config['server'], img_format)).processes(plantuml_code)
+
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#extendmarkdown
 class PlantUMLMarkdownExtension(markdown.Extension):
     # For details see https://pythonhosted.org/Markdown/extensions/api.html#configsettings
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         self.config = {
             'classes': ["uml", "Space separated list of classes for the generated image. Defaults to 'uml'."],
             'alt': ["uml diagram", "Text to show when image is not available. Defaults to 'uml diagram'"],
             'format': ["png", "Format of image to generate (png, svg or txt). Defaults to 'png'."],
-            'title': ["", "Tooltip for the diagram"]
+            'title': ["", "Tooltip for the diagram"],
+            'server': ["", "PlantUML server url, for remote rendering. Defaults to '', use local command."],
         }
 
         # Fix to make links navigable in SVG diagrams
         etree.register_namespace('xlink', 'http://www.w3.org/1999/xlink')
 
-        super(PlantUMLMarkdownExtension, self).__init__(*args, **kwargs)
+        super(PlantUMLMarkdownExtension, self).__init__(**kwargs)
 
-    def extendMarkdown(self, md, md_globals):
+    def extendMarkdown(self, md):
         blockprocessor = PlantUMLPreprocessor(md)
         blockprocessor.config = self.getConfigs()
         # need to go before both fenced_code_block and things like retext's PosMapMarkPreprocessor
-        md.preprocessors.add('plantuml', blockprocessor, '_begin')
+        md.preprocessors.register(blockprocessor, 'plantuml', 45)
 
 
-def makeExtension(*args, **kwargs):
-    return PlantUMLMarkdownExtension(*args, **kwargs)
+def makeExtension(**kwargs):
+    return PlantUMLMarkdownExtension(**kwargs)

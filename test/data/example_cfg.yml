@@ -1,0 +1,6 @@
+# Example plugin configuration.
+# To use it:
+#   markdown_py -x plantuml-markdown -c cfg.yml mydoc.md
+plantuml-markdown:
+  server: http://localhost:9080
+  classes: example1,example-2
