@@ -30,6 +30,8 @@
    * `svg_object`: HTML `object` tag with embedded svg image (links are navigable)
    * `svg_inline`: HTML5 `svg` tag with inline svg image source (links are navigable, can be manipulated with CSS rules)
    * `txt`: plain text diagrams.
+   
+   For more details see the [GitHub repository](https://github.com/mikitex70/plantuml-markdown).
 
    Installation
    ------------
