@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.0.0 (2019-03-02)
+
+### New
+
+* Added support for use a plantuml server (implements #19) [Michele Tessaro]
+
+  Now for the diagram rendering can be used an external PlantUML server.
+  This can speedup document generation when there are a lot of diagrams.
+
+### Fix
+
+* Use preprocessors.register instead of (deprecated) add. [Johan]
+
+* Fixed usage syntax. [Michele Tessaro]
+
+  The `width` and `height` options are marked as optional.
+
+
 ## 1.4.0 (2018-11-24)
 
 ### New
@@ -11,6 +29,10 @@
   shrinked keeping the aspect ratio.
   If there is not enought space in the page fot the diagram, the image
   will be reduced.
+
+### Changes
+
+* Updated documentation for new release. [Michele Tessaro]
 
 ### Fix
 
