@@ -45,6 +45,11 @@ The `width` and `height` options must include a [CSS unit](https://www.w3schools
 
 Installation
 ------------
+
+There are two choises, use a local binary or use a remote service.
+
+### Using a local PlantUML binary
+
 You need to install [PlantUML][] (see the site for details) and [Graphviz][] 2.26.3 or later.
 The plugin expects a program `plantuml` in the classpath. If not installed by your package
 manager, you can create a shell script and place it somewhere in the classpath. For example,
@@ -77,18 +82,18 @@ the ebuild and the `files` subfolder or you can add the `zugaina` repository wit
 To use the plugin with [Python-Markdown][] you have three choices:
 
 * do a simple `pip install plantuml-markdown`, and the plugin should be ready to be used
-* copy the file `plantuml.py` in the `extensions` folder of [Python-Markdown][]. For example, for Python 2.7 you must
+* copy the file `plantuml-markdown.py` in the `extensions` folder of [Python-Markdown][]. For example, for Python 2.7 you must
   do:
   
   ```console
-  $ sudo cp plantuml.py /usr/lib/python27/site-packages/markdown/extensions/
+  $ sudo cp plantuml-markdown.py /usr/lib/python27/site-packages/markdown/extensions/
   ```
 * copy the file somewhere in your home. A good choice may be the `user-site` path, for example (`bash` syntax):
 
   ```console
   $ export INSTALLPATH="`python -m site --user-site`/plantuml-markdown"
   $ mkdir -p "$INSTALLPATH"
-  $ cp plantuml.py "$INSTALLPATH/mdx_plantuml.py"
+  $ cp plantuml-markdown.py "$INSTALLPATH/mdx_plantuml-markdown.py"
   $ export PYTHONPATH="$INSTALLPATH"
   ```
   
@@ -96,7 +101,31 @@ To use the plugin with [Python-Markdown][] you have three choices:
 
 After installed, you can use this plugin by activating it in the `markdown_py` command. For example:
 
-    markdown_py -x plantuml mydoc.md > out.html
+    markdown_py -x plantuml-markdown mydoc.md > out.html
+
+### Using a PlantUML server
+
+From version `2.0` a [PlantUML server](http://plantuml.com/server) can be used for rendering diagrams. This speedups a
+lot the diagrams rendering but needs to send the diagram source to a server.
+
+You can download the [war](http://sourceforge.net/projects/plantuml/files/plantuml.war/download) and deploy in a servlet
+container, or you can run it as a [docker container](https://hub.docker.com/r/plantuml/plantuml-server/).
+
+In either cases you need to specify the URL of the server in a configuration file like:
+
+```yaml
+plantuml-markdown:
+  server: http://www.plantuml.com/plantuml  # PlantUML server, for remote rendering
+  # other global options
+  format: png                               # default diagram image format
+  classes: class1,class2                    # default diagram classes
+  title: UML diagram                        # default title (tooltip) for diagram images
+  alt: UML diagram image                    # default `alt` attribute for diagram images
+```
+
+Then you need to specify the configuration file on the command line:
+
+    markdown_py -x plantuml-markdown -c myconfig.yml mydoc.md > out.html
 
 Running tests
 -------------
