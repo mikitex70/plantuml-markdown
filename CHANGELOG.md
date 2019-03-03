@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.1 (2019-03-03)
+
+### Fix
+
+* Fixed package contents. [Michele Tessaro]
+
+* Fixed travis configuration. [Michele Tessaro]
+
+
 ## 2.0.0 (2019-03-02)
 
 ### New
@@ -8,6 +17,10 @@
 
   Now for the diagram rendering can be used an external PlantUML server.
   This can speedup document generation when there are a lot of diagrams.
+
+### Changes
+
+* Updated documentation for new release. [Michele Tessaro]
 
 ### Fix
 
