@@ -162,7 +162,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             # These are images
             if img_format == 'svg_inline':
                 data = self.ADAPT_SVG_REGEX.sub('<svg \\1\\2>', diagram.decode('UTF-8'))
-                img = etree.fromstring(data)
+                img = etree.fromstring(data.encode('UTF-8'))
                 # remove width and height in style attribute
                 img.attrib['style'] = re.sub(r'\b(?:width|height):\d+px;', '', img.attrib['style'])
             elif img_format == 'svg':
