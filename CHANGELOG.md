@@ -1,6 +1,21 @@
 # Changelog
 
+## 2.0.2 (2019-03-16)
+
+### New
+
+* Added test to verify utf-8 character handling. [Michele Tessaro]
+
+### Fix
+
+* Fixed handling of unicode characters in svg_inline (refs #21) [Szymon Wilkołazki]
+
+
 ## 2.0.1 (2019-03-03)
+
+### Changes
+
+* Updated documentation for the new release. [Michele Tessaro]
 
 ### Fix
 
