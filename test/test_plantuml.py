@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import re
 import unittest
@@ -225,3 +226,16 @@ class PlantumlTest(unittest.TestCase):
             .build()
         self.assertEqual(self._stripImageData(self._load_file('code_and_diag.html')),
                          self._stripImageData(self.md.convert(text)))
+
+    def test_unicode_chars(self):
+        """
+        Test that svg_inline handles correctly utf8 characters
+        """
+        # Example diagram from issue 21
+        text = self.text_builder.diagram(u'Alicja -> Łukasz: "Zażółć gęślą jaźń"')\
+            .format("svg_inline")\
+            .build()
+        svg = self.md.convert(text)
+        self.assertTrue('Alicja' in svg)
+        self.assertTrue('&#321;ukasz' in svg)
+        self.assertTrue('"Za&#380;&#243;&#322;&#263; g&#281;&#347;l&#261; ja&#378;&#324;"' in svg)
