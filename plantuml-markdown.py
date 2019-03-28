@@ -79,8 +79,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
         \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
         \s*(title=(?P<quot3>"|')(?P<title>[\w\s"']+)(?P=quot3))?
-        \s*(width=(?P<quot4>"|')(?P<width>[\w\s"']+)(?P=quot4))?
-        \s*(height=(?P<quot5>"|')(?P<height>[\w\s"']+)(?P=quot5))?
+        \s*(width=(?P<quot4>"|')(?P<width>[\w\s%"']+)(?P=quot4))?
+        \s*(height=(?P<quot5>"|')(?P<height>[\w\s%"']+)(?P=quot5))?
         \s*\n
         (?P<code>.*?)(?<=\n)
         ::end-uml::[ ]*$
@@ -94,8 +94,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
         \s*(alt=(?P<quot2>"|')(?P<alt>[\w\s"']+)(?P=quot2))?
         \s*(title=(?P<quot3>"|')(?P<title>[\w\s"']+)(?P=quot3))?
-        \s*(width=(?P<quot4>"|')(?P<width>[\w\s"']+)(?P=quot4))?
-        \s*(height=(?P<quot5>"|')(?P<height>[\w\s"']+)(?P=quot5))?
+        \s*(width=(?P<quot4>"|')(?P<width>[\w\s%"']+)(?P=quot4))?
+        \s*(height=(?P<quot5>"|')(?P<height>[\w\s%"']+)(?P=quot5))?
         [ ]*
         }?[ ]*\n                                # Optional closing }
         (?P<code>.*?)(?<=\n)
