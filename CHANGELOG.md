@@ -1,10 +1,30 @@
 # Changelog
 
+## 3.0.0 (2019-03-31)
+
+### New
+
+* Allow percent sign in width and height options. [Mathias Lüdtke]
+
+### Fix
+
+* Renamed module to `plantuml_markdown` (fixes #23) [Michele Tessaro]
+
+  Renamed module from `plantuml-markdown` to `plantuml_markdown` to allow
+  importing module in other python sources.
+  Thi breaks compatibility: plugin configuration in `markdown_py` must be
+  renamed too.
+
+
 ## 2.0.2 (2019-03-16)
 
 ### New
 
 * Added test to verify utf-8 character handling. [Michele Tessaro]
+
+### Changes
+
+* Updated documentation for new release. [Michele Tessaro]
 
 ### Fix
 
