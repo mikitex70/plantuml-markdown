@@ -101,7 +101,7 @@ To use the plugin with [Python-Markdown][] you have three choices:
 
 After installed, you can use this plugin by activating it in the `markdown_py` command. For example:
 
-    markdown_py -x plantuml-markdown mydoc.md > out.html
+    markdown_py -x plantuml_markdown mydoc.md > out.html
 
 ### Using a PlantUML server
 
@@ -114,7 +114,7 @@ container, or you can run it as a [docker container](https://hub.docker.com/r/pl
 In either cases you need to specify the URL of the server in a configuration file like:
 
 ```yaml
-plantuml-markdown:
+plantuml_markdown:
   server: http://www.plantuml.com/plantuml  # PlantUML server, for remote rendering
   # other global options
   format: png                               # default diagram image format
@@ -125,7 +125,7 @@ plantuml-markdown:
 
 Then you need to specify the configuration file on the command line:
 
-    markdown_py -x plantuml-markdown -c myconfig.yml mydoc.md > out.html
+    markdown_py -x plantuml_markdown -c myconfig.yml mydoc.md > out.html
 
 Running tests
 -------------

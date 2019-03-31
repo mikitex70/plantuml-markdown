@@ -14,7 +14,7 @@ class PlantumlTest(unittest.TestCase):
         super(PlantumlTest, cls).setUpClass()
 
     def setUp(self):
-        self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code', 'plantuml-markdown'])
+        self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code', 'plantuml_markdown'])
         self.text_builder = None
 
     def _load_file(self, filename):
