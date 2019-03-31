@@ -14,7 +14,7 @@ class PlantumlTest(unittest.TestCase):
         super(PlantumlTest, cls).setUpClass()
 
     def setUp(self):
-        self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code', 'plantuml-markdown'])
+        self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code', 'plantuml_markdown'])
         self.text_builder = None
 
     def _load_file(self, filename):
@@ -160,6 +160,15 @@ class PlantumlTest(unittest.TestCase):
             '<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" style="max-width:120px" title="" width="100%%" /></p>' % self.FAKE_IMAGE,
             self._stripImageData(self.md.convert(text)))
 
+    def test_arg_with_percent(self):
+        """
+        Test for the correct parsing of the width argument
+        """
+        text = self.text_builder.diagram("A --> B").width("70%").build()
+        self.assertEqual(
+            '<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" style="max-width:70%%" title="" width="100%%" /></p>' % self.FAKE_IMAGE,
+            self._stripImageData(self.md.convert(text)))
+
     def test_arg_height(self):
         """
         Test for the correct parsing of the width argument
@@ -167,6 +176,15 @@ class PlantumlTest(unittest.TestCase):
         text = self.text_builder.diagram("A --> B").height("120px").build()
         self.assertEqual(
             '<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" style="max-height:120px" title="" width="100%%" /></p>' % self.FAKE_IMAGE,
+            self._stripImageData(self.md.convert(text)))
+
+    def test_arg_height_percent(self):
+        """
+        Test for the correct parsing of the width argument
+        """
+        text = self.text_builder.diagram("A --> B").height("50%").build()
+        self.assertEqual(
+            '<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" style="max-height:50%%" title="" width="100%%" /></p>' % self.FAKE_IMAGE,
             self._stripImageData(self.md.convert(text)))
 
     def test_arg_width_and_height(self):

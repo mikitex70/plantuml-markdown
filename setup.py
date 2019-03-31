@@ -15,7 +15,7 @@ with open(path.join(here, 'test-requirements.txt')) as f:
 
 setuptools.setup(
     name="plantuml-markdown",
-    version="2.0.2",
+    version="3.0.0",
     author="Michele Tessaro",
     author_email="michele.tessaro@email.it",
     description="A PlantUML plugin for Markdown",
@@ -24,7 +24,7 @@ setuptools.setup(
     keywords=['Markdown', 'typesetting', 'include', 'plugin', 'extension'],
     url="https://github.com/mikitex70/plantuml-markdown",
     #packages=setuptools.find_packages(exclude=['test']),
-    py_modules=['plantuml-markdown'],
+    py_modules=['plantuml_markdown'],
     install_requires=install_requirements,
     tests_require=test_requirements,
     classifiers=[
