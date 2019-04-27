@@ -6,6 +6,10 @@
 
 * Allow percent sign in width and height options. [Mathias Lüdtke]
 
+### Changes
+
+* Updated documentation for new release. [Michele Tessaro]
+
 ### Fix
 
 * Renamed module to `plantuml_markdown` (fixes #23) [Michele Tessaro]

@@ -117,6 +117,7 @@ In either cases you need to specify the URL of the server in a configuration fil
 plantuml_markdown:
   server: http://www.plantuml.com/plantuml  # PlantUML server, for remote rendering
   # other global options
+  cachedir: /tmp                            # set a non-empty value to enable caching
   format: png                               # default diagram image format
   classes: class1,class2                    # default diagram classes
   title: UML diagram                        # default title (tooltip) for diagram images
