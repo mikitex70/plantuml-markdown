@@ -1,6 +1,6 @@
 # Changelog
 
-## development (unreleased)
+## 3.1.0 (2019-05-02)
 
 ### New
 
