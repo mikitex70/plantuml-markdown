@@ -1,10 +1,28 @@
 # Changelog
 
+## 3.1.0 (2019-05-02)
+
+### New
+
+* Added diagram caching (implements #27) [Michele Tessaro]
+
+  To activate caching define the configuration option `cachedir`.
+  See the `README.md` for some detail.
+
+### Changes
+
+* Added installation instructions for `chocolatey` (refs #28) [Michele Tessaro]
+
+
 ## 3.0.0 (2019-03-31)
 
 ### New
 
 * Allow percent sign in width and height options. [Mathias Lüdtke]
+
+### Changes
+
+* Updated documentation for new release. [Michele Tessaro]
 
 ### Fix
 
