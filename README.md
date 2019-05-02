@@ -46,7 +46,34 @@ The `width` and `height` options must include a [CSS unit](https://www.w3schools
 Installation
 ------------
 
-There are two choises, use a local binary or use a remote service.
+To use the plugin with [Python-Markdown][] you have these choices:
+
+* with `pip`, do a simple `pip install plantuml-markdown`, and the plugin should be ready to be used
+* on Windows you can use [Chocolatey](https://chocolatey.org/), a package manager for Windows: do a 
+  `choco install plantuml` and you are ready to work (this command will install all dependencies, Java and Graphviz
+   included, see https://chocolatey.org/packages/plantuml for details)
+* copy the file `plantuml-markdown.py` in the `extensions` folder of [Python-Markdown][]. For example, for Python 2.7
+  you must do:
+  
+  ```console
+  $ sudo cp plantuml-markdown.py /usr/lib/python27/site-packages/markdown/extensions/
+  ```
+* copy the file somewhere in your home. A good choice may be the `user-site` path, for example (`bash` syntax):
+
+  ```console
+  $ export INSTALLPATH="`python -m site --user-site`/plantuml-markdown"
+  $ mkdir -p "$INSTALLPATH"
+  $ cp plantuml-markdown.py "$INSTALLPATH/mdx_plantuml-markdown.py"
+  $ export PYTHONPATH="$INSTALLPATH"
+  ```
+  
+  You must export `PYTHONPATH` before running `markdown_py`, or you can put the definition in `~/.bashrc`.
+
+After installed, you can use this plugin by activating it in the `markdown_py` command. For example:
+
+    markdown_py -x plantuml_markdown mydoc.md > out.html
+
+But before to use it, you need to configure which [PlantUML] binary to use: a local binary, or a remote server.
 
 ### Using a local PlantUML binary
 
@@ -79,30 +106,6 @@ For [Gentoo Linux][Gentoo] there is an ebuild at http://gpo.zugaina.org/dev-util
 the ebuild and the `files` subfolder or you can add the `zugaina` repository with [layman][]
 (recommended).
 
-To use the plugin with [Python-Markdown][] you have three choices:
-
-* do a simple `pip install plantuml-markdown`, and the plugin should be ready to be used
-* copy the file `plantuml-markdown.py` in the `extensions` folder of [Python-Markdown][]. For example, for Python 2.7 you must
-  do:
-  
-  ```console
-  $ sudo cp plantuml-markdown.py /usr/lib/python27/site-packages/markdown/extensions/
-  ```
-* copy the file somewhere in your home. A good choice may be the `user-site` path, for example (`bash` syntax):
-
-  ```console
-  $ export INSTALLPATH="`python -m site --user-site`/plantuml-markdown"
-  $ mkdir -p "$INSTALLPATH"
-  $ cp plantuml-markdown.py "$INSTALLPATH/mdx_plantuml-markdown.py"
-  $ export PYTHONPATH="$INSTALLPATH"
-  ```
-  
-  You must export `PYTHONPATH` before running `markdown_py`, or you can put the definition in `~/.bashrc`.
-
-After installed, you can use this plugin by activating it in the `markdown_py` command. For example:
-
-    markdown_py -x plantuml_markdown mydoc.md > out.html
-
 ### Using a PlantUML server
 
 From version `2.0` a [PlantUML server](http://plantuml.com/server) can be used for rendering diagrams. This speedups a
@@ -131,7 +134,8 @@ Then you need to specify the configuration file on the command line:
 Running tests
 -------------
 
-The test execution requires a specific version of [PlantUML] (the image generated can be different with different [PlantUML] versions).
+The test execution requires a specific version of [PlantUML] (the image generated can be different with different 
+[PlantUML] versions).
 
 To run the tests, execute the following command:
 

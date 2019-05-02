@@ -1,5 +1,19 @@
 # Changelog
 
+## development (unreleased)
+
+### New
+
+* Added diagram caching (implements #27) [Michele Tessaro]
+
+  To activate caching define the configuration option `cachedir`.
+  See the `README.md` for some detail.
+
+### Changes
+
+* Added installation instructions for `chocolatey` (refs #28) [Michele Tessaro]
+
+
 ## 3.0.0 (2019-03-31)
 
 ### New
