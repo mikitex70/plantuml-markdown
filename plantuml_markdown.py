@@ -261,12 +261,15 @@ class PlantUMLMarkdownExtension(markdown.Extension):
 
         super(PlantUMLMarkdownExtension, self).__init__(**kwargs)
 
-    def extendMarkdown(self, md):
+    def extendMarkdown(self, md, md_globals=None):
         blockprocessor = PlantUMLPreprocessor(md)
         blockprocessor.config = self.getConfigs()
         # need to go before both fenced_code_block and things like retext's PosMapMarkPreprocessor.
         # Need to go after mdx_include.
-        md.preprocessors.register(blockprocessor, 'plantuml', 100)
+        if markdown.version_info[0] < 3:
+            md.preprocessors.add('plantuml', blockprocessor, '_begin')
+        else:
+            md.preprocessors.register(blockprocessor, 'plantuml', 100)
 
 
 def makeExtension(**kwargs):
