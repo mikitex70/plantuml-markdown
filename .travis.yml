@@ -7,9 +7,14 @@ python:
   - 3.5
   - 3.6
 
+env:
+  - MARKDOWN_VER=2.6.8
+  - MARKDOWN_VER=3.0.1
+
 install:
   - sudo apt-get install graphviz
   - pip install -r requirements.txt
+  - pip install --upgrade Markdown==$MARKDOWN_VER
   - wget 'http://sourceforge.net/projects/plantuml/files/plantuml.1.2018.2.jar/download' -O /tmp/plantuml.1.2018.2.jar
 
 script:
