@@ -59,6 +59,8 @@ import os
 import re
 import base64
 from subprocess import Popen, PIPE
+from zlib import adler32
+
 from plantuml import PlantUML
 import logging
 import markdown
@@ -146,12 +148,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         # Extract diagram source end convert it
         code = m.group('code')
+        diagram = self._render_diagram(code, requested_format)
 
-        if self.config['server']:
-            diagram = self._render_remote_uml_image(code, requested_format)
-        else:
-            diagram = self._render_local_uml_image(code, requested_format)
-        
         if img_format == 'txt':
             # logger.debug(diagram)
             img = etree.Element('pre')
@@ -199,6 +197,30 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         return text[:m.start()] + etree.tostring(img).decode() + text[m.end():], True
 
+    def _render_diagram(self, code, requested_format):
+        cached_diagram_file = None
+        diagram = None
+
+        if self.config['cachedir']:
+            diagram_hash = "%08x" % (adler32(code.encode('UTF-8')) & 0xffffffff)
+            cached_diagram_file = os.path.join(self.config['cachedir'], diagram_hash + '.' + requested_format)
+
+            if os.path.isfile(cached_diagram_file):
+                with open(cached_diagram_file, 'rb') as f:
+                    diagram = f.read()
+
+        if not diagram:
+            if self.config['server']:
+                diagram = self._render_remote_uml_image(code, requested_format)
+            else:
+                diagram = self._render_local_uml_image(code, requested_format)
+
+            if self.config['cachedir']:
+                with open(cached_diagram_file, 'wb') as f:
+                    f.write(diagram)
+
+        return diagram
+
     @staticmethod
     def _render_local_uml_image(plantuml_code, img_format):
         plantuml_code = plantuml_code.encode('utf8')
@@ -231,6 +253,7 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'format': ["png", "Format of image to generate (png, svg or txt). Defaults to 'png'."],
             'title': ["", "Tooltip for the diagram"],
             'server': ["", "PlantUML server url, for remote rendering. Defaults to '', use local command."],
+            'cachedir': ["", "Directory for caching of diagrams. Defaults to '', no caching"]
         }
 
         # Fix to make links navigable in SVG diagrams
@@ -238,12 +261,15 @@ class PlantUMLMarkdownExtension(markdown.Extension):
 
         super(PlantUMLMarkdownExtension, self).__init__(**kwargs)
 
-    def extendMarkdown(self, md):
+    def extendMarkdown(self, md, md_globals=None):
         blockprocessor = PlantUMLPreprocessor(md)
         blockprocessor.config = self.getConfigs()
         # need to go before both fenced_code_block and things like retext's PosMapMarkPreprocessor.
         # Need to go after mdx_include.
-        md.preprocessors.register(blockprocessor, 'plantuml', 100)
+        if markdown.version_info[0] < 3:
+            md.preprocessors.add('plantuml', blockprocessor, '_begin')
+        else:
+            md.preprocessors.register(blockprocessor, 'plantuml', 100)
 
 
 def makeExtension(**kwargs):

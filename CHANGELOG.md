@@ -1,10 +1,42 @@
 # Changelog
 
+
+## 3.1.1 (2019-05-29)
+
+### New
+
+* Configured travis to test with multiple Markdown versions. [Michele Tessaro]
+
+### Fix
+
+* Fixed compatibility with Markdown 2 (refs #29) [Michele Tessaro]
+
+
+## 3.1.0 (2019-05-02)
+
+### New
+
+* Added diagram caching (implements #27) [Michele Tessaro]
+
+  To activate caching define the configuration option `cachedir`.
+  See the `README.md` for some detail.
+
+### Changes
+
+* Update changelog for the new release. [Michele Tessaro]
+
+* Added installation instructions for `chocolatey` (refs #28) [Michele Tessaro]
+
+
 ## 3.0.0 (2019-03-31)
 
 ### New
 
 * Allow percent sign in width and height options. [Mathias Lüdtke]
+
+### Changes
+
+* Updated documentation for new release. [Michele Tessaro]
 
 ### Fix
 
@@ -200,9 +232,9 @@
 
 * Some minor fixes. [Michele Tessaro]
 
-  * base64 encoded SVGs, as Firefox doesn&#x27;t handles plain SVGs
-  * fixed the need of 2 empty lines for &#x27;txt&#x27; diagrams
-  * fixed newlines converted into br tags for &#x27;txt&#x27; diagrams
+  * base64 encoded SVGs, as Firefox doesn't handles plain SVGs
+  * fixed the need of 2 empty lines for 'txt' diagrams
+  * fixed newlines converted into br tags for 'txt' diagrams
 
 * Correct path exists test. [Benjamin Henriet]
 
@@ -218,7 +250,7 @@
 
 * Removed the (useless) remove of the last line of source text block. [Michele Tessaro]
 
-* Use inline images, NO MORE TEMPFILES!  Experimental &#x27;txt&#x27; support. [kubilus1]
+* Use inline images, NO MORE TEMPFILES!  Experimental 'txt' support. [kubilus1]
 
 * Implemented a sort of caching for generated images. [Michele Tessaro]
 
