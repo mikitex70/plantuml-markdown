@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.2 (2019-06-01)
+
+### Fix
+
+* Fixed pip installable packages (fixes #29, #30) [Michele Tessaro]
+
 
 ## 3.1.1 (2019-05-29)
 
@@ -232,9 +238,9 @@
 
 * Some minor fixes. [Michele Tessaro]
 
-  * base64 encoded SVGs, as Firefox doesn't handles plain SVGs
-  * fixed the need of 2 empty lines for 'txt' diagrams
-  * fixed newlines converted into br tags for 'txt' diagrams
+  * base64 encoded SVGs, as Firefox doesn&#x27;t handles plain SVGs
+  * fixed the need of 2 empty lines for &#x27;txt&#x27; diagrams
+  * fixed newlines converted into br tags for &#x27;txt&#x27; diagrams
 
 * Correct path exists test. [Benjamin Henriet]
 
@@ -250,7 +256,7 @@
 
 * Removed the (useless) remove of the last line of source text block. [Michele Tessaro]
 
-* Use inline images, NO MORE TEMPFILES!  Experimental 'txt' support. [kubilus1]
+* Use inline images, NO MORE TEMPFILES!  Experimental &#x27;txt&#x27; support. [kubilus1]
 
 * Implemented a sort of caching for generated images. [Michele Tessaro]
 
@@ -281,5 +287,4 @@
   identify syntax errors in the source MD document
 
 * Initial commit. [Michele Tessaro]
-
 
