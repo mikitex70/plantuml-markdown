@@ -85,11 +85,11 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         \s*(height=(?P<quot5>"|')(?P<height>[\w\s"']+%?)(?P=quot5))?
         \s*\n
         (?P<code>.*?)(?<=\n)
-        ::end-uml::[ ]*$
+        \s*::end-uml::[ ]*$
         ''', re.MULTILINE | re.DOTALL | re.VERBOSE)
 
     FENCED_BLOCK_RE = re.compile(r'''
-        (?P<fence>^(?:~{3,}|`{3,}))[ ]*         # Opening ``` or ~~~
+        (?P<fence>(?:~{3,}|`{3,}))[ ]*          # Opening ``` or ~~~
         (\{?\.?(plant)?uml)[ ]*                 # Optional {, and lang
         # args
         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
@@ -101,7 +101,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         [ ]*
         }?[ ]*\n                                # Optional closing }
         (?P<code>.*?)(?<=\n)
-        (?P=fence)[ ]*$
+        \s*(?P=fence)[ ]*$
         ''', re.MULTILINE | re.DOTALL | re.VERBOSE)
 
     def __init__(self, md):
