@@ -1,10 +1,14 @@
 # Changelog
 
-## development (unreleased)
+## 3.1.3 (2019-08-26)
 
 ### New
 
 * Added a test for issue #31. [Michele Tessaro]
+
+### Changes
+
+* Updated changelog for the new release. [Michele Tessaro]
 
 ### Fix
 
