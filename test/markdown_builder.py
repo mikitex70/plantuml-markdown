@@ -7,6 +7,7 @@ class MarkdownBuilder:
         self._end_delimiter = '::end-uml::' if delimiter == '::uml::' else re.sub(r'\w', '', delimiter)
         self._buffer = ""
         self._extended_syntax = False
+        self._indent = 0
         self._reset_diagram()
 
     def _reset_diagram(self):
@@ -29,8 +30,8 @@ class MarkdownBuilder:
         if self._diagram_buffer:
             delim = re.sub(r'(\W{3,})(\w+)', r'\1{\2', self._delimiter) if self._extended_syntax else self._delimiter
             args = self._format + self._class + self._alt + self._title + self._width + self._height
-            self._buffer += delim+args+('}' if self._extended_syntax else '')
-            self._buffer += "\n"+self._diagram_buffer+"\n"+self._end_delimiter+"\n"
+            self._buffer += (' '*self._indent)+delim+args+('}' if self._extended_syntax else '')
+            self._buffer += "\n"+(' '*self._indent)+self._diagram_buffer+"\n"+(' '*self._indent)+self._end_delimiter+"\n"
 
         self._reset_diagram()
 
@@ -108,7 +109,7 @@ class MarkdownBuilder:
         self._buffer += txt
         return self
 
-    def diagram(self, diag):
+    def diagram(self, diag, indent=0):
         """
         Define a new diagram.
         :param diag: Diagram source
@@ -116,6 +117,15 @@ class MarkdownBuilder:
         """
         self._emit_diagram()
         self._diagram_buffer = diag
+        return self
+
+    def indent(self, value):
+        """
+        Indent next block of text with the specified number of spaces.
+        :param value: how many spaces to indent
+        :return: The object itself
+        """
+        self._indent = value
         return self
 
     def build(self):

@@ -245,8 +245,24 @@ class PlantumlTest(unittest.TestCase):
         self.assertEqual(self._stripImageData(self._load_file('code_and_diag.html')),
                          self._stripImageData(self.md.convert(text)))
 
-    def test_unicode_chars(self):
+    def test_indented_fenced_code(self):
         """
+        Test handling of indented fenced code
+        """
+        text = self.text_builder.text('* list item\n\n') \
+            .indent(4) \
+            .diagram('A --> B') \
+            .build()
+        self.assertEqual('''<ul>
+<li>
+<p>list item</p>
+<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" title="" /></p>
+</li>
+</ul>''' % self.FAKE_IMAGE,
+                          self._stripImageData(self.md.convert(text)))
+
+    def test_unicode_chars(self):
+        """indented_code
         Test that svg_inline handles correctly utf8 characters
         """
         # Example diagram from issue 21
