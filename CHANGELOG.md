@@ -1,5 +1,42 @@
 # Changelog
 
+## 3.1.3 (2019-08-26)
+
+### New
+
+* Added a test for issue #31. [Michele Tessaro]
+
+### Changes
+
+* Updated changelog for the new release. [Michele Tessaro]
+
+### Fix
+
+* Fix rendering in indented blocks (fixes #31) [Grzegorz Adamiak]
+
+  It fixes [issue][31] with rendering indented fenced blocks. They were
+  rendered only when put at beginning of the line. To illustrate, this
+  block was processed correctly
+
+      ```plantuml
+      A --&gt; B : I am processed
+      ```
+
+  while a block nested under a list item (indented) was not processed
+
+        * A list item with nested block
+
+          ```plantuml
+          A --&gt; B : I am not processed
+          ```
+
+  [31]: https://github.com/mikitex70/plantuml-markdown/issues/31
+
+  With this patch the block is converted into image and correctly put in
+  the document tree allowing for images nested in other block elements,
+  e.g. list items.
+
+
 ## 3.1.2 (2019-06-01)
 
 ### Fix
