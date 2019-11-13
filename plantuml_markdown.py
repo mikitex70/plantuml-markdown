@@ -203,7 +203,10 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         if self.config['cachedir']:
             diagram_hash = "%08x" % (adler32(code.encode('UTF-8')) & 0xffffffff)
-            cached_diagram_file = os.path.join(self.config['cachedir'], diagram_hash + '.' + requested_format)
+            cached_diagram_file = os.path.expanduser(
+                    os.path.join(
+                        self.config['cachedir'],
+                        diagram_hash + '.' + requested_format))
 
             if os.path.isfile(cached_diagram_file):
                 with open(cached_diagram_file, 'rb') as f:
