@@ -66,6 +66,15 @@ class PlantumlTest(unittest.TestCase):
             '<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" title="Diagram test" /></p>' % self.FAKE_IMAGE,
             self._stripImageData(self.md.convert(text)))
 
+    def test_arg_title_characters(self):
+        """
+        Test for the correct parsing of the title argument with special characters
+        """
+        text = self.text_builder.diagram("A --> B").title("Diagram-test/%&\"").build()
+        self.assertEqual(
+            '<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" title="Diagram-test/%%&amp;&quot;" /></p>' %
+            self.FAKE_IMAGE, self._stripImageData(self.md.convert(text)))
+
     def test_arg_title_inline_svg(self):
         """
         Test for setting title attribute in inline SVG
@@ -83,6 +92,15 @@ class PlantumlTest(unittest.TestCase):
         self.assertEqual(
             '<p><img alt="Diagram test" class="uml" src="data:image/png;base64,%s" title="" /></p>' % self.FAKE_IMAGE,
             self._stripImageData(self.md.convert(text)))
+
+    def test_arg_alt_characters(self):
+        """
+        Test for the correct parsing of the alt argument with special characters
+        """
+        text = self.text_builder.diagram("A --> B").alt("Diagram-test/%&\"").build()
+        self.assertEqual(
+            '<p><img alt="Diagram-test/%%&amp;&quot;" class="uml" src="data:image/png;base64,%s" title="" /></p>' %
+            self.FAKE_IMAGE, self._stripImageData(self.md.convert(text)))
 
     def test_arg_alt_inline_svg(self):
         """
