@@ -1,5 +1,23 @@
 # Changelog
 
+
+## 3.1.4 (2019-11-13)
+
+### New
+
+* Expand "~" in cachedir config. [Jean Jordaan]
+
+### Changes
+
+* Updated changelog for the new release. [Michele Tessaro]
+
+### Fix
+
+* Fixed special characters handling in alt and title (fixes #70) [Michele Tessaro]
+
+* Fix brackets. [Jean Jordaan]
+
+
 ## 3.1.3 (2019-08-26)
 
 ### New
@@ -10,6 +28,8 @@
 
 * Updated changelog for the new release. [Michele Tessaro]
 
+* Updated changelog fot the new release. [Michele Tessaro]
+
 ### Fix
 
 * Fix rendering in indented blocks (fixes #31) [Grzegorz Adamiak]
@@ -19,7 +39,7 @@
   block was processed correctly
 
       ```plantuml
-      A --&gt; B : I am processed
+      A --> B : I am processed
       ```
 
   while a block nested under a list item (indented) was not processed
@@ -27,7 +47,7 @@
         * A list item with nested block
 
           ```plantuml
-          A --&gt; B : I am not processed
+          A --> B : I am not processed
           ```
 
   [31]: https://github.com/mikitex70/plantuml-markdown/issues/31
@@ -275,9 +295,9 @@
 
 * Some minor fixes. [Michele Tessaro]
 
-  * base64 encoded SVGs, as Firefox doesn&#x27;t handles plain SVGs
-  * fixed the need of 2 empty lines for &#x27;txt&#x27; diagrams
-  * fixed newlines converted into br tags for &#x27;txt&#x27; diagrams
+  * base64 encoded SVGs, as Firefox doesn't handles plain SVGs
+  * fixed the need of 2 empty lines for 'txt' diagrams
+  * fixed newlines converted into br tags for 'txt' diagrams
 
 * Correct path exists test. [Benjamin Henriet]
 
@@ -293,7 +313,7 @@
 
 * Removed the (useless) remove of the last line of source text block. [Michele Tessaro]
 
-* Use inline images, NO MORE TEMPFILES!  Experimental &#x27;txt&#x27; support. [kubilus1]
+* Use inline images, NO MORE TEMPFILES!  Experimental 'txt' support. [kubilus1]
 
 * Implemented a sort of caching for generated images. [Michele Tessaro]
 
@@ -324,4 +344,5 @@
   identify syntax errors in the source MD document
 
 * Initial commit. [Michele Tessaro]
+
 
