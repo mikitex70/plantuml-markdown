@@ -256,7 +256,9 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'format': ["png", "Format of image to generate (png, svg or txt). Defaults to 'png'."],
             'title': ["", "Tooltip for the diagram"],
             'server': ["", "PlantUML server url, for remote rendering. Defaults to '', use local command."],
-            'cachedir': ["", "Directory for caching of diagrams. Defaults to '', no caching"]
+            'cachedir': ["", "Directory for caching of diagrams. Defaults to '', no caching"],
+            'priority': ["30", "Extension priority. Higher values means the extension is applied sooner than others. "
+                               "Defaults to 30"]
         }
 
         # Fix to make links navigable in SVG diagrams
@@ -272,7 +274,7 @@ class PlantUMLMarkdownExtension(markdown.Extension):
         if markdown.version_info[0] < 3:
             md.preprocessors.add('plantuml', blockprocessor, '_begin')
         else:
-            md.preprocessors.register(blockprocessor, 'plantuml', 100)
+            md.preprocessors.register(blockprocessor, 'plantuml', int(blockprocessor.config['priority']))
 
 
 def makeExtension(**kwargs):

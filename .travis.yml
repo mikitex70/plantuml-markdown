@@ -16,6 +16,7 @@ install:
   - sudo apt-get install graphviz
   - pip install -r requirements.txt
   - pip install --upgrade Markdown==$MARKDOWN_VER
+  - pip install -r test-requirements.txt
   - wget 'http://sourceforge.net/projects/plantuml/files/plantuml.1.2018.2.jar/download' -O /tmp/plantuml.1.2018.2.jar
 
 script:

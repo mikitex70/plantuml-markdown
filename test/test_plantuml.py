@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
 import os
 import re
-import unittest
 import markdown
+import tempfile
+from unittest import TestCase, SkipTest
+import mock
 
 
-class PlantumlTest(unittest.TestCase):
+class PlantumlTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
         if cls is PlantumlTest:
-            raise unittest.SkipTest("Base class")
+            raise SkipTest("Base class")
         super(PlantumlTest, cls).setUpClass()
 
     def setUp(self):
-        self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code', 'plantuml_markdown'])
+        self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code',
+                                                'pymdownx.snippets', 'plantuml_markdown'])
         self.text_builder = None
 
     def _load_file(self, filename):
@@ -56,6 +59,53 @@ class PlantumlTest(unittest.TestCase):
             return "<svg{}{}{}{}>{}</svg>".format(alt, title, classes, style, cls.FAKE_SVG)
 
         return cls.SVG_REGEX.sub(lambda x: sort_attributes(x.groups()), html)
+
+    def test_priority_after_snippets(self):
+        """
+        Verifies the normal priority of the plantuml_markdown plugin: it must be execute before the fenced code
+        but after the snippets plugin.
+        """
+        self._test_snippets(30, 'A --> B\n')
+
+    def test_priority_before_snippets(self):
+        """
+        Verifies changing plugin priority: in must be execute even before the snippets plugin.
+        :return:
+        """
+        # raising priority, so the plantuml plugin is executed before the snippet plugin
+        # expecting that the snippet is not inserted in the plantuml source code
+        self._test_snippets(40, '--8<-- "'+os.path.join(tempfile.gettempdir(), 'test-defs.puml')+'"\n')
+
+    def _test_snippets(self, priority, expected):
+        """
+        Verifies the execution order with the snippets plugin.
+        If priority is lower than 32, the snippets plugin has priority; if greater, the
+        plantml_markdown plugin has priority over the snippets plugin.
+        :param priority: execution priority of the plantuml_markdown plugin
+        :param expected: expected generated plantuml source code
+        """
+        self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code',
+                                                'pymdownx.snippets', 'plantuml_markdown'],
+                                    extension_configs={
+                                        'plantuml_markdown': {
+                                            'priority': priority
+                                        }
+                                    })
+        tempdir = tempfile.gettempdir()
+        defs_file = os.path.join(tempdir, 'test-defs.puml')
+        # preparing a file to include
+        with open(defs_file, 'w') as f:
+            f.write('A --> B')
+
+        from test.markdown_builder import MarkdownBuilder
+        from plantuml_markdown import PlantUMLPreprocessor
+
+        # mcking a method to capture the generated PlantUML source code
+        with mock.patch.object(PlantUMLPreprocessor, '_render_diagram',
+                            return_value='testing'.encode('utf8')) as mocked_plugin:
+            text = self.text_builder.diagram("--8<-- \"" + defs_file + "\"").build()
+            self.md.convert(text)
+            mocked_plugin.assert_called_with(expected, 'png')
 
     def test_arg_title(self):
         """
