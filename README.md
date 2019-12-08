@@ -85,8 +85,31 @@ save te following into `/usr/local/bin/plantuml` (supposing [PlantUML][] install
 
 ```
     #!/bin/bash
-    java -jar /opt/plantuml/plantuml.jar ${@}
+    java $PLANTUML_JAVAOPTS -jar /opt/plantuml/plantuml.jar ${@}
 ```
+
+The `PLANTUML_JAVAOPTS` variable can be used to set specific Java options, such as memory tuning options,
+or to set system variable used by PlantUML, such as then include search path. This would avoid modifications of the
+`plantuml` script. 
+For example, with a diagram like:
+
+```
+    ```plantuml
+    !include myDefs.puml
+
+    A --> B
+    ```
+``` 
+
+you can do:
+
+```
+    export PLANTUML_JAVAOPTS="-Dplantuml.include.path=$HOME/plantuml_defs"
+    markdown_py -x plantuml_markdown mydoc.md > out.html
+```
+
+The same thing can be done using the environment variable `_JAVA_OPTIONS`, which is readed by default by the `java`
+executable.
 
 On Windows can be used the following `plantuml.bat` (many thanks to [henn1001](https://github.com/henn1001)):
 
@@ -97,7 +120,7 @@ On Windows can be used the following `plantuml.bat` (many thanks to [henn1001](h
     setlocal
     set GRAPHVIZ_DOT=%mypath%\Graphviz\bin\dot.exe
 
-    java -jar %mypath%\plantuml.jar %*
+    java %PLANTUML_JAVAOPTS% -jar %mypath%\plantuml.jar %*
 ```
 
 Make sure the `plantuml.bat` is on the path.
@@ -106,7 +129,7 @@ For [Gentoo Linux][Gentoo] there is an ebuild at http://gpo.zugaina.org/dev-util
 the ebuild and the `files` subfolder or you can add the `zugaina` repository with [layman][]
 (recommended).
 
-### Using a PlantUML server
+### <a name="using-plantuml-server"></a>Using a PlantUML server
 
 From version `2.0` a [PlantUML server](http://plantuml.com/server) can be used for rendering diagrams. This speedups a
 lot the diagrams rendering but needs to send the diagram source to a server.
@@ -125,11 +148,30 @@ plantuml_markdown:
   classes: class1,class2                    # default diagram classes
   title: UML diagram                        # default title (tooltip) for diagram images
   alt: UML diagram image                    # default `alt` attribute for diagram images
+  priority: 30                              # plugin priority; the higher, the sooner will be applied (default 30)
 ```
 
 Then you need to specify the configuration file on the command line:
 
     markdown_py -x plantuml_markdown -c myconfig.yml mydoc.md > out.html
+    
+Plugin options
+--------------
+
+The plugin has several configuration option:
+
+* `classes`: space separated list of classes for the generated image. Defaults to `uml`
+* `format`: format of image to generate (`png`, `svg` or `txt`). Defaults to `png`
+* `alt`: text to show when image is not available. Defaults to `uml diagram`
+* `title`: tooltip for the diagram
+* `server`: PlantUML server url, for remote rendering. Defaults to `''`, use local command
+* `cachedir`: directory for caching of diagrams. Defaults to `''`, no caching
+* `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `30`
+
+For passing options to the `plantuml_plugin` see the documentation of the tool you are using.
+
+For `markdown_py`, simply write a YAML file with the configurations and use the `-c` option on the command line.
+See the [Using a PlantUML server](#using-plantuml-server) section for an example.
 
 Running tests
 -------------
