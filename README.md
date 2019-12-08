@@ -85,8 +85,31 @@ save te following into `/usr/local/bin/plantuml` (supposing [PlantUML][] install
 
 ```
     #!/bin/bash
-    java -jar /opt/plantuml/plantuml.jar ${@}
+    java $PLANTUML_JAVAOPTS -jar /opt/plantuml/plantuml.jar ${@}
 ```
+
+The `PLANTUML_JAVAOPTS` variable can be used to set specific Java options, such as memory tuning options,
+or to set system variable used by PlantUML, such as then include search path. This would avoid modifications of the
+`plantuml` script. 
+For example, with a diagram like:
+
+```
+    ```plantuml
+    !include myDefs.puml
+
+    A --> B
+    ```
+``` 
+
+you can do:
+
+```
+    export PLANTUML_JAVAOPTS="-Dplantuml.include.path=$HOME/plantuml_defs"
+    markdown_py -x plantuml_markdown mydoc.md > out.html
+```
+
+The same thing can be done using the environment variable `_JAVA_OPTIONS`, which is readed by default by the `java`
+executable.
 
 On Windows can be used the following `plantuml.bat` (many thanks to [henn1001](https://github.com/henn1001)):
 
@@ -97,7 +120,7 @@ On Windows can be used the following `plantuml.bat` (many thanks to [henn1001](h
     setlocal
     set GRAPHVIZ_DOT=%mypath%\Graphviz\bin\dot.exe
 
-    java -jar %mypath%\plantuml.jar %*
+    java %PLANTUML_JAVAOPTS% -jar %mypath%\plantuml.jar %*
 ```
 
 Make sure the `plantuml.bat` is on the path.
