@@ -1,6 +1,21 @@
 # Changelog
 
 
+## 3.2.0 (2019-12-08)
+
+### New
+
+* Added `priority` option to change plugin priority (refs #38) [Michele Tessaro]
+
+  Now the plugin execution priority can be changed if you don't like
+  default value.
+  The default should be the most reasonable with most plugins.
+
+### Changes
+
+* Documented how to set plantuml include search path (refs #37) [Michele Tessaro]
+
+
 ## 3.1.4 (2019-11-13)
 
 ### New
