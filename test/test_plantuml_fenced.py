@@ -20,9 +20,9 @@ class PlantumlTest_fenced(PlantumlTest):
             .diagram('A --> B') \
             .text('\nParagraph after.') \
             .build()
-        self.assertEqual('<p>Paragraph before.</p>\n'
-                         '<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" title="" /></p>\n'
-                         '<p>Paragraph after.</p>' % self.FAKE_IMAGE,
+        self.assertEqual(self._stripImageData('<p>Paragraph before.</p>\n'
+                                              '<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" title="" /></p>\n'
+                                              '<p>Paragraph after.</p>' % self.FAKE_IMAGE),
                          self._stripImageData(self.md.convert(text)))
 
     def test_plantuml(self):
@@ -40,7 +40,7 @@ class PlantumlTest_fenced(PlantumlTest):
         text = self.text_builder.diagram('A --> B').extended_syntax().title('Diagram test').build()
         self.assertTrue('```{uml' in text)  # Check the presence of extended syntax
         self.assertEqual(
-            '<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" title="Diagram test" /></p>' % self.FAKE_IMAGE,
+            self._stripImageData('<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" title="Diagram test" /></p>' % self.FAKE_IMAGE),
             self._stripImageData(self.md.convert(text)))
 
 

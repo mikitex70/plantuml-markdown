@@ -179,6 +179,12 @@ Running tests
 The test execution requires a specific version of [PlantUML] (the image generated can be different with different 
 [PlantUML] versions).
 
+Before to run tests, install the required dependencies:
+
+```bash
+pip install -r test-requirements.txt
+```
+
 To run the tests, execute the following command:
 
 ```bash
