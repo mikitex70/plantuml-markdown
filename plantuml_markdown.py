@@ -68,7 +68,7 @@ from markdown.util import etree, AtomicString
 
 
 logger = logging.getLogger('MARKDOWN')
-logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#blockparser
