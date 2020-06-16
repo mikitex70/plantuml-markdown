@@ -1,7 +1,27 @@
 # Changelog
 
 
-## development (2020-03-04)
+## development (unreleased)
+
+### New
+
+* Added test for diagram include. [Michele Tessaro]
+
+* Added support for loading platuml from external files. [Chalmela, Ravi]
+
+### Changes
+
+* Updated documentation. [Michele Tessaro]
+
+### Fix
+
+* Removed test support for Python 2.7. [Michele Tessaro]
+
+  Python 2.7 is now at end-of-life, removing test cause missing
+  dependecies.
+
+
+## 3.2.2 (2020-03-04)
 
 ### Fix
 
