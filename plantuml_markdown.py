@@ -150,13 +150,15 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             # logger.error("Bad uml image format '"+imgformat+"', using png")
             requested_format = "png"
 
-        code_source = None
-        #if source and base_dir
-        with open(base_dir + source, 'r') as f:
-            code_source = f.read()
+        if source and base_dir:
+            # Load diagram source from external file
+            with open(os.path.join(base_dir, source), 'r') as f:
+                code = f.read()
+        else:
+            # Extract diagram source from markdown text
+            code = m.group('code')
 
-        # Extract diagram source end convert it
-        code = m.group('code') if not code_source else code_source
+        # Extract diagram source end convert it (if not external)
         diagram = self._render_diagram(code, requested_format)
 
         if img_format == 'txt':
@@ -268,7 +270,7 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'cachedir': ["", "Directory for caching of diagrams. Defaults to '', no caching"],
             'priority': ["30", "Extension priority. Higher values means the extension is applied sooner than others. "
                                "Defaults to 30"],
-            'base_dir': [".", "Base directory for external files"]
+            'base_dir': [".", "Base directory for external files inclusion"]
         }
 
         # Fix to make links navigable in SVG diagrams
