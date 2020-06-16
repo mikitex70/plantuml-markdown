@@ -303,6 +303,23 @@ class PlantumlTest(TestCase):
         self.assertEqual(self._stripSvgData('<p><svg alt="uml diagram" title="" class="uml" style="max-width:120px;max-height:120px">...svg-body...</svg></p>'),
                          self._stripSvgData(self.md.convert(text)))
 
+    def test_arg_source(self):
+        """
+        Test for the correct parsing of the source argument
+        """
+        include_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+        self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code',
+                                                'pymdownx.snippets', 'plantuml_markdown'],
+                                    extension_configs={
+                                        'plantuml_markdown': {
+                                            'base_dir': include_path
+                                        }
+                                    })
+
+        text = self.text_builder.diagram("ignored text").source("included_diag.puml").build()
+        self.assertEquals(self._load_file('include_output.html'),
+                          self.md.convert(text))
+
     def test_multidiagram(self):
         """
         Test for the definition of multiple diagrams on the same document

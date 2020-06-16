@@ -21,6 +21,7 @@ class MarkdownBuilder:
         self._diagram_buffer = ""
         self._width = ""
         self._height = ""
+        self._source = ""
 
     def _emit_diagram(self):
         """
@@ -29,7 +30,7 @@ class MarkdownBuilder:
         """
         if self._diagram_buffer:
             delim = re.sub(r'(\W{3,})(\w+)', r'\1{\2', self._delimiter) if self._extended_syntax else self._delimiter
-            args = self._format + self._class + self._alt + self._title + self._width + self._height
+            args = self._format + self._class + self._alt + self._title + self._width + self._height + self._source
             self._buffer += (' '*self._indent)+delim+args+('}' if self._extended_syntax else '')
             self._buffer += "\n"+(' '*self._indent)+self._diagram_buffer+"\n"+(' '*self._indent)+self._end_delimiter+"\n"
 
@@ -92,10 +93,19 @@ class MarkdownBuilder:
     def height(self, h):
         """
         Define the maximum height of the diagram image.
-        :param w: Max width, with unit (ex: "120px")
+        :param h: Max width, with unit (ex: "120px")
         :return: The object itself
         """
         self._height = " height='%s'" % h
+        return self
+
+    def source(self, file_path):
+        """
+        Sets inclusion of an external source diagram instead on an inline code.
+        :param file_path: Path of the file containing the diagram source
+        :return: The object itself
+        """
+        self._source = " source='%s'" % file_path
         return self
 
     def text(self, txt):
