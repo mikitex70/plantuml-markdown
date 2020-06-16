@@ -83,6 +83,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         \s*(title=(?P<quot3>"|')(?P<title>.*?)(?P=quot3))?
         \s*(width=(?P<quot4>"|')(?P<width>[\w\s"']+%?)(?P=quot4))?
         \s*(height=(?P<quot5>"|')(?P<height>[\w\s"']+%?)(?P=quot5))?
+        \s*(source=(?P<quot6>"|')(?P<source>.*?)(?P=quot6))?
         \s*\n
         (?P<code>.*?)(?<=\n)
         \s*::end-uml::[ ]*$
@@ -98,6 +99,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         \s*(title=(?P<quot3>"|')(?P<title>.*?)(?P=quot3))?
         \s*(width=(?P<quot4>"|')(?P<width>[\w\s"']+%?)(?P=quot4))?
         \s*(height=(?P<quot5>"|')(?P<height>[\w\s"']+%?)(?P=quot5))?
+        \s*(source=(?P<quot6>"|')(?P<source>.*?)(?P=quot6))?
         [ ]*
         }?[ ]*\n                                # Optional closing }
         (?P<code>.*?)(?<=\n)
@@ -134,6 +136,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         title = m.group('title') if m.group('title') else self.config['title']
         width = m.group('width') if m.group('width') else None
         height = m.group('height') if m.group('height') else None
+        source = m.group('source') if m.group('source') else None
+        base_dir = self.config['base_dir'] if self.config['base_dir'] else None
 
         # Convert image type in PlantUML image format
         if img_format == 'png':
@@ -146,8 +150,13 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             # logger.error("Bad uml image format '"+imgformat+"', using png")
             requested_format = "png"
 
+        code_source = None
+        #if source and base_dir
+        with open(base_dir + source, 'r') as f:
+            code_source = f.read()
+
         # Extract diagram source end convert it
-        code = m.group('code')
+        code = m.group('code') if not code_source else code_source
         diagram = self._render_diagram(code, requested_format)
 
         if img_format == 'txt':
@@ -258,7 +267,8 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'server': ["", "PlantUML server url, for remote rendering. Defaults to '', use local command."],
             'cachedir': ["", "Directory for caching of diagrams. Defaults to '', no caching"],
             'priority': ["30", "Extension priority. Higher values means the extension is applied sooner than others. "
-                               "Defaults to 30"]
+                               "Defaults to 30"],
+            'base_dir': [".", "Base directory for external files"]
         }
 
         # Fix to make links navigable in SVG diagrams
