@@ -26,7 +26,13 @@ class PlantumlTest(TestCase):
             return f.read()[:-1]  # skip the last newline
 
     FAKE_IMAGE = 'ABCDEF=='
-    IMAGE_REGEX = re.compile(r'<(?:img|.*object)(?:( alt=".*?")|( class=".*?")|( title=".*?")|( style=".*?")|( src=".*?")|(?:.*?))+/>')
+    IMAGE_REGEX = re.compile(r'<(?:img|.*object)'
+                             r'(?:( alt=".*?")|'
+                             r'( class=".*?")|'
+                             r'( title=".*?")|'
+                             r'( style=".*?")|'
+                             r'( src=".*?")|'
+                             r'(?:.*?))+(?:/>|></(?:img|.*object>))')
     BASE64_REGEX = re.compile(
         r'("data:image/[a-z+]+;base64,)(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?')
 
@@ -214,8 +220,11 @@ class PlantumlTest(TestCase):
         Test for the correct parsing of the format argument, generating a svg image
         """
         text = self.text_builder.diagram("A --> B").format("svg_object").build()
+        html = self.md.convert(text)
         self.assertEqual(self._stripImageData(self._load_file('svg_object_diag.html')),
-                         self._stripImageData(self.md.convert(text)))
+                         self._stripImageData(html))
+        # verify that the tag is explicitly closed
+        self.assertIsNotNone(re.match(r'.*<object .*?></object>.*', html))
 
     def test_arg_format_svg_inline(self):
         """

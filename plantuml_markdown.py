@@ -160,6 +160,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         # Extract diagram source end convert it (if not external)
         diagram = self._render_diagram(code, requested_format)
+        self_closed = True  # tags are always self closing
 
         if img_format == 'txt':
             # logger.debug(diagram)
@@ -184,6 +185,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
                 img = etree.Element('object')
                 img.attrib['data'] = data
+                self_closed = False  # object tag must be explicitly closed
             else:  # png format, explicitly set or as a default when format is not recognized
                 data = 'data:image/png;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
                 img = etree.Element('img')
@@ -206,7 +208,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             img.attrib['alt'] = alt
             img.attrib['title'] = title
 
-        return text[:m.start()] + etree.tostring(img).decode() + text[m.end():], True
+        return text[:m.start()] + etree.tostring(img, short_empty_elements=self_closed).decode() \
+            + text[m.end():], True
 
     def _render_diagram(self, code, requested_format):
         cached_diagram_file = None
