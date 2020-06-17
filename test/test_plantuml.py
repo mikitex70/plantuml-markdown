@@ -46,7 +46,6 @@ class PlantumlTest(TestCase):
             return cls.BASE64_REGEX.sub(r'\1%s' % cls.FAKE_IMAGE, html)
 
         return cls.IMAGE_REGEX.sub(lambda x: sort_attributes(x.groups()), html)
-        #return cls.BASE64_REGEX.sub(r'\1%s' % cls.FAKE_IMAGE, html)
 
     FAKE_SVG = '...svg-body...'
     SVG_REGEX = re.compile(r'<(?:\w+:)?svg(?:( alt=".*?")|( class=".*?")|( title=".*?")|( style=".*?")|(?:.*?))+>.*</(?:\w+:)?svg>')
@@ -317,8 +316,8 @@ class PlantumlTest(TestCase):
                                     })
 
         text = self.text_builder.diagram("ignored text").source("included_diag.puml").build()
-        self.assertEquals(self._load_file('include_output.html'),
-                          self.md.convert(text))
+        self.assertEqual(self._stripImageData(self._load_file('include_output.html')),
+                         self._stripImageData(self.md.convert(text)))
 
     def test_multidiagram(self):
         """
