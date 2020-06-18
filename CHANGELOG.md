@@ -1,13 +1,11 @@
 # Changelog
 
 
-## development (unreleased)
+## 3.3.0 (2020-06-18)
 
 ### New
 
-* Added test for diagram include. [Michele Tessaro]
-
-* Added support for loading platuml from external files. [Chalmela, Ravi]
+* Added support for loading plantuml from external files (refs #42) [Chalmela, Ravi]
 
 ### Changes
 
@@ -15,10 +13,7 @@
 
 ### Fix
 
-* Removed test support for Python 2.7. [Michele Tessaro]
-
-  Python 2.7 is now at end-of-life, removing test cause missing
-  dependecies.
+* Fixed closing of object tag (fixes #44) [Michele Tessaro]
 
 
 ## 3.2.2 (2020-03-04)
@@ -71,10 +66,6 @@
 
 ## 3.1.3 (2019-08-26)
 
-### New
-
-* Added a test for issue #31. [Michele Tessaro]
-
 ### Changes
 
 * Updated changelog for the new release. [Michele Tessaro]
@@ -116,10 +107,6 @@
 
 
 ## 3.1.1 (2019-05-29)
-
-### New
-
-* Configured travis to test with multiple Markdown versions. [Michele Tessaro]
 
 ### Fix
 
@@ -164,10 +151,6 @@
 
 ## 2.0.2 (2019-03-16)
 
-### New
-
-* Added test to verify utf-8 character handling. [Michele Tessaro]
-
 ### Changes
 
 * Updated documentation for new release. [Michele Tessaro]
@@ -186,8 +169,6 @@
 ### Fix
 
 * Fixed package contents. [Michele Tessaro]
-
-* Fixed travis configuration. [Michele Tessaro]
 
 
 ## 2.0.0 (2019-03-02)
