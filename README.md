@@ -144,6 +144,7 @@ plantuml_markdown:
   server: http://www.plantuml.com/plantuml  # PlantUML server, for remote rendering
   # other global options
   cachedir: /tmp                            # set a non-empty value to enable caching
+  base_dir: .                               # where to search for diagrams to include
   format: png                               # default diagram image format
   classes: class1,class2                    # default diagram classes
   title: UML diagram                        # default title (tooltip) for diagram images
@@ -167,6 +168,7 @@ The plugin has several configuration option:
 * `server`: PlantUML server url, for remote rendering. Defaults to `''`, use local command
 * `cachedir`: directory for caching of diagrams. Defaults to `''`, no caching
 * `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `30`
+* `base_dir`: path where to search for external diagrams files
 
 For passing options to the `plantuml_plugin` see the documentation of the tool you are using.
 

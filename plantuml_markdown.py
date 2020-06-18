@@ -83,6 +83,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         \s*(title=(?P<quot3>"|')(?P<title>.*?)(?P=quot3))?
         \s*(width=(?P<quot4>"|')(?P<width>[\w\s"']+%?)(?P=quot4))?
         \s*(height=(?P<quot5>"|')(?P<height>[\w\s"']+%?)(?P=quot5))?
+        \s*(source=(?P<quot6>"|')(?P<source>.*?)(?P=quot6))?
         \s*\n
         (?P<code>.*?)(?<=\n)
         \s*::end-uml::[ ]*$
@@ -98,6 +99,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         \s*(title=(?P<quot3>"|')(?P<title>.*?)(?P=quot3))?
         \s*(width=(?P<quot4>"|')(?P<width>[\w\s"']+%?)(?P=quot4))?
         \s*(height=(?P<quot5>"|')(?P<height>[\w\s"']+%?)(?P=quot5))?
+        \s*(source=(?P<quot6>"|')(?P<source>.*?)(?P=quot6))?
         [ ]*
         }?[ ]*\n                                # Optional closing }
         (?P<code>.*?)(?<=\n)
@@ -134,6 +136,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         title = m.group('title') if m.group('title') else self.config['title']
         width = m.group('width') if m.group('width') else None
         height = m.group('height') if m.group('height') else None
+        source = m.group('source') if m.group('source') else None
+        base_dir = self.config['base_dir'] if self.config['base_dir'] else None
 
         # Convert image type in PlantUML image format
         if img_format == 'png':
@@ -146,9 +150,17 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             # logger.error("Bad uml image format '"+imgformat+"', using png")
             requested_format = "png"
 
-        # Extract diagram source end convert it
-        code = m.group('code')
+        if source and base_dir:
+            # Load diagram source from external file
+            with open(os.path.join(base_dir, source), 'r') as f:
+                code = f.read()
+        else:
+            # Extract diagram source from markdown text
+            code = m.group('code')
+
+        # Extract diagram source end convert it (if not external)
         diagram = self._render_diagram(code, requested_format)
+        self_closed = True  # tags are always self closing
 
         if img_format == 'txt':
             # logger.debug(diagram)
@@ -173,6 +185,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
                 img = etree.Element('object')
                 img.attrib['data'] = data
+                self_closed = False  # object tag must be explicitly closed
             else:  # png format, explicitly set or as a default when format is not recognized
                 data = 'data:image/png;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
                 img = etree.Element('img')
@@ -195,7 +208,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             img.attrib['alt'] = alt
             img.attrib['title'] = title
 
-        return text[:m.start()] + etree.tostring(img).decode() + text[m.end():], True
+        return text[:m.start()] + etree.tostring(img, short_empty_elements=self_closed).decode() \
+            + text[m.end():], True
 
     def _render_diagram(self, code, requested_format):
         cached_diagram_file = None
@@ -258,7 +272,8 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'server': ["", "PlantUML server url, for remote rendering. Defaults to '', use local command."],
             'cachedir': ["", "Directory for caching of diagrams. Defaults to '', no caching"],
             'priority': ["30", "Extension priority. Higher values means the extension is applied sooner than others. "
-                               "Defaults to 30"]
+                               "Defaults to 30"],
+            'base_dir': [".", "Base directory for external files inclusion"]
         }
 
         # Fix to make links navigable in SVG diagrams

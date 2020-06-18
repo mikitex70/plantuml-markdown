@@ -26,7 +26,13 @@ class PlantumlTest(TestCase):
             return f.read()[:-1]  # skip the last newline
 
     FAKE_IMAGE = 'ABCDEF=='
-    IMAGE_REGEX = re.compile(r'<(?:img|.*object)(?:( alt=".*?")|( class=".*?")|( title=".*?")|( style=".*?")|( src=".*?")|(?:.*?))+/>')
+    IMAGE_REGEX = re.compile(r'<(?:img|.*object)'
+                             r'(?:( alt=".*?")|'
+                             r'( class=".*?")|'
+                             r'( title=".*?")|'
+                             r'( style=".*?")|'
+                             r'( src=".*?")|'
+                             r'(?:.*?))+(?:/>|></(?:img|.*object>))')
     BASE64_REGEX = re.compile(
         r'("data:image/[a-z+]+;base64,)(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?')
 
@@ -46,7 +52,6 @@ class PlantumlTest(TestCase):
             return cls.BASE64_REGEX.sub(r'\1%s' % cls.FAKE_IMAGE, html)
 
         return cls.IMAGE_REGEX.sub(lambda x: sort_attributes(x.groups()), html)
-        #return cls.BASE64_REGEX.sub(r'\1%s' % cls.FAKE_IMAGE, html)
 
     FAKE_SVG = '...svg-body...'
     SVG_REGEX = re.compile(r'<(?:\w+:)?svg(?:( alt=".*?")|( class=".*?")|( title=".*?")|( style=".*?")|(?:.*?))+>.*</(?:\w+:)?svg>')
@@ -215,8 +220,11 @@ class PlantumlTest(TestCase):
         Test for the correct parsing of the format argument, generating a svg image
         """
         text = self.text_builder.diagram("A --> B").format("svg_object").build()
+        html = self.md.convert(text)
         self.assertEqual(self._stripImageData(self._load_file('svg_object_diag.html')),
-                         self._stripImageData(self.md.convert(text)))
+                         self._stripImageData(html))
+        # verify that the tag is explicitly closed
+        self.assertIsNotNone(re.match(r'.*<object .*?></object>.*', html))
 
     def test_arg_format_svg_inline(self):
         """
@@ -302,6 +310,23 @@ class PlantumlTest(TestCase):
         text = self.text_builder.diagram("A --> B").format("svg_inline").width('120px').height("120px").build()
         self.assertEqual(self._stripSvgData('<p><svg alt="uml diagram" title="" class="uml" style="max-width:120px;max-height:120px">...svg-body...</svg></p>'),
                          self._stripSvgData(self.md.convert(text)))
+
+    def test_arg_source(self):
+        """
+        Test for the correct parsing of the source argument
+        """
+        include_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+        self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code',
+                                                'pymdownx.snippets', 'plantuml_markdown'],
+                                    extension_configs={
+                                        'plantuml_markdown': {
+                                            'base_dir': include_path
+                                        }
+                                    })
+
+        text = self.text_builder.diagram("ignored text").source("included_diag.puml").build()
+        self.assertEqual(self._stripImageData(self._load_file('include_output.html')),
+                         self._stripImageData(self.md.convert(text)))
 
     def test_multidiagram(self):
         """
