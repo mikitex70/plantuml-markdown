@@ -30,7 +30,7 @@ The GitLab/GitHub block syntax is also recognized. Example:
       Goofy <-- MickeyMouse: responds
     ```
 
-Options are optional (otherwise the wouldn't be options), but if present must be specified in the order `format`, `classes`, `alt`, `title`, `width`, `height`.
+Options are optional (otherwise the wouldn't be options), but if present must be specified in the order `format`, `classes`, `alt`, `title`, `width`, `height`, and `source`.
 The option value may be enclosed in single or double quotes.
 
 Supported values for `format` parameter are:
@@ -42,6 +42,25 @@ Supported values for `format` parameter are:
 * `txt`: plain text diagrams.
 
 The `width` and `height` options must include a [CSS unit](https://www.w3schools.com/cssref/css_units.asp).
+
+`source` parameter is used for inclusion of an external source diagram instead on an inline code. Here's an example in GitLab/GitHub block syntax.
+
+> basic.puml
+
+    ```
+        title Authentication Sequence
+        Alice->Bob: Authentication Request
+        note right of Bob: Bob thinks about it
+        Bob->Alice: Authentication Response
+    ```
+
+> index.md
+
+    ```plantuml source="basic.puml"
+        '' This code is ignored and basic.puml is used instead.
+        Goofy ->  MickeyMouse: calls
+        Goofy <-- MickeyMouse: responds
+    ```
 
 Installation
 ------------
