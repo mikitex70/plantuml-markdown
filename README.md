@@ -47,12 +47,12 @@ The `width` and `height` options must include a [CSS unit](https://www.w3schools
 
 > basic.puml
 
-    ```
-        title Authentication Sequence
+    @startuml
+    title Authentication Sequence
         Alice->Bob: Authentication Request
         note right of Bob: Bob thinks about it
         Bob->Alice: Authentication Response
-    ```
+    @enduml
 
 > index.md
 
