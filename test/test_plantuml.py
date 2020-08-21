@@ -324,9 +324,13 @@ class PlantumlTest(TestCase):
                                         }
                                     })
 
-        text = self.text_builder.diagram("ignored text").source("included_diag.puml").build()
-        self.assertEqual(self._stripImageData(self._load_file('include_output.html')),
-                         self._stripImageData(self.md.convert(text)))
+        text = self.text_builder.diagram("B -> C")\
+                        .source("included_diag.puml")\
+                        .format("txt")\
+                        .build()
+        # ensure that the inline source diagram is appended to the external soource
+        self.assertEqual(self._load_file('include_output.html'),
+                         self.md.convert(text))
 
     def test_multidiagram(self):
         """

@@ -150,13 +150,14 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             # logger.error("Bad uml image format '"+imgformat+"', using png")
             requested_format = "png"
 
+        # Extract the PlantUML code.
+        code = ""
+        # Add external diagram source.
         if source and base_dir:
-            # Load diagram source from external file
             with open(os.path.join(base_dir, source), 'r') as f:
-                code = f.read()
-        else:
-            # Extract diagram source from markdown text
-            code = m.group('code')
+                code += f.read()
+        # Add extracted markdown diagram text.
+        code += m.group('code')
 
         # Extract diagram source end convert it (if not external)
         diagram = self._render_diagram(code, requested_format)
