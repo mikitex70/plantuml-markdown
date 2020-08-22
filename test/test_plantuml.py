@@ -328,7 +328,7 @@ class PlantumlTest(TestCase):
                         .source("included_diag.puml")\
                         .format("txt")\
                         .build()
-        # ensure that the inline source diagram is appended to the external soource
+        # ensure that the inline source diagram is appended to the external source
         self.assertEqual(self._load_file('include_output.html'),
                          self.md.convert(text))
 
@@ -356,6 +356,21 @@ class PlantumlTest(TestCase):
             .build()
         self.assertEqual(self._stripImageData(self._load_file('code_and_diag.html')),
                          self._stripImageData(self.md.convert(text)))
+
+    def test_diagram_in_fenced_code(self):
+        """
+        Diagrams inside fenced code must not be touched
+        """
+        text = self.text_builder.text('````markdown\n') \
+            .text('```uml\n') \
+            .text('A --> B\n') \
+            .text('```\n') \
+            .text('````\n') \
+            .build()
+        self.assertEqual('''<pre><code class="markdown">```uml
+A --&gt; B
+```
+</code></pre>''', self.md.convert(text))
 
     def test_indented_fenced_code(self):
         """

@@ -90,7 +90,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         ''', re.MULTILINE | re.DOTALL | re.VERBOSE)
 
     FENCED_BLOCK_RE = re.compile(r'''
-        (?P<fence>(?:~{3,}|`{3,}))[ ]*          # Opening ``` or ~~~
+        (?P<fence>(?:~{3}|`{3}))[ ]*          # Opening ``` or ~~~
         (\{?\.?(plant)?uml)[ ]*                 # Optional {, and lang
         # args
         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
@@ -106,15 +106,21 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         \s*(?P=fence)[ ]*$
         ''', re.MULTILINE | re.DOTALL | re.VERBOSE)
 
+    FENCED_CODE_RE = re.compile(r'(?P<fence>(?:~{4,}|`{4,})).*(?P=fence)',
+                                re.MULTILINE | re.DOTALL | re.VERBOSE)
+
     def __init__(self, md):
         super(PlantUMLPreprocessor, self).__init__(md)
 
     def run(self, lines):
         text = '\n'.join(lines)
-        did_replace = True
+        idx = 0
 
-        while did_replace:
-            text, did_replace = self._replace_block(text)
+        # loop until all text is parsed
+        while idx < len(text):
+            text1, idx1 = self._replace_block(text[idx:])
+            text = text[:idx]+text1
+            idx += idx1
 
         return text.split('\n')
 
@@ -122,12 +128,17 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
     ADAPT_SVG_REGEX = re.compile(r'^<\?xml .*?\?><svg(.*?)xmlns=".*?" (.*?)>')
 
     def _replace_block(self, text):
+        # skip fenced code enclosing diagram
+        m = self.FENCED_CODE_RE.search(text)
+        if m:
+            return text, m.end()+1
+
         # Parse configuration params
         m = self.FENCED_BLOCK_RE.search(text)
         if not m:
             m = self.BLOCK_RE.search(text)
             if not m:
-                return text, False
+                return text, len(text)
 
         # Parse configuration params
         img_format = m.group('format') if m.group('format') else self.config['format']
@@ -209,8 +220,9 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             img.attrib['alt'] = alt
             img.attrib['title'] = title
 
-        return text[:m.start()] + etree.tostring(img, short_empty_elements=self_closed).decode() \
-            + text[m.end():], True
+        diag_tag = etree.tostring(img, short_empty_elements=self_closed).decode()
+        return text[:m.start()] + diag_tag + text[m.end():], \
+               len(diag_tag) - len(text) + m.end()
 
     def _render_diagram(self, code, requested_format):
         cached_diagram_file = None

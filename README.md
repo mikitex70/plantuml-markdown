@@ -57,7 +57,7 @@ The `width` and `height` options must include a [CSS unit](https://www.w3schools
 > index.md
 
     ```plantuml source="basic.puml"
-        '' This code is ignored and basic.puml is used instead.
+        '' This code is appended to the contents of basic.puml
         Goofy ->  MickeyMouse: calls
         Goofy <-- MickeyMouse: responds
     ```
@@ -112,13 +112,13 @@ or to set system variable used by PlantUML, such as then include search path. Th
 `plantuml` script. 
 For example, with a diagram like:
 
-```
+````
     ```plantuml
     !include myDefs.puml
 
     A --> B
     ```
-``` 
+````
 
 you can do:
 
@@ -168,7 +168,7 @@ plantuml_markdown:
   classes: class1,class2                    # default diagram classes
   title: UML diagram                        # default title (tooltip) for diagram images
   alt: UML diagram image                    # default `alt` attribute for diagram images
-  priority: 30                              # plugin priority; the higher, the sooner will be applied (default 30)
+  priority: 23                              # plugin priority; the higher, the sooner will be applied (default 23)
 ```
 
 Then you need to specify the configuration file on the command line:
@@ -186,7 +186,7 @@ The plugin has several configuration option:
 * `title`: tooltip for the diagram
 * `server`: PlantUML server url, for remote rendering. Defaults to `''`, use local command
 * `cachedir`: directory for caching of diagrams. Defaults to `''`, no caching
-* `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `30`
+* `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `23`
 * `base_dir`: path where to search for external diagrams files
 
 For passing options to the `plantuml_plugin` see the documentation of the tool you are using.
