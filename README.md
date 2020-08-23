@@ -43,23 +43,26 @@ Supported values for `format` parameter are:
 
 The `width` and `height` options must include a [CSS unit](https://www.w3schools.com/cssref/css_units.asp).
 
-`source` parameter is used for inclusion of an external source diagram instead on an inline code. Here's an example in GitLab/GitHub block syntax.
+`source` parameter is used for inclusion of an external source diagram instead on an inline code. This can be used for theming and/or defining participants in another file. Here's an example in GitLab/GitHub block syntax.
 
-> basic.puml
+> participants.puml
 
     @startuml
-    title Authentication Sequence
-        Alice->Bob: Authentication Request
-        note right of Bob: Bob thinks about it
-        Bob->Alice: Authentication Response
+    skinparam roundcorner 10
+    participant "Alice" as A
+    participant "Bob" as B
     @enduml
 
 > index.md
 
-    ```plantuml source="basic.puml"
-        '' This code is ignored and basic.puml is used instead.
-        Goofy ->  MickeyMouse: calls
-        Goofy <-- MickeyMouse: responds
+    ```plantuml source="participants.puml"
+        @startuml
+        '' Source file defines the participants.
+        title Authentication Sequence
+        A->B: Authentication Request
+        note right of B: Bob thinks about it
+        B->A: Authentication Response
+        @enduml
     ```
 
 Installation
