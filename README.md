@@ -30,7 +30,7 @@ The GitLab/GitHub block syntax is also recognized. Example:
       Goofy <-- MickeyMouse: responds
     ```
 
-Options are optional (otherwise the wouldn't be options), but if present must be specified in the order `format`, `classes`, `alt`, `title`, `width`, `height`.
+Options are optional (otherwise the wouldn't be options), but if present must be specified in the order `format`, `classes`, `alt`, `title`, `width`, `height`, and `source`.
 The option value may be enclosed in single or double quotes.
 
 Supported values for `format` parameter are:
@@ -42,6 +42,25 @@ Supported values for `format` parameter are:
 * `txt`: plain text diagrams.
 
 The `width` and `height` options must include a [CSS unit](https://www.w3schools.com/cssref/css_units.asp).
+
+`source` parameter is used for inclusion of an external source diagram instead on an inline code. Here's an example in GitLab/GitHub block syntax.
+
+> basic.puml
+
+    @startuml
+    title Authentication Sequence
+        Alice->Bob: Authentication Request
+        note right of Bob: Bob thinks about it
+        Bob->Alice: Authentication Response
+    @enduml
+
+> index.md
+
+    ```plantuml source="basic.puml"
+        '' This code is appended to the contents of basic.puml
+        Goofy ->  MickeyMouse: calls
+        Goofy <-- MickeyMouse: responds
+    ```
 
 Installation
 ------------
@@ -93,13 +112,13 @@ or to set system variable used by PlantUML, such as then include search path. Th
 `plantuml` script. 
 For example, with a diagram like:
 
-```
+````
     ```plantuml
     !include myDefs.puml
 
     A --> B
     ```
-``` 
+````
 
 you can do:
 
@@ -149,7 +168,7 @@ plantuml_markdown:
   classes: class1,class2                    # default diagram classes
   title: UML diagram                        # default title (tooltip) for diagram images
   alt: UML diagram image                    # default `alt` attribute for diagram images
-  priority: 30                              # plugin priority; the higher, the sooner will be applied (default 30)
+  priority: 23                              # plugin priority; the higher, the sooner will be applied (default 23)
 ```
 
 Then you need to specify the configuration file on the command line:
@@ -167,7 +186,7 @@ The plugin has several configuration option:
 * `title`: tooltip for the diagram
 * `server`: PlantUML server url, for remote rendering. Defaults to `''`, use local command
 * `cachedir`: directory for caching of diagrams. Defaults to `''`, no caching
-* `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `30`
+* `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `23`
 * `base_dir`: path where to search for external diagrams files
 
 For passing options to the `plantuml_plugin` see the documentation of the tool you are using.

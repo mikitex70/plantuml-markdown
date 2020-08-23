@@ -12,8 +12,8 @@ python setup.py bdist_wheel
 deactivate
 
 # Build package for Python 3
-[[ -d ".env35" ]] || python3.5 -m virtualenv .env35
-. .env35/bin/activate
+[[ -d ".env36" ]] || python3.6 -m virtualenv .env36
+. .env36/bin/activate
 pip install setuptools twine wheel
 python setup.py bdist_wheel
 
