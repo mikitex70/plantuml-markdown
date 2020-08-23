@@ -1,6 +1,29 @@
 # Changelog
 
 
+## 3.4.0 (2020-08-23)
+
+### New
+
+* Capability to keep both inline and source data (implements #47) [Ihsan Topaloglu]
+
+  As per discussed on https://github.com/mikitex70/plantuml-markdown/issues/47
+
+### Changes
+
+* Update README.md (refs #47) [Ihsan Topaloglu]
+
+* Update README.md (refs #47) [Ihsan Topaloglu]
+
+  Readme update for the `source` inclusion feature that came with https://github.com/mikitex70/plantuml-markdown/releases/tag/3.3.0
+
+### Fix
+
+* Fixed uml code inside fenced code (fixes #45) [Michele Tessaro]
+
+  UML source diagram inside a fenced code is now leaved untouched.
+
+
 ## 3.3.0 (2020-06-18)
 
 ### New
@@ -8,6 +31,8 @@
 * Added support for loading plantuml from external files (refs #42) [Chalmela, Ravi]
 
 ### Changes
+
+* Updated documentation. [Michele Tessaro]
 
 * Updated documentation. [Michele Tessaro]
 
