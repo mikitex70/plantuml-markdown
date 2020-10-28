@@ -1,6 +1,16 @@
 # Changelog
 
 
+## 3.4.1 (2020-10-28)
+
+### Fix
+
+* Fixed multiple mixed code blocs (fixes #45) [Michele Tessaro]
+
+  Fixed parsing of mixed `fenced_code` and `plantuml_markdown` blocks in
+  the same document.
+
+
 ## 3.4.0 (2020-08-23)
 
 ### New
@@ -10,6 +20,8 @@
   As per discussed on https://github.com/mikitex70/plantuml-markdown/issues/47
 
 ### Changes
+
+* Updated CHANGELOG.md. [Michele Tessaro]
 
 * Update README.md (refs #47) [Ihsan Topaloglu]
 
