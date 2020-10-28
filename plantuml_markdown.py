@@ -90,7 +90,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         ''', re.MULTILINE | re.DOTALL | re.VERBOSE)
 
     FENCED_BLOCK_RE = re.compile(r'''
-        (?P<fence>(?:~{3}|`{3}))[ ]*          # Opening ``` or ~~~
+        (?P<indent>[ ]*)
+        (?P<fence>(?:~{3}|`{3}))[ ]*            # Opening ``` or ~~~
         (\{?\.?(plant)?uml)[ ]*                 # Optional {, and lang
         # args
         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
@@ -103,10 +104,10 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         [ ]*
         }?[ ]*\n                                # Optional closing }
         (?P<code>.*?)(?<=\n)
-        \s*(?P=fence)[ ]*$
+        (?P=indent)(?P=fence)[ ]*$
         ''', re.MULTILINE | re.DOTALL | re.VERBOSE)
-
-    FENCED_CODE_RE = re.compile(r'(?P<fence>(?:~{4,}|`{4,})).*(?P=fence)',
+    # (?P<indent>[ ]*)(?P<fence>(?:~{3}|`{3}))[ ]*(\{?\.?(plant)?uml)[ ]*\n(?P<code>.*?)(?<=\n)(?P=indent)(?P=fence)$
+    FENCED_CODE_RE = re.compile(r'(?P<fence>(?:~{4,}|`{4,})).*?(?P=fence)',
                                 re.MULTILINE | re.DOTALL | re.VERBOSE)
 
     def __init__(self, md):
@@ -131,7 +132,11 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         # skip fenced code enclosing diagram
         m = self.FENCED_CODE_RE.search(text)
         if m:
-            return text, m.end()+1
+            # check if before the fenced code there is a plantuml diagram
+            m1 = self.FENCED_BLOCK_RE.search(text[:m.start()])
+            if m1 is None:
+                # no diagram, skip this block of text
+                return text, m.end()+1
 
         # Parse configuration params
         m = self.FENCED_BLOCK_RE.search(text)

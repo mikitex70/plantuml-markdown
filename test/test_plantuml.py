@@ -388,6 +388,38 @@ A --&gt; B
 </ul>''' % self.FAKE_IMAGE),
                           self._stripImageData(self.md.convert(text)))
 
+    def test_multiple_fences(self):
+        """
+        Test multiple fences in document.
+        Single document with a mix of fence code and plantuml diagrams.
+        """
+        text = self.text_builder.text('````markdown\n') \
+            .text('    ```uml\n') \
+            .text('    A --> B\n') \
+            .text('    ```\n') \
+            .text('````\n') \
+            .diagram('A --> B') \
+            .text('````markdown\n') \
+            .text('    ```uml\n') \
+            .text('    A <-- B\n') \
+            .text('    ```\n') \
+            .text('````\n') \
+            .diagram('A <-- B') \
+            .build()
+        self.assertEqual('''<pre><code class="markdown">    ```uml
+    A --&gt; B
+    ```
+</code></pre>
+
+<p><img alt="uml diagram" title="" class="uml" src="data:image/png;base64,%s"/></p>
+<pre><code class="markdown">    ```uml
+    A &lt;-- B
+    ```
+</code></pre>
+
+<p><img alt="uml diagram" title="" class="uml" src="data:image/png;base64,%s"/></p>''' %
+                         (self.FAKE_IMAGE, self.FAKE_IMAGE), self._stripImageData(self.md.convert(text)))
+
     def test_unicode_chars(self):
         """indented_code
         Test that svg_inline handles correctly utf8 characters
