@@ -11,6 +11,9 @@ class PlantumlTest_legacy(PlantumlTest):
         # Setup testing with old block delimiter (I don't remember where I've seen this syntax)
         self.text_builder = MarkdownBuilder('::uml::')
 
+    def test_multiple_fences(self):
+        pass  # this test has non sense with legacy diagram delimiter
+
 
 if __name__ == '__main__':
     unittest.main()

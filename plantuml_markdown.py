@@ -64,7 +64,8 @@ from zlib import adler32
 from plantuml import PlantUML
 import logging
 import markdown
-from markdown.util import etree, AtomicString
+from markdown.util import AtomicString #, etree
+from xml.etree import ElementTree as etree
 
 
 logger = logging.getLogger('MARKDOWN')
@@ -305,7 +306,7 @@ class PlantUMLMarkdownExtension(markdown.Extension):
         blockprocessor.config = self.getConfigs()
         # need to go before both fenced_code_block and things like retext's PosMapMarkPreprocessor.
         # Need to go after mdx_include.
-        if markdown.version_info[0] < 3:
+        if markdown.__version_info__[0] < 3:
             md.preprocessors.add('plantuml', blockprocessor, '_begin')
         else:
             md.preprocessors.register(blockprocessor, 'plantuml', int(blockprocessor.config['priority']))

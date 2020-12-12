@@ -18,7 +18,13 @@ class PlantumlTest(TestCase):
     def setUp(self):
         self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code',
                                                 'admonition', 'pymdownx.snippets',
-                                                'plantuml_markdown'])
+                                                'plantuml_markdown'],
+                                    extension_configs={
+                                        # fix for fences in Markdown 3.3
+                                        'markdown.extensions.fenced_code': {
+                                            'lang_prefix': ''
+                                        }
+                                    })
         self.text_builder = None
 
     def _load_file(self, filename):
@@ -52,7 +58,7 @@ class PlantumlTest(TestCase):
             html = "<img{}{}{}{}{}/>".format(alt, title, classes, style, src)
             return cls.BASE64_REGEX.sub(r'\1%s' % cls.FAKE_IMAGE, html)
 
-        return cls.IMAGE_REGEX.sub(lambda x: sort_attributes(x.groups()), html)
+        return cls.IMAGE_REGEX.sub(lambda x: sort_attributes(x.groups()), html.replace('\n\n', '\n'))
 
     FAKE_SVG = '...svg-body...'
     SVG_REGEX = re.compile(r'<(?:\w+:)?svg(?:( alt=".*?")|( class=".*?")|( title=".*?")|( style=".*?")|(?:.*?))+>.*</(?:\w+:)?svg>')
@@ -411,13 +417,11 @@ A --&gt; B
     A --&gt; B
     ```
 </code></pre>
-
 <p><img alt="uml diagram" title="" class="uml" src="data:image/png;base64,%s"/></p>
 <pre><code class="markdown">    ```uml
     A &lt;-- B
     ```
 </code></pre>
-
 <p><img alt="uml diagram" title="" class="uml" src="data:image/png;base64,%s"/></p>''' %
                          (self.FAKE_IMAGE, self.FAKE_IMAGE), self._stripImageData(self.md.convert(text)))
 

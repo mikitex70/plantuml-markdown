@@ -7,10 +7,12 @@ python:
   - 3.6
   - 3.7
   - 3.8
+  - 3.9
 
 env:
   - MARKDOWN_VER=2.6.8
   - MARKDOWN_VER=3.0.1
+  - MARKDOWN_VER=3.3.3
 
 install:
   - sudo apt-get install graphviz
