@@ -17,7 +17,8 @@ class PlantumlTest(TestCase):
 
     def setUp(self):
         self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code',
-                                                'pymdownx.snippets', 'plantuml_markdown'])
+                                                'admonition', 'pymdownx.snippets',
+                                                'plantuml_markdown'])
         self.text_builder = None
 
     def _load_file(self, filename):
@@ -419,6 +420,16 @@ A --&gt; B
 
 <p><img alt="uml diagram" title="" class="uml" src="data:image/png;base64,%s"/></p>''' %
                          (self.FAKE_IMAGE, self.FAKE_IMAGE), self._stripImageData(self.md.convert(text)))
+
+    def test_admonition(self):
+        text = self.text_builder.text('!!! note\n') \
+            .indent(4) \
+            .diagram('A --> B') \
+            .build()
+        self.assertEqual('''<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><img alt="uml diagram" title="" class="uml" src="data:image/png;base64,%s"/></p>
+</div>''' % self.FAKE_IMAGE, self._stripImageData(self.md.convert(text)))
 
     def test_unicode_chars(self):
         """indented_code

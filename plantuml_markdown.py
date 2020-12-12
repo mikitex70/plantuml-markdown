@@ -75,6 +75,7 @@ logger = logging.getLogger('MARKDOWN')
 class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
     # Regular expression inspired from fenced_code
     BLOCK_RE = re.compile(r'''
+        (?P<indent>[ ]*)
         ::uml:: 
         # args
         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
@@ -86,7 +87,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         \s*(source=(?P<quot6>"|')(?P<source>.*?)(?P=quot6))?
         \s*\n
         (?P<code>.*?)(?<=\n)
-        \s*::end-uml::[ ]*$
+        (?P=indent)::end-uml::[ ]*$
         ''', re.MULTILINE | re.DOTALL | re.VERBOSE)
 
     FENCED_BLOCK_RE = re.compile(r'''
@@ -226,7 +227,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             img.attrib['title'] = title
 
         diag_tag = etree.tostring(img, short_empty_elements=self_closed).decode()
-        return text[:m.start()] + diag_tag + text[m.end():], \
+        return text[:m.start()] + m.group('indent') + diag_tag + text[m.end():], \
                len(diag_tag) - len(text) + m.end()
 
     def _render_diagram(self, code, requested_format):
