@@ -5,6 +5,7 @@ import markdown
 import tempfile
 from unittest import TestCase, SkipTest
 import mock
+import os
 
 
 class PlantumlTest(TestCase):
@@ -16,8 +17,25 @@ class PlantumlTest(TestCase):
         super(PlantumlTest, cls).setUpClass()
 
     def setUp(self):
+        if markdown.__version__ >= '3.3':
+            configs = {
+                # fix for fences in Markdown 3.3
+                'markdown.extensions.fenced_code': {
+                    'lang_prefix': ''
+                }
+            }
+        else:
+            configs = {}
+            
+        if os.environ.get('PLANTUML_SERVER', None):
+            configs['plantuml_markdown'] = {
+                'server': os.environ.get('PLANTUML_SERVER', None)
+            }
+
         self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code',
-                                                'pymdownx.snippets', 'plantuml_markdown'])
+                                                'admonition', 'pymdownx.snippets',
+                                                'plantuml_markdown'],
+                                    extension_configs=configs)
         self.text_builder = None
 
     def _load_file(self, filename):
@@ -51,7 +69,7 @@ class PlantumlTest(TestCase):
             html = "<img{}{}{}{}{}/>".format(alt, title, classes, style, src)
             return cls.BASE64_REGEX.sub(r'\1%s' % cls.FAKE_IMAGE, html)
 
-        return cls.IMAGE_REGEX.sub(lambda x: sort_attributes(x.groups()), html)
+        return cls.IMAGE_REGEX.sub(lambda x: sort_attributes(x.groups()), html.replace('\n\n', '\n'))
 
     FAKE_SVG = '...svg-body...'
     SVG_REGEX = re.compile(r'<(?:\w+:)?svg(?:( alt=".*?")|( class=".*?")|( title=".*?")|( style=".*?")|(?:.*?))+>.*</(?:\w+:)?svg>')
@@ -221,7 +239,13 @@ class PlantumlTest(TestCase):
         """
         text = self.text_builder.diagram("A --> B").format("svg_object").build()
         html = self.md.convert(text)
-        self.assertEqual(self._stripImageData(self._load_file('svg_object_diag.html')),
+
+        if markdown.__version__ >= '3.3':
+            expected = 'svg_object_diag-3.3.html'
+        else:
+            expected = 'svg_object_diag.html'
+
+        self.assertEqual(self._stripImageData(self._load_file(expected)),
                          self._stripImageData(html))
         # verify that the tag is explicitly closed
         self.assertIsNotNone(re.match(r'.*<object .*?></object>.*', html))
@@ -316,13 +340,18 @@ class PlantumlTest(TestCase):
         Test for the correct parsing of the source argument
         """
         include_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+        configs = {
+            'plantuml_markdown': {
+                'base_dir': include_path
+            }
+        }
+            
+        if os.environ.get('PLANTUML_SERVER', None):
+            configs['plantuml_markdown']['server'] = os.environ.get('PLANTUML_SERVER', None)
+
         self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code',
                                                 'pymdownx.snippets', 'plantuml_markdown'],
-                                    extension_configs={
-                                        'plantuml_markdown': {
-                                            'base_dir': include_path
-                                        }
-                                    })
+                                    extension_configs=configs)
 
         text = self.text_builder.diagram("B -> C")\
                         .source("included_diag.puml")\
@@ -410,15 +439,23 @@ A --&gt; B
     A --&gt; B
     ```
 </code></pre>
-
 <p><img alt="uml diagram" title="" class="uml" src="data:image/png;base64,%s"/></p>
 <pre><code class="markdown">    ```uml
     A &lt;-- B
     ```
 </code></pre>
-
 <p><img alt="uml diagram" title="" class="uml" src="data:image/png;base64,%s"/></p>''' %
                          (self.FAKE_IMAGE, self.FAKE_IMAGE), self._stripImageData(self.md.convert(text)))
+
+    def test_admonition(self):
+        text = self.text_builder.text('!!! note\n') \
+            .indent(4) \
+            .diagram('A --> B') \
+            .build()
+        self.assertEqual('''<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><img alt="uml diagram" title="" class="uml" src="data:image/png;base64,%s"/></p>
+</div>''' % self.FAKE_IMAGE, self._stripImageData(self.md.convert(text)))
 
     def test_unicode_chars(self):
         """indented_code

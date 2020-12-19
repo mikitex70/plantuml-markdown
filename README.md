@@ -197,6 +197,9 @@ See the [Using a PlantUML server](#using-plantuml-server) section for an example
 Running tests
 -------------
 
+`plantuml-markdown` is tested with Python >= 3.6 and `Markdown >= 3.0.1`. Older versions of Python or `Markdown` may
+work, but if it doesn't I can't guarantee a fix as they are end-of-life versions.
+
 The test execution requires a specific version of [PlantUML] (the image generated can be different with different 
 [PlantUML] versions).
 

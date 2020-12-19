@@ -1,4 +1,4 @@
 #!/bin/sh
-PLANTUML_VER="1.2018.2"
+PLANTUML_VER="1.2020.23"
 [ -f "/tmp/plantuml.${PLANTUML_VER}.jar" ] || wget -q "http://sourceforge.net/projects/plantuml/files/plantuml.${PLANTUML_VER}.jar/download" -O /tmp/plantuml.${PLANTUML_VER}.jar
 java -Djava.awt.headless=true -jar /tmp/plantuml.${PLANTUML_VER}.jar ${@}

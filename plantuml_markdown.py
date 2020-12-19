@@ -64,7 +64,8 @@ from zlib import adler32
 from plantuml import PlantUML
 import logging
 import markdown
-from markdown.util import etree, AtomicString
+from markdown.util import AtomicString #, etree
+from xml.etree import ElementTree as etree
 
 
 logger = logging.getLogger('MARKDOWN')
@@ -75,6 +76,7 @@ logger = logging.getLogger('MARKDOWN')
 class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
     # Regular expression inspired from fenced_code
     BLOCK_RE = re.compile(r'''
+        (?P<indent>[ ]*)
         ::uml:: 
         # args
         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
@@ -86,7 +88,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         \s*(source=(?P<quot6>"|')(?P<source>.*?)(?P=quot6))?
         \s*\n
         (?P<code>.*?)(?<=\n)
-        \s*::end-uml::[ ]*$
+        (?P=indent)::end-uml::[ ]*$
         ''', re.MULTILINE | re.DOTALL | re.VERBOSE)
 
     FENCED_BLOCK_RE = re.compile(r'''
@@ -226,7 +228,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             img.attrib['title'] = title
 
         diag_tag = etree.tostring(img, short_empty_elements=self_closed).decode()
-        return text[:m.start()] + diag_tag + text[m.end():], \
+        return text[:m.start()] + m.group('indent') + diag_tag + text[m.end():], \
                len(diag_tag) - len(text) + m.end()
 
     def _render_diagram(self, code, requested_format):
@@ -304,7 +306,7 @@ class PlantUMLMarkdownExtension(markdown.Extension):
         blockprocessor.config = self.getConfigs()
         # need to go before both fenced_code_block and things like retext's PosMapMarkPreprocessor.
         # Need to go after mdx_include.
-        if markdown.version_info[0] < 3:
+        if markdown.__version_info__[0] < 3:
             md.preprocessors.add('plantuml', blockprocessor, '_begin')
         else:
             md.preprocessors.register(blockprocessor, 'plantuml', int(blockprocessor.config['priority']))
