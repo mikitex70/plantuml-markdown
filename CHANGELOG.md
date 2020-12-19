@@ -1,11 +1,28 @@
 # Changelog
 
 
+## 3.4.2 (2020-12-19)
+
+### Changes
+
+* Remove tests for python < 3.6. [Michele Tessaro]
+
+  Python versions before 3.6 are now at end of life.
+  `plantuml-markdown` will not be tested with those versions, and bugs
+  will be fixed only if reproducible with more recent Python versions.
+
+### Fix
+
+* Fixed working with Markdown 3.3 (fixes #39) [Michele Tessaro]
+
+* Fixed indentation handling (fixes #51) [Michele Tessaro]
+
+
 ## 3.4.1 (2020-10-28)
 
 ### Fix
 
-* Fixed multiple mixed code blocs (fixes #45) [Michele Tessaro]
+* Fixed multiple mixed code blocks (fixes #45) [Michele Tessaro]
 
   Fixed parsing of mixed `fenced_code` and `plantuml_markdown` blocks in
   the same document.
