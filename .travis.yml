@@ -2,25 +2,23 @@ sudo: true
 language: python
 
 python:
-  - 3.4
-  - 3.5
   - 3.6
   - 3.7
   - 3.8
   - 3.9
 
 env:
-  - MARKDOWN_VER=2.6.8
   - MARKDOWN_VER=3.0.1
+  - MARKDOWN_VER=3.1.1
+  - MARKDOWN_VER=3.2.2
   - MARKDOWN_VER=3.3.3
 
 install:
   - sudo apt-get install graphviz
-  - pip install -r requirements.txt
-  - pip install --upgrade Markdown==$MARKDOWN_VER
-  - pip install -r test-requirements.txt
-  - wget 'http://sourceforge.net/projects/plantuml/files/plantuml.1.2018.2.jar/download' -O /tmp/plantuml.1.2018.2.jar
+  - wget 'http://sourceforge.net/projects/plantuml/files/plantuml.1.2020.23.jar/download' -O /tmp/plantuml.1.2020.23.jar
+  - sed 's/Markdown/Markdown==$MARKDOWN_VER/' requirements.txt > /tmp/requirements.txt
+  - cat test-requirements.txt >> /tmp/requirements.txt
+  - pip install -r /tmp/requirements.txt
 
 script:
-  - test/plantuml -v
-  - PATH="$PWD/test:$PATH" python -m unittest discover -v -s test
+  - PATH="$PWD/test:$PATH" nose2 --verbose -F

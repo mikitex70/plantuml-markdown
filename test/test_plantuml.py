@@ -5,6 +5,7 @@ import markdown
 import tempfile
 from unittest import TestCase, SkipTest
 import mock
+import os
 
 
 class PlantumlTest(TestCase):
@@ -16,15 +17,25 @@ class PlantumlTest(TestCase):
         super(PlantumlTest, cls).setUpClass()
 
     def setUp(self):
+        if markdown.__version__ >= '3.3':
+            configs = {
+                # fix for fences in Markdown 3.3
+                'markdown.extensions.fenced_code': {
+                    'lang_prefix': ''
+                }
+            }
+        else:
+            configs = {}
+            
+        if os.environ.get('PLANTUML_SERVER', None):
+            configs['plantuml_markdown'] = {
+                'server': os.environ.get('PLANTUML_SERVER', None)
+            }
+
         self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code',
                                                 'admonition', 'pymdownx.snippets',
                                                 'plantuml_markdown'],
-                                    extension_configs={
-                                        # fix for fences in Markdown 3.3
-                                        'markdown.extensions.fenced_code': {
-                                            'lang_prefix': ''
-                                        }
-                                    })
+                                    extension_configs=configs)
         self.text_builder = None
 
     def _load_file(self, filename):
@@ -228,7 +239,13 @@ class PlantumlTest(TestCase):
         """
         text = self.text_builder.diagram("A --> B").format("svg_object").build()
         html = self.md.convert(text)
-        self.assertEqual(self._stripImageData(self._load_file('svg_object_diag.html')),
+
+        if markdown.__version__ >= '3.3':
+            expected = 'svg_object_diag-3.3.html'
+        else:
+            expected = 'svg_object_diag.html'
+
+        self.assertEqual(self._stripImageData(self._load_file(expected)),
                          self._stripImageData(html))
         # verify that the tag is explicitly closed
         self.assertIsNotNone(re.match(r'.*<object .*?></object>.*', html))
@@ -323,13 +340,18 @@ class PlantumlTest(TestCase):
         Test for the correct parsing of the source argument
         """
         include_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+        configs = {
+            'plantuml_markdown': {
+                'base_dir': include_path
+            }
+        }
+            
+        if os.environ.get('PLANTUML_SERVER', None):
+            configs['plantuml_markdown']['server'] = os.environ.get('PLANTUML_SERVER', None)
+
         self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code',
                                                 'pymdownx.snippets', 'plantuml_markdown'],
-                                    extension_configs={
-                                        'plantuml_markdown': {
-                                            'base_dir': include_path
-                                        }
-                                    })
+                                    extension_configs=configs)
 
         text = self.text_builder.diagram("B -> C")\
                         .source("included_diag.puml")\
