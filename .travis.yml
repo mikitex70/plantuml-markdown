@@ -16,7 +16,7 @@ env:
 install:
   - sudo apt-get install graphviz
   - wget 'http://sourceforge.net/projects/plantuml/files/plantuml.1.2020.23.jar/download' -O /tmp/plantuml.1.2020.23.jar
-  - sed 's/Markdown/Markdown==$MARKDOWN_VER/' requirements.txt > /tmp/requirements.txt
+  - sed "s/Markdown/Markdown==$MARKDOWN_VER/" requirements.txt > /tmp/requirements.txt
   - cat test-requirements.txt >> /tmp/requirements.txt
   - pip install -r /tmp/requirements.txt
 
