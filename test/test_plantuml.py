@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import re
+import sys
+
 import markdown
 import tempfile
 from unittest import TestCase, SkipTest
@@ -469,3 +471,49 @@ A --&gt; B
         self.assertTrue('Alicja' in svg)
         self.assertTrue('&#321;ukasz' in svg)
         self.assertTrue('"Za&#380;&#243;&#322;&#263; g&#281;&#347;l&#261; ja&#378;&#324;"' in svg)
+
+    def test_json(self):
+        """
+        Test that we can use startjson and similar tags to change diagram kind
+        """
+        text = self.text_builder.diagram('''
+        @startjson
+        {
+           "fruit":"Apple",
+           "size":"Large",
+           "color":"Red"
+        }
+        @endjson
+        ''').format("txt").build()
+        self.assertEqual('''<pre><code class="text">                                   
+               fruit          Apple
+               size           Large
+                                   
+               color          Red  
+</code></pre>''', self.md.convert(text))
+
+    def test_source(self):
+        include_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+        configs = {
+            'plantuml_markdown': {
+                'base_dir': include_path,
+                'encoding': 'cp1252'
+            }
+        }
+        self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code',
+                                                'pymdownx.snippets', 'plantuml_markdown'],
+                                    extension_configs=configs)
+
+        text = self.text_builder.diagram(" ")\
+            .source("included_source.puml")\
+            .format("txt")\
+            .build()
+        self.assertEqual('''<pre><code class="text">     ,------.          ,-.
+     |&#192;&#210;&#200;&#201;&#204;&#217;|          |A|
+     `--+---'          `+'
+        |   "&#242;&#224;&#232;&#236;&#233;&#249;"    | 
+        | &lt;-------------| 
+     ,--+---.          ,+.
+     |&#192;&#210;&#200;&#201;&#204;&#217;|          |A|
+     `------'          `-'
+</code></pre>''', self.md.convert(text))

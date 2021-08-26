@@ -1,0 +1,3 @@
+' file with CP1252 character encoding
+participant "ÀÒÈÉÌÙ" as B
+A -> B: "עאטליש"
