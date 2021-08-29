@@ -1,9 +1,27 @@
 # Changelog
 
 
+## 3.4.3 (2021-08-29)
+
+### Fix
+
+* Fixed read utf8 sources in Windows (refs #56) [Michele Tessaro]
+
+  Now the `source` option expects files in the `utf8` encoding.
+  In *nix nothing should change; Windows therefore uses `cp1252` as the
+  default character encoding, so if you need to use that encoding you need
+  to specify it in the plugin configuration options. Example:
+  ```yaml
+  plantuml_markdown:
+      encoding: cp1252
+  ```
+
+
 ## 3.4.2 (2020-12-19)
 
 ### Changes
+
+* Updated CHANGELOG. [Michele Tessaro]
 
 * Remove tests for python < 3.6. [Michele Tessaro]
 
