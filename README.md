@@ -188,6 +188,7 @@ The plugin has several configuration option:
 * `cachedir`: directory for caching of diagrams. Defaults to `''`, no caching
 * `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `23`
 * `base_dir`: path where to search for external diagrams files
+* `encoding`: character encoding for external files (see `source` parameter); default encoding is `utf-8`. Please note that on Windows text files may use the `cp1252` as default encoding, so setting `encoding: cp1252` may fix incorrect characters rendering.
 
 For passing options to the `plantuml_plugin` see the documentation of the tool you are using.
 

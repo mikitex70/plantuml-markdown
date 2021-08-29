@@ -64,7 +64,7 @@ from zlib import adler32
 from plantuml import PlantUML
 import logging
 import markdown
-from markdown.util import AtomicString #, etree
+from markdown.util import AtomicString
 from xml.etree import ElementTree as etree
 
 
@@ -155,7 +155,6 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         width = m.group('width') if m.group('width') else None
         height = m.group('height') if m.group('height') else None
         source = m.group('source') if m.group('source') else None
-        base_dir = self.config['base_dir'] if self.config['base_dir'] else None
 
         # Convert image type in PlantUML image format
         if img_format == 'png':
@@ -170,9 +169,11 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         # Extract the PlantUML code.
         code = ""
+        base_dir = self.config['base_dir'] if self.config['base_dir'] else None
+        encoding = self.config['encoding'] if self.config['encoding'] else 'utf8'
         # Add external diagram source.
         if source and base_dir:
-            with open(os.path.join(base_dir, source), 'r') as f:
+            with open(os.path.join(base_dir, source), 'r', encoding=encoding) as f:
                 code += f.read()
         # Add extracted markdown diagram text.
         code += m.group('code')
@@ -293,7 +294,8 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'cachedir': ["", "Directory for caching of diagrams. Defaults to '', no caching"],
             'priority': ["30", "Extension priority. Higher values means the extension is applied sooner than others. "
                                "Defaults to 30"],
-            'base_dir': [".", "Base directory for external files inclusion"]
+            'base_dir': [".", "Base directory for external files inclusion"],
+            'encoding': ["utf8", "Default character encoding for external files (default: utf8)"]
         }
 
         # Fix to make links navigable in SVG diagrams
