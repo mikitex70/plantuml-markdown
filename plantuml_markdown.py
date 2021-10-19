@@ -230,7 +230,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         diag_tag = etree.tostring(img, short_empty_elements=self_closed).decode()
         return text[:m.start()] + m.group('indent') + diag_tag + text[m.end():], \
-               len(diag_tag) - len(text) + m.end()
+               m.start() + len(m.group('indent')) + len(diag_tag)
 
     def _render_diagram(self, code, requested_format):
         cached_diagram_file = None
