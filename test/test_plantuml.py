@@ -45,6 +45,9 @@ class PlantumlTest(TestCase):
         with open(os.path.join(dir_path, 'data', filename), 'r') as f:
             return f.read()[:-1]  # skip the last newline
 
+    def _remove_style(self, markup):
+        return re.sub(r' style="[^"]*"', '', markup)
+
     FAKE_IMAGE = 'ABCDEF=='
     IMAGE_REGEX = re.compile(r'<(?:img|.*object)'
                              r'(?:( alt=".*?")|'
@@ -171,7 +174,7 @@ class PlantumlTest(TestCase):
         """
         text = self.text_builder.diagram("A --> B").format("svg_inline").title("Diagram test").build()
         self.assertEqual(
-            self._stripImageData('<p><svg alt="uml diagram" title="Diagram test" class="uml">%s</svg></p>' % self.FAKE_SVG),
+            self._stripImageData('<p><svg alt="uml diagram" title="Diagram test" class="uml" style="background:#FFFFFF">%s</svg></p>' % self.FAKE_SVG),
             self._stripSvgData(self.md.convert(text)))
 
     def test_arg_alt(self):
@@ -198,7 +201,7 @@ class PlantumlTest(TestCase):
         """
         text = self.text_builder.diagram("A --> B").format("svg_inline").alt("Diagram test").build()
         self.assertEqual(
-            self._stripImageData('<p><svg alt="Diagram test" title="" class="uml">%s</svg></p>' % self.FAKE_SVG),
+            self._stripImageData('<p><svg alt="Diagram test" title="" class="uml" style="background:#FFFFFF">%s</svg></p>' % self.FAKE_SVG),
             self._stripSvgData(self.md.convert(text)))
 
     def test_arg_classes(self):
@@ -216,7 +219,7 @@ class PlantumlTest(TestCase):
         """
         text = self.text_builder.diagram("A --> B").format("svg_inline").classes("class1 class2").build()
         self.assertEqual(
-            self._stripImageData('<p><svg alt="uml diagram" title="" class="class1 class2">%s</svg></p>' % self.FAKE_SVG),
+            self._stripImageData('<p><svg alt="uml diagram" title="" class="class1 class2" style="background:#FFFFFF">%s</svg></p>' % self.FAKE_SVG),
             self._stripSvgData(self.md.convert(text)))
 
     def test_arg_format_png(self):
@@ -318,7 +321,7 @@ class PlantumlTest(TestCase):
         Test for the correct parsing of the format argument, generating a svg image
         """
         text = self.text_builder.diagram("A --> B").format("svg_inline").width("120px").build()
-        self.assertEqual(self._stripSvgData('<p><svg alt="uml diagram" title="" class="uml" style="max-width:120px">...svg-body...</svg></p>'),
+        self.assertEqual(self._stripSvgData('<p><svg alt="uml diagram" title="" class="uml" style="background:#FFFFFF;max-width:120px">...svg-body...</svg></p>'),
                          self._stripSvgData(self.md.convert(text)))
 
     def test_arg_format_height_svg_inline(self):
@@ -326,7 +329,7 @@ class PlantumlTest(TestCase):
         Test for the correct parsing of the format argument, generating a svg image
         """
         text = self.text_builder.diagram("A --> B").format("svg_inline").height("120px").build()
-        self.assertEqual(self._stripSvgData('<p><svg alt="uml diagram" title="" class="uml" style="max-height:120px">...svg-body...</svg></p>'),
+        self.assertEqual(self._stripSvgData('<p><svg alt="uml diagram" title="" class="uml" style="background:#FFFFFF;max-height:120px">...svg-body...</svg></p>'),
                          self._stripSvgData(self.md.convert(text)))
 
     def test_arg_format_width_and_height_svg_inline(self):
@@ -334,7 +337,7 @@ class PlantumlTest(TestCase):
         Test for the correct parsing of the format argument, generating a svg image
         """
         text = self.text_builder.diagram("A --> B").format("svg_inline").width('120px').height("120px").build()
-        self.assertEqual(self._stripSvgData('<p><svg alt="uml diagram" title="" class="uml" style="max-width:120px;max-height:120px">...svg-body...</svg></p>'),
+        self.assertEqual(self._stripSvgData('<p><svg alt="uml diagram" title="" class="uml" style="background:#FFFFFF;max-width:120px;max-height:120px">...svg-body...</svg></p>'),
                          self._stripSvgData(self.md.convert(text)))
 
     def test_arg_source(self):

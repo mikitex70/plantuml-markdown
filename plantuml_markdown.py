@@ -212,14 +212,15 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 img.attrib['src'] = data
 
             styles = []
+            if 'style' in img.attrib and img.attrib['style'] != '':
+                styles.append(re.sub(r';$', '', img.attrib['style']))
             if width:
                 styles.append("max-width:"+width)
             if height:
                 styles.append("max-height:"+height)
 
             if styles:
-                style = img.attrib['style']+';' if 'style' in img.attrib and img.attrib['style'] != '' else ''
-                img.attrib['style'] = style+";".join(styles)
+                img.attrib['style'] = ";".join(styles) #style+";".join(styles)
                 img.attrib['width'] = '100%'
                 if 'height' in img.attrib:
                     img.attrib.pop('height')
@@ -230,7 +231,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         diag_tag = etree.tostring(img, short_empty_elements=self_closed).decode()
         return text[:m.start()] + m.group('indent') + diag_tag + text[m.end():], \
-               len(diag_tag) - len(text) + m.end()
+               m.start() + len(m.group('indent')) + len(diag_tag)
 
     def _render_diagram(self, code, requested_format):
         cached_diagram_file = None

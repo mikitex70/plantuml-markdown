@@ -1,7 +1,18 @@
 # Changelog
 
 
+## 3.4.4 (2021-10-24)
+
+### Fix
+
+* Fix progression of parser (#57) [Spencer Gilson]
+
+
 ## 3.4.3 (2021-08-29)
+
+### Changes
+
+* Updated documentation for the new release. [Michele Tessaro]
 
 ### Fix
 
