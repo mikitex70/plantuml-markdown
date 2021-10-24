@@ -212,14 +212,15 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 img.attrib['src'] = data
 
             styles = []
+            if 'style' in img.attrib and img.attrib['style'] != '':
+                styles.append(re.sub(r';$', '', img.attrib['style']))
             if width:
                 styles.append("max-width:"+width)
             if height:
                 styles.append("max-height:"+height)
 
             if styles:
-                style = img.attrib['style']+';' if 'style' in img.attrib and img.attrib['style'] != '' else ''
-                img.attrib['style'] = style+";".join(styles)
+                img.attrib['style'] = ";".join(styles) #style+";".join(styles)
                 img.attrib['width'] = '100%'
                 if 'height' in img.attrib:
                     img.attrib.pop('height')
