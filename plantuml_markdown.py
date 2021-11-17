@@ -64,6 +64,7 @@ from zlib import adler32
 from plantuml import PlantUML
 import logging
 import markdown
+import uuid
 from markdown.util import AtomicString
 from xml.etree import ElementTree as etree
 
@@ -182,6 +183,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         diagram = self._render_diagram(code, requested_format)
         self_closed = True  # tags are always self closing
 
+        map_tag = ''
         if img_format == 'txt':
             # logger.debug(diagram)
             img = etree.Element('pre')
@@ -229,7 +231,19 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             img.attrib['alt'] = alt
             img.attrib['title'] = title
 
+            # Add map for hyperlink
+            map_data = self._render_local_uml_map(code, requested_format).decode("utf-8")
+            if len(map_data) > 1:
+                unique_id = str(uuid.uuid4())
+                map = etree.fromstring(map_data)
+                map.attrib['id'] = unique_id
+                map.attrib['name'] = unique_id
+                map_tag = etree.tostring(map, short_empty_elements=self_closed).decode()
+                img.attrib['usemap'] = '#' + unique_id
+
         diag_tag = etree.tostring(img, short_empty_elements=self_closed).decode()
+        diag_tag = map_tag + diag_tag
+
         return text[:m.start()] + m.group('indent') + diag_tag + text[m.end():], \
                m.start() + len(m.group('indent')) + len(diag_tag)
 
@@ -269,6 +283,26 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             # On Windows run batch files through a shell so the extension can be resolved
             p = Popen(cmdline, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=(os.name == 'nt'))
             out, err = p.communicate(input=plantuml_code)
+
+        except Exception as exc:
+            raise Exception('Failed to run plantuml: %s' % exc)
+        else:
+            if p.returncode != 0:
+                # plantuml returns a nice image in case of syntax error so log but still return out
+                print('Error in "uml" directive: %s' % err)
+
+            return out
+
+    @staticmethod
+    def _render_local_uml_map(plantuml_code, img_format):
+        plantuml_code = plantuml_code.encode('utf-8')
+        cmdline = ['plantuml', '-pipemap', '-t' + img_format]
+
+        try:
+            # On Windows run batch files through a shell so the extension can be resolved
+            p = Popen(cmdline, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=(os.name == 'nt'))
+            out, err = p.communicate(input=plantuml_code)
+
         except Exception as exc:
             raise Exception('Failed to run plantuml: %s' % exc)
         else:
