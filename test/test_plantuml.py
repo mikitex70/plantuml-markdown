@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
-import os
 import re
-import sys
 
 import markdown
 import tempfile
 from unittest import TestCase, SkipTest
 import mock
 import os
-
 
 class PlantumlTest(TestCase):
 
@@ -55,6 +52,7 @@ class PlantumlTest(TestCase):
                              r'( title=".*?")|'
                              r'( style=".*?")|'
                              r'( src=".*?")|'
+                             r'( usemap=".*?")|'
                              r'(?:.*?))+(?:/>|></(?:img|.*object>))')
     BASE64_REGEX = re.compile(
         r'("data:image/[a-z+]+;base64,)(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?')
@@ -67,13 +65,18 @@ class PlantumlTest(TestCase):
             classes = next(x for x in groups if x.startswith(' class='))
             style = next(iter(x for x in groups if x and x.startswith(' style=')), None)
             src = next(iter(x for x in groups if x and x.startswith(' src=')), None)
+            usemap = next(iter(x for x in groups if x and x.startswith(' usemap=')), None)
+            usemap = ' usemap="test"' if usemap else ''
 
             style = style if style and '""' not in style else ''
             src = src if src and '""' not in src else ''
 
-            html = "<img{}{}{}{}{}/>".format(alt, title, classes, style, src)
+            html = "<img{}{}{}{}{}{}/>".format(alt, title, classes, style, src, usemap)
             return cls.BASE64_REGEX.sub(r'\1%s' % cls.FAKE_IMAGE, html)
 
+        if html.startswith('<map id='):
+            html = html[html.index('<area shape='):]
+            html = '<map id="test" name="test">' + html
         return cls.IMAGE_REGEX.sub(lambda x: sort_attributes(x.groups()), html.replace('\n\n', '\n'))
 
     FAKE_SVG = '...svg-body...'
@@ -365,6 +368,20 @@ class PlantumlTest(TestCase):
         # ensure that the inline source diagram is appended to the external source
         self.assertEqual(self._load_file('include_output.html'),
                          self.md.convert(text))
+
+    COORDS_REGEX = re.compile(r' coords="\d+(?:,\d+)+"')
+
+    def test_plantuml_map(self):
+        """
+        Test map markup is generated for plantuml with links
+        """
+        text = self.text_builder.diagram('A --> B [[https://www.google.fr]]').build()
+        self.assertEqual(
+            self._stripImageData("""<map id="test" name="test">
+<area shape="rect" id="id1" href="https://www.google.fr" title="https://www.google.fr" alt="" coords="1,2,3,4" />
+</map>
+<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" title="" usemap="test" /></p>""" % self.FAKE_IMAGE),
+            self.COORDS_REGEX.sub(' coords="1,2,3,4"', self._stripImageData(self.md.convert(text))))
 
     def test_multidiagram(self):
         """
