@@ -212,6 +212,15 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 data = 'data:image/png;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
                 img = etree.Element('img')
                 img.attrib['src'] = data
+                # Add map for hyperlink
+                map_data = self._render_local_uml_map(code, requested_format).decode("utf-8")
+                if len(map_data) > 1:
+                    unique_id = str(uuid.uuid4())
+                    map = etree.fromstring(map_data)
+                    map.attrib['id'] = unique_id
+                    map.attrib['name'] = unique_id
+                    map_tag = etree.tostring(map, short_empty_elements=self_closed).decode()
+                    img.attrib['usemap'] = '#' + unique_id
 
             styles = []
             if 'style' in img.attrib and img.attrib['style'] != '':
@@ -230,16 +239,6 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             img.attrib['class'] = classes
             img.attrib['alt'] = alt
             img.attrib['title'] = title
-
-            # Add map for hyperlink
-            map_data = self._render_local_uml_map(code, requested_format).decode("utf-8")
-            if len(map_data) > 1:
-                unique_id = str(uuid.uuid4())
-                map = etree.fromstring(map_data)
-                map.attrib['id'] = unique_id
-                map.attrib['name'] = unique_id
-                map_tag = etree.tostring(map, short_empty_elements=self_closed).decode()
-                img.attrib['usemap'] = '#' + unique_id
 
         diag_tag = etree.tostring(img, short_empty_elements=self_closed).decode()
         diag_tag = map_tag + diag_tag
