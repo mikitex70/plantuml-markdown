@@ -369,6 +369,8 @@ class PlantumlTest(TestCase):
         self.assertEqual(self._load_file('include_output.html'),
                          self.md.convert(text))
 
+    COORDS_REGEX = re.compile(r' coords="\d+(?:,\d+)+"')
+
     def test_plantuml_map(self):
         """
         Test map markup is generated for plantuml with links
@@ -376,10 +378,10 @@ class PlantumlTest(TestCase):
         text = self.text_builder.diagram('A --> B [[https://www.google.fr]]').build()
         self.assertEqual(
             self._stripImageData("""<map id="test" name="test">
-<area shape="rect" id="id1" href="https://www.google.fr" title="https://www.google.fr" alt="" coords="44,52,54,60" />
+<area shape="rect" id="id1" href="https://www.google.fr" title="https://www.google.fr" alt="" coords="1,2,3,4" />
 </map>
 <p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" title="" usemap="test" /></p>""" % self.FAKE_IMAGE),
-            self._stripImageData(self.md.convert(text)))
+            self.COORDS_REGEX.sub(' coords="1,2,3,4"', self._stripImageData(self.md.convert(text))))
 
     def test_multidiagram(self):
         """
