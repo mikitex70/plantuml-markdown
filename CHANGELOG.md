@@ -1,6 +1,17 @@
 # Changelog
 
 
+## 3.5.0 (2021-11-23)
+
+### New
+
+* Add image map support. [Stéphane MORI]
+
+  Some plantuml representation contains hyperlinks. Those hyperlinks trig
+  the generation of a map tag. These map tag is linked to the generated
+  image by usemap attribute which refer to the map name.
+
+
 ## 3.4.4 (2021-10-24)
 
 ### Fix
