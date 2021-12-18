@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 3.5.1 (2021-12-18)
+
+### Fix
+
+* There is no need to install uuid since Python 2.5 (refs #60) [Borys T]
+
+
 ## 3.5.0 (2021-11-23)
 
 ### New
@@ -10,6 +17,10 @@
   Some plantuml representation contains hyperlinks. Those hyperlinks trig
   the generation of a map tag. These map tag is linked to the generated
   image by usemap attribute which refer to the map name.
+
+### Changes
+
+* Update the changelog. [Michele Tessaro]
 
 
 ## 3.4.4 (2021-10-24)
