@@ -65,6 +65,7 @@ from plantuml import PlantUML
 import logging
 import markdown
 import uuid
+import requests
 from markdown.util import AtomicString
 from xml.etree import ElementTree as etree
 
@@ -314,7 +315,13 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             return out
 
     def _render_remote_uml_image(self, plantuml_code, img_format):
-        return PlantUML("%s/%s/" % (self.config['server'], img_format)).processes(plantuml_code)
+        image_url = PlantUML("%s/%s/" % (self.config['server'], img_format)).get_url(plantuml_code)
+        # download manually the image to be able to continue in case of errors
+        with requests.get(image_url) as r:
+            if r.status_code >= 400:
+                print('WARNING in "uml" directive: remote server has returned error %d' % r.status_code)
+
+            return r.content
 
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#extendmarkdown
