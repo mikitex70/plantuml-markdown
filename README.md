@@ -99,7 +99,7 @@ But before to use it, you need to configure which [PlantUML] binary to use: a lo
 You need to install [PlantUML][] (see the site for details) and [Graphviz][] 2.26.3 or later.
 The plugin expects a program `plantuml` in the classpath. If not installed by your package
 manager, you can create a shell script and place it somewhere in the classpath. For example,
-save te following into `/usr/local/bin/plantuml` (supposing [PlantUML][] installed into
+save the following into `/usr/local/bin/plantuml` (supposing [PlantUML][] installed into
 `/opt/plantuml`):
 
 ```
@@ -127,7 +127,7 @@ you can do:
     markdown_py -x plantuml_markdown mydoc.md > out.html
 ```
 
-The same thing can be done using the environment variable `_JAVA_OPTIONS`, which is readed by default by the `java`
+The same thing can be done using the environment variable `_JAVA_OPTIONS`, which is read by default by the `java`
 executable.
 
 On Windows can be used the following `plantuml.bat` (many thanks to [henn1001](https://github.com/henn1001)):

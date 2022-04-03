@@ -175,7 +175,7 @@
 
 * Updated changelog for the new release. [Michele Tessaro]
 
-* Updated changelog fot the new release. [Michele Tessaro]
+* Updated changelog for the new release. [Michele Tessaro]
 
 ### Fix
 
@@ -250,7 +250,7 @@
 
   Renamed module from `plantuml-markdown` to `plantuml_markdown` to allow
   importing module in other python sources.
-  Thi breaks compatibility: plugin configuration in `markdown_py` must be
+  This breaks compatibility: plugin configuration in `markdown_py` must be
   renamed too.
 
 
@@ -306,8 +306,8 @@
 
   The new attributes `width` and `height` can be used to limit image size:
   if the image dimension is bigger than values specified, they will be
-  shrinked keeping the aspect ratio.
-  If there is not enought space in the page fot the diagram, the image
+  shrunk keeping the aspect ratio.
+  If there is not enough space in the page for the diagram, the image
   will be reduced.
 
 ### Changes
@@ -345,7 +345,7 @@
 * Fixed wrong `classes` HTML attribute (fixes #16) [Michele Tessaro]
 
   Fixed a type on the generated HTML code, the `class` attribute was
-  mispelled to `classes`.
+  misspelled to `classes`.
 
 
 ## 1.2.5 (2018-08-27)
@@ -461,7 +461,7 @@
 
 * Remove self from static method. [Benjamin Henriet]
 
-* Remove self param from static method, diable image renaming/removing. [arye]
+* Remove self param from static method, disable image renaming/removing. [arye]
 
 * Updated documentation for installation. [Michele]
 
