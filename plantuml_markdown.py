@@ -217,7 +217,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 if self.config['server'] == '':  # local diagram rendering
                     # Add map for hyperlink
                     map_data = self._render_local_uml_map(code, requested_format).decode("utf-8")
-                    if len(map_data) > 1:
+                    if map_data.startswith('<map '):
                         unique_id = str(uuid.uuid4())
                         map = etree.fromstring(map_data)
                         map.attrib['id'] = unique_id
