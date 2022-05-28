@@ -1,7 +1,39 @@
 # Changelog
 
 
+## 3.5.3 (2022-05-28)
+
+### Changes
+
+* Fixed code indentation in README.md. [Michele Tessaro]
+
+### Fix
+
+* Fixed running on Windows (fixes #63) [Michele Tessaro]
+
+  Fixed the condition for the detection of image maps: when there are no
+  image maps, in Linux the output is `\n` while on Windows it is `\r\n`,
+  so in Windows image maps were detected even if not present.
+
+
+## 3.5.2 (2022-02-25)
+
+### Fix
+
+* Fixed error with external plantuml server (fixes #61) [Michele Tessaro]
+
+  When using an external PlantUML server to render diagrams, if a diagram
+  has syntax errors and the remote server returns an error code (HTTP >=
+  400), and exception was thrown immediatly stopping markdown parsing.
+  Now the error is intercepted and logged, and markdown can continue its
+  work.
+
+
 ## 3.5.1 (2021-12-18)
+
+### Changes
+
+* Updated changelog for the new release. [Michele Tessaro]
 
 ### Fix
 
