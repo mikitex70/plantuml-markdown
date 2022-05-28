@@ -9,18 +9,18 @@ converted into an image and inserted in the document.
 Syntax:
 
 ```markdown
-    ::uml:: [format="png|svg|txt"] [classes="class1 class2 ..."] [alt="text for alt"] [title="Text for title"] [width="300px"] [height="300px"]
-      PlantUML script diagram
-    ::end-uml::
+::uml:: [format="png|svg|txt"] [classes="class1 class2 ..."] [alt="text for alt"] [title="Text for title"] [width="300px"] [height="300px"]
+  PlantUML script diagram
+::end-uml::
 ```
 
 Example:
 
 ```markdown
-    ::uml:: format="png" classes="uml myDiagram" alt="My super diagram placeholder" title="My super diagram" width="300px" height="300px"
-      Goofy ->  MickeyMouse: calls
-      Goofy <-- MickeyMouse: responds
-    ::end-uml::
+::uml:: format="png" classes="uml myDiagram" alt="My super diagram placeholder" title="My super diagram" width="300px" height="300px"
+  Goofy ->  MickeyMouse: calls
+  Goofy <-- MickeyMouse: responds
+::end-uml::
 ```
 
 The GitLab/GitHub block syntax is also recognized. Example:
@@ -57,9 +57,9 @@ The `width` and `height` options must include a [CSS unit](https://www.w3schools
 > index.md
 
     ```plantuml source="basic.puml"
-        '' This code is appended to the contents of basic.puml
-        Goofy ->  MickeyMouse: calls
-        Goofy <-- MickeyMouse: responds
+    '' This code is appended to the contents of basic.puml
+    Goofy ->  MickeyMouse: calls
+    Goofy <-- MickeyMouse: responds
     ```
 
 Installation
@@ -103,8 +103,8 @@ save te following into `/usr/local/bin/plantuml` (supposing [PlantUML][] install
 `/opt/plantuml`):
 
 ```
-    #!/bin/bash
-    java $PLANTUML_JAVAOPTS -jar /opt/plantuml/plantuml.jar ${@}
+#!/bin/bash
+java $PLANTUML_JAVAOPTS -jar /opt/plantuml/plantuml.jar ${@}
 ```
 
 The `PLANTUML_JAVAOPTS` variable can be used to set specific Java options, such as memory tuning options,
@@ -113,18 +113,18 @@ or to set system variable used by PlantUML, such as then include search path. Th
 For example, with a diagram like:
 
 ````
-    ```plantuml
-    !include myDefs.puml
+```plantuml
+!include myDefs.puml
 
-    A --> B
-    ```
+A --> B
+```
 ````
 
 you can do:
 
 ```
-    export PLANTUML_JAVAOPTS="-Dplantuml.include.path=$HOME/plantuml_defs"
-    markdown_py -x plantuml_markdown mydoc.md > out.html
+export PLANTUML_JAVAOPTS="-Dplantuml.include.path=$HOME/plantuml_defs"
+markdown_py -x plantuml_markdown mydoc.md > out.html
 ```
 
 The same thing can be done using the environment variable `_JAVA_OPTIONS`, which is readed by default by the `java`
@@ -133,13 +133,13 @@ executable.
 On Windows can be used the following `plantuml.bat` (many thanks to [henn1001](https://github.com/henn1001)):
 
 ```
-    @echo off
-    set mypath=%~dp0
-    
-    setlocal
-    set GRAPHVIZ_DOT=%mypath%\Graphviz\bin\dot.exe
+@echo off
+set mypath=%~dp0
 
-    java %PLANTUML_JAVAOPTS% -jar %mypath%\plantuml.jar %*
+setlocal
+set GRAPHVIZ_DOT=%mypath%\Graphviz\bin\dot.exe
+
+java %PLANTUML_JAVAOPTS% -jar %mypath%\plantuml.jar %*
 ```
 
 Make sure the `plantuml.bat` is on the path.
