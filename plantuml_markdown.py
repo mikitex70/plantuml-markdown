@@ -183,8 +183,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         # Extract diagram source end convert it (if not external)
         diagram = self._render_diagram(code, requested_format)
         self_closed = True  # tags are always self closing
-
         map_tag = ''
+
         if img_format == 'txt':
             # logger.debug(diagram)
             img = etree.Element('pre')
@@ -213,17 +213,16 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 data = 'data:image/png;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
                 img = etree.Element('img')
                 img.attrib['src'] = data
-
-                if self.config['server'] == '':  # local diagram rendering
-                    # Add map for hyperlink
-                    map_data = self._render_local_uml_map(code, requested_format).decode("utf-8")
-                    if map_data.startswith('<map '):
-                        unique_id = str(uuid.uuid4())
-                        map = etree.fromstring(map_data)
-                        map.attrib['id'] = unique_id
-                        map.attrib['name'] = unique_id
-                        map_tag = etree.tostring(map, short_empty_elements=self_closed).decode()
-                        img.attrib['usemap'] = '#' + unique_id
+                # Check for hyperlinks
+                map_data = self._render_diagram(code, 'map').decode("utf-8")
+                if map_data.startswith('<map '):
+                    # There are hyperlinks, add the image map
+                    unique_id = str(uuid.uuid4())
+                    map = etree.fromstring(map_data)
+                    map.attrib['id'] = unique_id
+                    map.attrib['name'] = unique_id
+                    map_tag = etree.tostring(map, short_empty_elements=self_closed).decode()
+                    img.attrib['usemap'] = '#' + unique_id
 
             styles = []
             if 'style' in img.attrib and img.attrib['style'] != '':
@@ -234,7 +233,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 styles.append("max-height:"+height)
 
             if styles:
-                img.attrib['style'] = ";".join(styles) #style+";".join(styles)
+                img.attrib['style'] = ";".join(styles)
                 img.attrib['width'] = '100%'
                 if 'height' in img.attrib:
                     img.attrib.pop('height')
@@ -244,7 +243,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             img.attrib['title'] = title
 
         diag_tag = etree.tostring(img, short_empty_elements=self_closed).decode()
-        diag_tag = map_tag + diag_tag
+        diag_tag = diag_tag + map_tag
 
         return text[:m.start()] + m.group('indent') + diag_tag + text[m.end():], \
                m.start() + len(m.group('indent')) + len(diag_tag)
@@ -279,26 +278,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
     @staticmethod
     def _render_local_uml_image(plantuml_code, img_format):
         plantuml_code = plantuml_code.encode('utf8')
-        cmdline = ['plantuml', '-p', "-t" + img_format]
-
-        try:
-            # On Windows run batch files through a shell so the extension can be resolved
-            p = Popen(cmdline, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=(os.name == 'nt'))
-            out, err = p.communicate(input=plantuml_code)
-
-        except Exception as exc:
-            raise Exception('Failed to run plantuml: %s' % exc)
-        else:
-            if p.returncode != 0:
-                # plantuml returns a nice image in case of syntax error so log but still return out
-                print('Error in "uml" directive: %s' % err)
-
-            return out
-
-    @staticmethod
-    def _render_local_uml_map(plantuml_code, img_format):
-        plantuml_code = plantuml_code.encode('utf-8')
-        cmdline = ['plantuml', '-pipemap', '-t' + img_format]
+        cmdline = ['plantuml', '-pipemap' if img_format == 'map' else '-p', "-t" + img_format]
 
         try:
             # On Windows run batch files through a shell so the extension can be resolved
