@@ -28,7 +28,7 @@ setuptools.setup(
     tests_require=test_requirements,
     classifiers=[
         "Programming Language :: Python",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Development Status :: 5 - Production/Stable",
         "Topic :: Software Development :: Documentation",
