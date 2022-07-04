@@ -181,7 +181,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         code += m.group('code')
 
         # Extract diagram source end convert it (if not external)
-        diagram = self._render_diagram(code, requested_format)
+        diagram = self._render_diagram(code, requested_format, base_dir)
         self_closed = True  # tags are always self closing
         map_tag = ''
 
@@ -248,7 +248,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         return text[:m.start()] + m.group('indent') + diag_tag + text[m.end():], \
                m.start() + len(m.group('indent')) + len(diag_tag)
 
-    def _render_diagram(self, code, requested_format):
+    def _render_diagram(self, code, requested_format, base_dir):
         cached_diagram_file = None
         diagram = None
 
@@ -263,15 +263,64 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 with open(cached_diagram_file, 'rb') as f:
                     diagram = f.read()
 
-        if not diagram:
-            if self.config['server']:
-                diagram = self._render_remote_uml_image(code, requested_format)
-            else:
-                diagram = self._render_local_uml_image(code, requested_format)
+        if diagram:
+            #if cache found then end this function here
+            return diagram
 
-            if self.config['cachedir']:
-                with open(cached_diagram_file, 'wb') as f:
-                    f.write(diagram)
+        #if cache not found create the diagram
+
+        theme = self.config['theme'].strip ()
+
+        if theme: 
+            #if theme configured, add it to the beginning of plantuml code
+            
+            """ These plantuml commands will result in error if theme is inserted
+                skip theme insertion if present; commands are standalone, 
+                hence just check beginning of plantuml code
+
+                Handle following pattern 
+
+                <zero more trailing spaces, newlines> 
+                @startuml (optional)
+                <zero more trailing spaces, newlines>
+                version/stdlib/listfonts etc. (commands that error out)
+                @enduml (optional)
+
+                command list is configurable in puml_notheme_cmdlist - useful if plantuml adds new commands, 
+                otherwise will need to update this code every time!
+            """
+
+            puml_notheme_cmdlist = self.config ['puml_notheme_cmdlist']
+
+            startuml = "@startuml\n"
+            code = code.lstrip().lstrip('\n')
+            startuml_present = code.startswith (startuml)
+
+            #first remove startuml tag if present
+            if startuml_present:
+                code_nostartuml = code[len(startuml):].lstrip().lstrip('\n')
+            else:
+                code_nostartuml = code
+
+            #validate that troublesome commands are not present
+            theme_wont_err = not code_nostartuml.startswith(tuple(puml_notheme_cmdlist))
+
+            #then add theme appropriately
+            if startuml_present and theme_wont_err:
+                    #add it after the @startuml tag
+                    code = startuml + "!theme " + theme + "\n" + code_nostartuml
+            elif theme_wont_err:
+                    #if no @startuml tag found just add it to the beginning
+                    code = "\n!theme " + theme + "\n" + code
+
+        if self.config['server']:
+            diagram = self._render_remote_uml_image(code, requested_format, base_dir)
+        else:
+            diagram = self._render_local_uml_image(code, requested_format)
+
+        if self.config['cachedir']:
+            with open(cached_diagram_file, 'wb') as f:
+                f.write(diagram)
 
         return diagram
 
@@ -294,14 +343,128 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
             return out
 
-    def _render_remote_uml_image(self, plantuml_code, img_format):
-        image_url = PlantUML("%s/%s/" % (self.config['server'], img_format)).get_url(plantuml_code)
-        # download manually the image to be able to continue in case of errors
-        with requests.get(image_url) as r:
-            if r.status_code >= 400:
-                print('WARNING in "uml" directive: remote server has returned error %d' % r.status_code)
+    def _render_remote_uml_image(self, plantuml_code, img_format, base_dir):
+       
+        temp_file = self._readFile(plantuml_code, base_dir, False)
+        http_method = self.config['http_method'].strip()
+        fallback_to_get = self.config['fallback_to_get']
+    
+        # Use GET if preferred, use POST with GET as fallback if POST fails
+        
+        post_failed = False
+
+        if http_method == "POST":
+            #image_url for POST attempt first
+            image_url = "%s/%s/" % (self.config['server'], img_format)
+            # download manually the image to be able to continue in case of errors
+
+            with requests.post(image_url,data = temp_file, headers = {"Content-Type": 'text/plain; charset=utf-8'}) as r:
+                if not r.ok:
+                    print('WARNING in "uml" directive: remote server has returned error %d on POST' % r.status_code)
+                    if fallback_to_get:
+                        print ('Falling back to Get')
+                        post_failed = True
+                if post_failed == False:
+                    return r.content
+
+        if http_method == "GET" or post_failed:
+            image_url = PlantUML("%s/%s/" % (self.config['server'], img_format)).get_url(temp_file)
+
+            with requests.get(image_url) as r:
+                if not r.ok:
+                    print('WARNING in "uml" directive: remote server has returned error %d on GET' % r.status_code)
 
             return r.content
+
+    # Read and format plantuml code appropriately
+    def _readFile(self, plantuml_code, directory, dark_mode):
+        lines = plantuml_code.splitlines()
+        # Wrap the whole combined text between startuml and enduml tags as recursive processing would have removed them
+        # This is necessary for it to work correctly with plamtuml POST processing
+        temp_file = "@startuml\n" + self._readFileRec(lines, "", directory, False) + "@enduml\n"
+        return temp_file
+
+    # Reads the file recursively
+    def _readFileRec(self, lines, temp_file, directory, dark_mode):
+
+        for line in lines:
+            line = line.strip()
+            if line.startswith("!include"):
+                temp_file = self._readInclLine(
+                     line, temp_file, directory, dark_mode
+                )
+            elif line.startswith("@startuml") or line.startswith("@enduml"):
+                # remove startuml and enduml tags as plantuml POST method doesn't like it in include files
+                # we will wrap the whole combined text between start and end tags at the end
+                continue
+            else:
+                temp_file += line
+            
+            if "\n" not in line:
+                temp_file += "\n"
+
+        return temp_file
+
+    def _readInclLine(self, line, temp_file, directory, dark_mode):
+
+        # If includeurl is found, we do not have to do anything here. Server
+        # can handle that
+        if "!includeurl" in line:
+            temp_file += line
+            return temp_file
+
+        # on the ninth position starts the filename
+        inc_file = line[9:].rstrip()
+
+        if dark_mode:
+            inc_file = inc_file.replace(
+                self.config["theme_light"], self.config["theme_dark"]
+            )
+
+        # According to plantuml, simple !include can also have urls, or use the <> format to include stdlib files, ignore that and continue
+        if inc_file.startswith("http") or inc_file.startswith("<"):
+            temp_file += line
+            return temp_file
+
+        # Read contents of the included file
+        try:
+            inc_file_abs = os.path.normpath(os.path.join(directory, inc_file))
+            temp_file = self._read_incl_line_file(
+                temp_file, dark_mode, inc_file_abs
+            )
+        except Exception as e1:
+            try:
+                inc_file_abs = os.path.normpath(
+                    os.path.join(directory, inc_file)
+                )
+                temp_file = self._read_incl_line_file(
+                    temp_file, dark_mode, inc_file_abs
+                )
+            except Exception as e2:
+                print("Could not find include " + str(e1) + str(e2))
+                raise e2
+
+        return temp_file
+
+    def _read_incl_line_file(self, temp_file, dark_mode, inc_file_abs):
+        """ Save the mtime of the inc file to compare """
+        try:
+            local_inc_time = os.path.getmtime(inc_file_abs)
+        except Exception as _:
+            local_inc_time = 0
+
+        #if local_inc_time > diagram.inc_time:
+        #   diagram.inc_time = local_inc_time
+
+        with open(inc_file_abs, "r") as inc:
+            temp_file = self._readFileRec(
+                inc,
+                temp_file,
+                os.path.dirname(os.path.realpath(inc_file_abs)),
+                dark_mode,
+            )
+
+        return temp_file
 
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#extendmarkdown
@@ -318,7 +481,20 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'priority': ["30", "Extension priority. Higher values means the extension is applied sooner than others. "
                                "Defaults to 30"],
             'base_dir': [".", "Base directory for external files inclusion"],
-            'encoding': ["utf8", "Default character encoding for external files (default: utf8)"]
+            'encoding': ["utf8", "Default character encoding for external files (default: utf8)"],
+            'http_method': ["GET", "Http Method for server - GET or POST", "Defaults to GET"],
+            'fallback_to_get': [True,"Fallback to GET if POST fails","Defaults to True"],
+            'theme': ["", "Default Theme to use, will be overriden  by !theme directive","Defaults to blank"],
+            'puml_notheme_cmdlist' :[[
+                                     'version', 
+                                     'listfonts', 
+                                     'stdlib', 
+                                     'license'
+                                     ], 
+                                    "theme will not be set if listed commands present (default list),", 
+                                    "Defaults to the forementioned list" 
+                                    ]
+
         }
 
         # Fix to make links navigable in SVG diagrams

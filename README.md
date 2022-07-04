@@ -169,6 +169,16 @@ plantuml_markdown:
   title: UML diagram                        # default title (tooltip) for diagram images
   alt: UML diagram image                    # default `alt` attribute for diagram images
   priority: 23                              # plugin priority; the higher, the sooner will be applied (default 23)
+  http_method: GET                          # GET or POST  - note that plantuml.com only supports GET (default GET)       
+  fallback_to_get: True                     # When using POST, should GET be used as fallback (POST will fail if @startuml/@enduml tags not used) (default True)
+  theme: bluegray                           # theme to be set, can be overriden inside puml files, (default none)
+  puml_notheme_cmdlist: [                             
+                          'version', 
+                          'listfonts', 
+                          'stdlib', 
+                          'license'
+                        ]                   # theme will not be set if listed commands present (default as listed)
+
 ```
 
 Then you need to specify the configuration file on the command line:
@@ -225,3 +235,19 @@ tests execution without clobbering the system.
 [Graphviz]: http://www.graphviz.org
 [Gentoo]: http://www.gentoo.org
 [layman]: http://wiki.gentoo.org/wiki/Layman
+
+Running tests using Docker
+-------------------------
+
+This requires `docker` and `docker-compose` to be installed
+
+First setup a small python alpine image with all the dependencies pre-installed. 
+```bash
+`docker-compose build
+``` 
+
+then run the container to automatically trigger tests and print the output mapping the contents of your workspace
+
+```bash
+`docker-compose up
+```

@@ -1,0 +1,21 @@
+version: '3.3'
+
+services:
+  plantuml-markdown:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - MARKDOWN_VER=${MARKDOWN_VER}
+    container_name: plantuml-markdown
+    working_dir: /plantuml-markdown
+    command: ['/bin/sh', '-c','nose2 --verbose -F']
+    volumes:
+      - .:/plantuml_markdown
+      - ./plantuml_markdown.py:/usr/local/lib/python3.9/site-packages/plantuml_markdown.py
+      - ./test:/plantuml-markdown/test
+    stdin_open: true
+    tty: true
+    privileged: true
+
+  
