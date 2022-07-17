@@ -151,7 +151,7 @@ class PlantumlTest(TestCase):
                             return_value='testing'.encode('utf8')) as mocked_plugin:
             text = self.text_builder.diagram("--8<-- \"" + defs_file + "\"").build()
             self.md.convert(text)
-            mocked_plugin.assert_called_with(expected, 'png')
+            mocked_plugin.assert_called_with(expected, 'map', '.')
 
     def test_arg_title(self):
         """
@@ -370,6 +370,7 @@ class PlantumlTest(TestCase):
                          self.md.convert(text))
 
     COORDS_REGEX = re.compile(r' coords="\d+(?:,\d+)+"')
+    UUID_REGEX = re.compile(r'"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"')
 
     def test_plantuml_map(self):
         """
@@ -377,11 +378,10 @@ class PlantumlTest(TestCase):
         """
         text = self.text_builder.diagram('A --> B [[https://www.google.fr]]').build()
         self.assertEqual(
-            self._stripImageData("""<map id="test" name="test">
+            self._stripImageData("""<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" title="" usemap="test" /><map id="test" name="test">
 <area shape="rect" id="id1" href="https://www.google.fr" title="https://www.google.fr" alt="" coords="1,2,3,4" />
-</map>
-<p><img alt="uml diagram" class="uml" src="data:image/png;base64,%s" title="" usemap="test" /></p>""" % self.FAKE_IMAGE),
-            self.COORDS_REGEX.sub(' coords="1,2,3,4"', self._stripImageData(self.md.convert(text))))
+</map></p>""" % self.FAKE_IMAGE),
+            self.UUID_REGEX.sub('"test"', self.COORDS_REGEX.sub(' coords="1,2,3,4"', self._stripImageData(self.md.convert(text)))))
 
     def test_multidiagram(self):
         """
