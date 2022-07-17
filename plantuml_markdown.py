@@ -70,8 +70,8 @@ from markdown.util import AtomicString
 from xml.etree import ElementTree as etree
 
 
+# use markdown_py with -v to enable warnings, or with --noisy to enable debug logs
 logger = logging.getLogger('MARKDOWN')
-#logger.setLevel(logging.DEBUG)
 
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#blockparser
@@ -268,6 +268,20 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             return diagram
 
         # if cache not found create the diagram
+        code = self._set_theme(code)
+
+        if self.config['server']:
+            diagram = self._render_remote_uml_image(code, requested_format, base_dir)
+        else:
+            diagram = self._render_local_uml_image(code, requested_format)
+
+        if self.config['cachedir']:
+            with open(cached_diagram_file, 'wb') as f:
+                f.write(diagram)
+
+        return diagram
+
+    def _set_theme(self, code):
         theme = self.config['theme'].strip()
 
         if theme:
@@ -311,16 +325,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 # if no @startuml tag found just add it to the beginning
                 code = "\n!theme " + theme + "\n" + code
 
-        if self.config['server']:
-            diagram = self._render_remote_uml_image(code, requested_format, base_dir)
-        else:
-            diagram = self._render_local_uml_image(code, requested_format)
-
-        if self.config['cachedir']:
-            with open(cached_diagram_file, 'wb') as f:
-                f.write(diagram)
-
-        return diagram
+        return code
 
     @staticmethod
     def _render_local_uml_image(plantuml_code, img_format):
@@ -337,7 +342,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         else:
             if p.returncode != 0:
                 # plantuml returns a nice image in case of syntax error so log but still return out
-                print('Error in "uml" directive: %s' % err)
+                logger.error('Error in "uml" directive: %s' % err)
 
             return out
 
@@ -356,11 +361,11 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
             with requests.post(image_url, data=temp_file, headers={"Content-Type": 'text/plain; charset=utf-8'}) as r:
                 if not r.ok:
-                    print('WARNING in "uml" directive: remote server has returned error %d on POST' % r.status_code)
+                    logger.warning('WARNING in "uml" directive: remote server has returned error %d on POST' % r.status_code)
                     if fallback_to_get:
-                        print('Falling back to Get')
+                        logger.error('Falling back to Get')
                         post_failed = True
-                if post_failed == False:
+                if not post_failed:
                     return r.content
 
         if http_method == "GET" or post_failed:
@@ -368,16 +373,16 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
             with requests.get(image_url) as r:
                 if not r.ok:
-                    print('WARNING in "uml" directive: remote server has returned error %d on GET' % r.status_code)
+                    logger.warning('WARNING in "uml" directive: remote server has returned error %d on GET' % r.status_code)
 
             return r.content
 
     # Read and format plantuml code appropriately
-    def _readFile(self, plantuml_code, directory, dark_mode):
+    def _readFile(self, plantuml_code, directory, dark_mode=False):
         lines = plantuml_code.splitlines()
         # Wrap the whole combined text between startuml and enduml tags as recursive processing would have removed them
         # This is necessary for it to work correctly with plamtuml POST processing
-        temp_file = "@startuml\n" + self._readFileRec(lines, "", directory, False) + "@enduml\n"
+        temp_file = "@startuml\n" + self._readFileRec(lines, "", directory, dark_mode) + "@enduml\n"
         return temp_file
 
     # Reads the file recursively
@@ -435,17 +440,17 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                     temp_file, dark_mode, inc_file_abs
                 )
             except Exception as e2:
-                print("Could not find include " + str(e1) + str(e2))
+                logger.error("Could not find include " + str(e1) + str(e2))
                 raise e2
 
         return temp_file
 
     def _read_incl_line_file(self, temp_file, dark_mode, inc_file_abs):
         """ Save the mtime of the inc file to compare """
-        try:
-            local_inc_time = os.path.getmtime(inc_file_abs)
-        except Exception as _:
-            local_inc_time = 0
+        # try:
+        #     local_inc_time = os.path.getmtime(inc_file_abs)
+        # except Exception as _:
+        #     local_inc_time = 0
 
         #if local_inc_time > diagram.inc_time:
         #   diagram.inc_time = local_inc_time
