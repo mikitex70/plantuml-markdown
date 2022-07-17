@@ -1,8 +1,9 @@
-FROM python:3-alpine AS plantuml_markdown
+ARG PYTHON_VER=3.10
+FROM python:${PYTHON_VER}-alpine AS plantuml_markdown
 
 WORKDIR /plantuml-markdown
 COPY . .
-ARG MARKDOWN_VER
+ARG MARKDOWN_VER=3.4.1
 
 RUN \
     apk update && \
