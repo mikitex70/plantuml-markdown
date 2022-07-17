@@ -171,7 +171,7 @@ plantuml_markdown:
   priority: 23                              # plugin priority; the higher, the sooner will be applied (default 23)
   http_method: GET                          # GET or POST  - note that plantuml.com only supports GET (default GET)       
   fallback_to_get: True                     # When using POST, should GET be used as fallback (POST will fail if @startuml/@enduml tags not used) (default True)
-  theme: bluegray                           # theme to be set, can be overriden inside puml files, (default none)
+  theme: bluegray                           # theme to be set, can be overridden inside puml files, (default none)
   puml_notheme_cmdlist: [                             
                           'version', 
                           'listfonts', 
@@ -223,18 +223,12 @@ pip install -r test-requirements.txt
 To run the tests, execute the following command:
 
 ```bash
-PATH="$PATH:$PWD/test" python -m unittest discover -v -s test
+nose2 --verbose -F
 ```
 
 This command uses a custom version of the `plantuml` command which will download the expected version of [PlantUML] for
 tests execution without clobbering the system.
 
-
-[Python-Markdown]: https://python-markdown.github.io/
-[PlantUML]: http://plantuml.sourceforge.net/
-[Graphviz]: http://www.graphviz.org
-[Gentoo]: http://www.gentoo.org
-[layman]: http://wiki.gentoo.org/wiki/Layman
 
 Running tests using Docker
 -------------------------
@@ -243,11 +237,23 @@ This requires `docker` and `docker-compose` to be installed
 
 First setup a small python alpine image with all the dependencies pre-installed. 
 ```bash
-`docker-compose build
+docker-compose build
 ``` 
 
 then run the container to automatically trigger tests and print the output mapping the contents of your workspace
 
 ```bash
-`docker-compose up
+docker-compose up
 ```
+
+To set specific version of Markdown or Python:
+```bash
+PTYHON_VER=3.9 MARKDOWN_VER=3.3.7 docker-compose build && docker-compose up
+```
+
+
+[Python-Markdown]: https://python-markdown.github.io/
+[PlantUML]: http://plantuml.sourceforge.net/
+[Graphviz]: http://www.graphviz.org
+[Gentoo]: http://www.gentoo.org
+[layman]: http://wiki.gentoo.org/wiki/Layman
