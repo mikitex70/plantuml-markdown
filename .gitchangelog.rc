@@ -82,6 +82,7 @@ section_regexps = [
     ('New', [
 	r'^[nN]ew\s*:\s*((dev|use?r|pkg|doc)\s*:\s*)?([^\n]*)$',
         r'^[aA]dded\s+',
+        r'^includepp',
      ]),
     ('Changes', [
         r'^[cC]hg\s*:\s*((dev|use?r|pkg|doc)\s*:\s*)?([^\n]*)$',
@@ -144,6 +145,7 @@ body_process = (ReSub(r'((^|\n)[A-Z]\w+(-\w+)*: .*(\n\s+.*)*)+$', r'') |
 subject_process = (strip |
     ReSub(r'^([cC]hg|[fF]ix|[nN]ew)\s*:\s*((dev|use?r|pkg|test|doc)\s*:\s*)?(.*)$', r'\4') |
     ReSub(r' @\d+(h|m|min)?', r'') |
+    ReSub(r'includepp postvget theme dockertest', r'added support for themes (implements #50)') |
     ucfirst | final_dot)
 
 
