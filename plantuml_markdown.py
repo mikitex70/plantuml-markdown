@@ -71,7 +71,7 @@ from xml.etree import ElementTree as etree
 
 
 logger = logging.getLogger('MARKDOWN')
-# logger.setLevel(logging.DEBUG)
+#logger.setLevel(logging.DEBUG)
 
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#blockparser
@@ -264,16 +264,14 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                     diagram = f.read()
 
         if diagram:
-            #if cache found then end this function here
+            # if cache found then end this function here
             return diagram
 
-        #if cache not found create the diagram
+        # if cache not found create the diagram
+        theme = self.config['theme'].strip()
 
-        theme = self.config['theme'].strip ()
-
-        if theme: 
-            #if theme configured, add it to the beginning of plantuml code
-            
+        if theme:
+            # if theme configured, add it to the beginning of plantuml code
             """ These plantuml commands will result in error if theme is inserted
                 skip theme insertion if present; commands are standalone, 
                 hence just check beginning of plantuml code
@@ -290,28 +288,28 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 otherwise will need to update this code every time!
             """
 
-            puml_notheme_cmdlist = self.config ['puml_notheme_cmdlist']
+            puml_notheme_cmdlist = self.config['puml_notheme_cmdlist']
 
             startuml = "@startuml\n"
             code = code.lstrip().lstrip('\n')
-            startuml_present = code.startswith (startuml)
+            startuml_present = code.startswith(startuml)
 
-            #first remove startuml tag if present
+            # first remove startuml tag if present
             if startuml_present:
                 code_nostartuml = code[len(startuml):].lstrip().lstrip('\n')
             else:
                 code_nostartuml = code
 
-            #validate that troublesome commands are not present
+            # validate that troublesome commands are not present
             theme_wont_err = not code_nostartuml.startswith(tuple(puml_notheme_cmdlist))
 
-            #then add theme appropriately
+            # then add theme appropriately
             if startuml_present and theme_wont_err:
-                    #add it after the @startuml tag
-                    code = startuml + "!theme " + theme + "\n" + code_nostartuml
+                # add it after the @startuml tag
+                code = startuml + "!theme " + theme + "\n" + code_nostartuml
             elif theme_wont_err:
-                    #if no @startuml tag found just add it to the beginning
-                    code = "\n!theme " + theme + "\n" + code
+                # if no @startuml tag found just add it to the beginning
+                code = "\n!theme " + theme + "\n" + code
 
         if self.config['server']:
             diagram = self._render_remote_uml_image(code, requested_format, base_dir)
@@ -344,25 +342,23 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             return out
 
     def _render_remote_uml_image(self, plantuml_code, img_format, base_dir):
-       
         temp_file = self._readFile(plantuml_code, base_dir, False)
         http_method = self.config['http_method'].strip()
         fallback_to_get = self.config['fallback_to_get']
     
         # Use GET if preferred, use POST with GET as fallback if POST fails
-        
         post_failed = False
 
         if http_method == "POST":
-            #image_url for POST attempt first
+            # image_url for POST attempt first
             image_url = "%s/%s/" % (self.config['server'], img_format)
             # download manually the image to be able to continue in case of errors
 
-            with requests.post(image_url,data = temp_file, headers = {"Content-Type": 'text/plain; charset=utf-8'}) as r:
+            with requests.post(image_url, data=temp_file, headers={"Content-Type": 'text/plain; charset=utf-8'}) as r:
                 if not r.ok:
                     print('WARNING in "uml" directive: remote server has returned error %d on POST' % r.status_code)
                     if fallback_to_get:
-                        print ('Falling back to Get')
+                        print('Falling back to Get')
                         post_failed = True
                 if post_failed == False:
                     return r.content
@@ -386,7 +382,6 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
     # Reads the file recursively
     def _readFileRec(self, lines, temp_file, directory, dark_mode):
-
         for line in lines:
             line = line.strip()
             if line.startswith("!include"):
@@ -406,9 +401,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         return temp_file
 
     def _readInclLine(self, line, temp_file, directory, dark_mode):
-
-        # If includeurl is found, we do not have to do anything here. Server
-        # can handle that
+        # If includeurl is found, we do not have to do anything here. Server can handle that
         if "!includeurl" in line:
             temp_file += line
             return temp_file
@@ -421,7 +414,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 self.config["theme_light"], self.config["theme_dark"]
             )
 
-        # According to plantuml, simple !include can also have urls, or use the <> format to include stdlib files, ignore that and continue
+        # According to plantuml, simple !include can also have urls, or use the <> format to include stdlib files,
+        # ignore that and continue
         if inc_file.startswith("http") or inc_file.startswith("<"):
             temp_file += line
             return temp_file
@@ -483,18 +477,17 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'base_dir': [".", "Base directory for external files inclusion"],
             'encoding': ["utf8", "Default character encoding for external files (default: utf8)"],
             'http_method': ["GET", "Http Method for server - GET or POST", "Defaults to GET"],
-            'fallback_to_get': [True,"Fallback to GET if POST fails","Defaults to True"],
-            'theme': ["", "Default Theme to use, will be overriden  by !theme directive","Defaults to blank"],
-            'puml_notheme_cmdlist' :[[
+            'fallback_to_get': [True, "Fallback to GET if POST fails", "Defaults to True"],
+            'theme': ["", "Default Theme to use, will be overridden  by !theme directive", "Defaults to blank"],
+            'puml_notheme_cmdlist': [[
                                      'version', 
                                      'listfonts', 
                                      'stdlib', 
                                      'license'
                                      ], 
-                                    "theme will not be set if listed commands present (default list),", 
-                                    "Defaults to the forementioned list" 
+                                     "theme will not be set if listed commands present (default list),",
+                                     "Defaults to the before mentioned list"
                                     ]
-
         }
 
         # Fix to make links navigable in SVG diagrams
