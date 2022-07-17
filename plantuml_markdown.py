@@ -214,7 +214,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 img = etree.Element('img')
                 img.attrib['src'] = data
                 # Check for hyperlinks
-                map_data = self._render_diagram(code, 'map').decode("utf-8")
+                map_data = self._render_diagram(code, 'map', base_dir).decode("utf-8")
                 if map_data.startswith('<map '):
                     # There are hyperlinks, add the image map
                     unique_id = str(uuid.uuid4())
