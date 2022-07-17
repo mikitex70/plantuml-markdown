@@ -178,12 +178,25 @@ plantuml_markdown:
                           'stdlib', 
                           'license'
                         ]                   # theme will not be set if listed commands present (default as listed)
-
 ```
 
 Then you need to specify the configuration file on the command line:
 
     markdown_py -x plantuml_markdown -c myconfig.yml mydoc.md > out.html
+
+### A note on the `priority` configuration
+
+With `markdownm_py` plugin extensions can conflict if they manipulate the same  block of text. 
+Examples are the [Fenced Code Blocks](https://python-markdown.github.io/extensions/fenced_code_blocks)
+or [Snippets](https://facelessuser.github.io/pymdown-extensions/extensions/snippets/).
+
+Every plugin has a priority configured, most wants to be run as te first or the last plugin in the chain. The
+`plantuml_markdown` plugin fits in the middle, trying to work as best without conflicting with other plugins.
+
+If you are getting strange behaviours in conjunction with other plugins, you can use the `priority` configuration to
+try to avoid the conflict, letting the plugin to be run before (higher value) or after other plugins (lower value).
+
+As an example of possible conflicts see issue #38.
     
 Plugin options
 --------------
