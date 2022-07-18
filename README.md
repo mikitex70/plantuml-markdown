@@ -171,19 +171,32 @@ plantuml_markdown:
   priority: 23                              # plugin priority; the higher, the sooner will be applied (default 23)
   http_method: GET                          # GET or POST  - note that plantuml.com only supports GET (default GET)       
   fallback_to_get: True                     # When using POST, should GET be used as fallback (POST will fail if @startuml/@enduml tags not used) (default True)
-  theme: bluegray                           # theme to be set, can be overriden inside puml files, (default none)
+  theme: bluegray                           # theme to be set, can be overridden inside puml files, (default none)
   puml_notheme_cmdlist: [                             
                           'version', 
                           'listfonts', 
                           'stdlib', 
                           'license'
                         ]                   # theme will not be set if listed commands present (default as listed)
-
 ```
 
 Then you need to specify the configuration file on the command line:
 
     markdown_py -x plantuml_markdown -c myconfig.yml mydoc.md > out.html
+
+### A note on the `priority` configuration
+
+With `markdownm_py` plugin extensions can conflict if they manipulate the same  block of text. 
+Examples are the [Fenced Code Blocks](https://python-markdown.github.io/extensions/fenced_code_blocks)
+or [Snippets](https://facelessuser.github.io/pymdown-extensions/extensions/snippets/).
+
+Every plugin has a priority configured, most wants to be run as te first or the last plugin in the chain. The
+`plantuml_markdown` plugin fits in the middle, trying to work as best without conflicting with other plugins.
+
+If you are getting strange behaviours in conjunction with other plugins, you can use the `priority` configuration to
+try to avoid the conflict, letting the plugin to be run before (higher value) or after other plugins (lower value).
+
+As an example of possible conflicts see issue #38.
     
 Plugin options
 --------------
@@ -223,18 +236,12 @@ pip install -r test-requirements.txt
 To run the tests, execute the following command:
 
 ```bash
-PATH="$PATH:$PWD/test" python -m unittest discover -v -s test
+nose2 --verbose -F
 ```
 
 This command uses a custom version of the `plantuml` command which will download the expected version of [PlantUML] for
 tests execution without clobbering the system.
 
-
-[Python-Markdown]: https://python-markdown.github.io/
-[PlantUML]: http://plantuml.sourceforge.net/
-[Graphviz]: http://www.graphviz.org
-[Gentoo]: http://www.gentoo.org
-[layman]: http://wiki.gentoo.org/wiki/Layman
 
 Running tests using Docker
 -------------------------
@@ -243,11 +250,23 @@ This requires `docker` and `docker-compose` to be installed
 
 First setup a small python alpine image with all the dependencies pre-installed. 
 ```bash
-`docker-compose build
+docker-compose build
 ``` 
 
 then run the container to automatically trigger tests and print the output mapping the contents of your workspace
 
 ```bash
-`docker-compose up
+docker-compose up
 ```
+
+To set specific version of Markdown or Python:
+```bash
+PTYHON_VER=3.9 MARKDOWN_VER=3.3.7 docker-compose build && docker-compose up
+```
+
+
+[Python-Markdown]: https://python-markdown.github.io/
+[PlantUML]: http://plantuml.sourceforge.net/
+[Graphviz]: http://www.graphviz.org
+[Gentoo]: http://www.gentoo.org
+[layman]: http://wiki.gentoo.org/wiki/Layman

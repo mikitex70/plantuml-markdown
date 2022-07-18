@@ -1,6 +1,26 @@
 # Changelog
 
 
+## development (unreleased)
+
+### New
+
+* Added support for themes (implements #50) [Bharat Rajagopalan]
+
+* Supported image maps from plantuml server. [Michele Tessaro]
+
+  Now png image maps are used even if the rendering is done by a remote
+  plantuml server.
+
+### Changes
+
+* Updated notes on running tests. [Michele Tessaro]
+
+### Fix
+
+* Fixed tests. [Michele Tessaro]
+
+
 ## 3.5.3 (2022-05-28)
 
 ### Changes
