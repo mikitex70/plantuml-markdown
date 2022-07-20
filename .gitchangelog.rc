@@ -88,6 +88,7 @@ section_regexps = [
         r'^[cC]hg\s*:\s*((dev|use?r|pkg|doc)\s*:\s*)?([^\n]*)$',
         r'^[cC]hange[\w]\s+.*$',
         r'^Remove md_globals kwarg',
+        r'^Various README updates',
      ]),
     ('Fix', [
         r'^[fF]ix\s*:\s*((dev|use?r|pkg|doc)\s*:\s*)?([^\n]*)$',

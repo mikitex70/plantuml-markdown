@@ -14,6 +14,19 @@
 
 ### Changes
 
+* Various README updates. [Bharat Rajagopalan]
+
+* Added in the README an explanation of the priority config (refs #66) [Michele Tessaro]
+
+* Remove md_globals kwarg. [Matt Riedemann]
+
+  Markdown 3.4 dropped support for the md_globals
+  kwarg:
+
+  https://github.com/Python-Markdown/markdown/blob/master/docs/change_log/release-3.4.md#previously-deprecated-objects-have-been-removed
+
+  Closes #67
+
 * Updated notes on running tests. [Michele Tessaro]
 
 ### Fix
