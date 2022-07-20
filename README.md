@@ -166,9 +166,10 @@ plantuml_markdown:
   base_dir: .                               # where to search for diagrams to include
   format: png                               # default diagram image format
   classes: class1,class2                    # default diagram classes
+  encoding: utf-8                           # character encoding for external files (default utf-8)
   title: UML diagram                        # default title (tooltip) for diagram images
   alt: UML diagram image                    # default `alt` attribute for diagram images
-  priority: 23                              # plugin priority; the higher, the sooner will be applied (default 23)
+  priority: 30                              # plugin priority; the higher, the sooner will be applied (default 30)
   http_method: GET                          # GET or POST  - note that plantuml.com only supports GET (default GET)       
   fallback_to_get: True                     # When using POST, should GET be used as fallback (POST will fail if @startuml/@enduml tags not used) (default True)
   theme: bluegray                           # theme to be set, can be overridden inside puml files, (default none)
@@ -203,15 +204,20 @@ Plugin options
 
 The plugin has several configuration option:
 
-* `classes`: space separated list of classes for the generated image. Defaults to `uml`
-* `format`: format of image to generate (`png`, `svg` or `txt`). Defaults to `png`
 * `alt`: text to show when image is not available. Defaults to `uml diagram`
-* `title`: tooltip for the diagram
-* `server`: PlantUML server url, for remote rendering. Defaults to `''`, use local command
-* `cachedir`: directory for caching of diagrams. Defaults to `''`, no caching
-* `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `23`
 * `base_dir`: path where to search for external diagrams files
+* `cachedir`: directory for caching of diagrams. Defaults to `''`, no caching
+* `classes`: space separated list of classes for the generated image. Defaults to `uml`
 * `encoding`: character encoding for external files (see `source` parameter); default encoding is `utf-8`. Please note that on Windows text files may use the `cp1252` as default encoding, so setting `encoding: cp1252` may fix incorrect characters rendering.
+* `fallback_to_get`: Fallback to `GET` if `POST` fails. Defaults to True
+* `format`: format of image to generate (`png`, `svg`, `svg_object`, `svg_inline` or `txt`). Defaults to `png` (See example section above for further explanations of the values for `format`)
+* `http_method`: Http Method for server - `GET` or `POST`. "Defaults to `GET`
+* `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `30`
+* `puml_notheme_cmdlist`: theme will not be set if listed commands present. Default list is  `['version', 'listfonts', 'stdlib', 'license']`. **If modifying please copy the default list provided and append**
+* `server`: PlantUML server url, for remote rendering. Defaults to `''`, use local command
+* `theme`: Default Theme to use, will be overridden  by !theme directive. Defaults to blank i.e. Plantuml `none` theme
+* `title`: tooltip for the diagram
+                                     
 
 For passing options to the `plantuml_plugin` see the documentation of the tool you are using.
 
