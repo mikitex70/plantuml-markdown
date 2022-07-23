@@ -59,6 +59,7 @@ import os
 import re
 import base64
 from subprocess import Popen, PIPE
+from typing import Dict, List, Optional
 from zlib import adler32
 
 from plantuml import PlantUML
@@ -347,7 +348,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             return out
 
     def _render_remote_uml_image(self, plantuml_code, img_format, base_dir):
-        temp_file = self._readFile(plantuml_code, base_dir, False)
+        # build the whole source diagram, executing include directives
+        temp_file = PlantUMLIncluder(False).readFile(plantuml_code, base_dir)
         http_method = self.config['http_method'].strip()
         fallback_to_get = self.config['fallback_to_get']
     
@@ -377,93 +379,83 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
             return r.content
 
-    # Read and format plantuml code appropriately
-    def _readFile(self, plantuml_code, directory, dark_mode=False):
+
+class PlantUMLIncluder:
+
+    def __init__(self, dark_mode: bool, light_theme: Optional[str] = None, dark_theme: Optional[str] = None):
+        self._dark_mode = dark_mode
+        self._light_theme = light_theme
+        self._dark_theme = dark_theme
+        self._definitions: Dict[str, str] = {}
+
+    # Given a PlantUML source, replace any "!include" directive with the included code, recursively
+    def readFile(self, plantuml_code: str, directory: str) -> str:
         lines = plantuml_code.splitlines()
         # Wrap the whole combined text between startuml and enduml tags as recursive processing would have removed them
         # This is necessary for it to work correctly with plamtuml POST processing
-        temp_file = "@startuml\n" + self._readFileRec(lines, "", directory, dark_mode) + "@enduml\n"
-        return temp_file
+        return "@startuml\n" + "\n".join(self._readFileRec(lines, directory)) + "@enduml\n"
 
     # Reads the file recursively
-    def _readFileRec(self, lines, temp_file, directory, dark_mode):
+    def _readFileRec(self, lines: List[str], directory: str) -> List[str]:
+        result: List[str] = []
+
         for line in lines:
             line = line.strip()
-            if line.startswith("!include"):
-                temp_file = self._readInclLine(
-                     line, temp_file, directory, dark_mode
-                )
+
+            # preprocessor, define variable, new syntax
+            match = re.search(r'!(?P<varname>\$?\w+)\s+=\s+"(?P<value>.*)"', line)
+
+            if not match:
+                # preprocessor, define variable, old syntax
+                match = re.search(r'^!define (?P<varname>\w+)\s+(?P<value>.*)', line)
+
+            if match:
+                # variable definition, save the mapping as the value can be used in !include directives
+                self._definitions[match.group('varname')] = match.group('value')
+                result.append(line)
+            elif line.startswith("!include"):
+                result.append(self._readInclLine(line, directory))
             elif line.startswith("@startuml") or line.startswith("@enduml"):
                 # remove startuml and enduml tags as plantuml POST method doesn't like it in include files
                 # we will wrap the whole combined text between start and end tags at the end
                 continue
             else:
-                temp_file += line
-            
-            if "\n" not in line:
-                temp_file += "\n"
+                result.append(line)
 
-        return temp_file
+        return result
 
-    def _readInclLine(self, line, temp_file, directory, dark_mode):
+    def _readInclLine(self, line: str, directory: str) -> str:
         # If includeurl is found, we do not have to do anything here. Server can handle that
         if "!includeurl" in line:
-            temp_file += line
-            return temp_file
+            return line
 
         # on the ninth position starts the filename
         inc_file = line[9:].rstrip()
 
-        if dark_mode:
-            inc_file = inc_file.replace(
-                self.config["theme_light"], self.config["theme_dark"]
-            )
+        for varname, value in self._definitions.items():
+            if inc_file.startswith(varname):
+                inc_file = inc_file.replace(varname, value)
+                break
+
+        if self._dark_mode:
+            inc_file = inc_file.replace(self._light_theme, self._dark_theme)
 
         # According to plantuml, simple !include can also have urls, or use the <> format to include stdlib files,
         # ignore that and continue
         if inc_file.startswith("http") or inc_file.startswith("<"):
-            temp_file += line
-            return temp_file
+            return line
 
         # Read contents of the included file
         try:
             inc_file_abs = os.path.normpath(os.path.join(directory, inc_file))
-            temp_file = self._read_incl_line_file(
-                temp_file, dark_mode, inc_file_abs
-            )
+            return self._read_incl_line_file(inc_file_abs)
         except Exception as e1:
-            try:
-                inc_file_abs = os.path.normpath(
-                    os.path.join(directory, inc_file)
-                )
-                temp_file = self._read_incl_line_file(
-                    temp_file, dark_mode, inc_file_abs
-                )
-            except Exception as e2:
-                logger.error("Could not find include " + str(e1) + str(e2))
-                raise e2
+            logger.error("Could not find include " + str(e1))
+            raise e1
 
-        return temp_file
-
-    def _read_incl_line_file(self, temp_file, dark_mode, inc_file_abs):
-        """ Save the mtime of the inc file to compare """
-        # try:
-        #     local_inc_time = os.path.getmtime(inc_file_abs)
-        # except Exception as _:
-        #     local_inc_time = 0
-
-        #if local_inc_time > diagram.inc_time:
-        #   diagram.inc_time = local_inc_time
-
+    def _read_incl_line_file(self, inc_file_abs: str):
         with open(inc_file_abs, "r") as inc:
-            temp_file = self._readFileRec(
-                inc,
-                temp_file,
-                os.path.dirname(os.path.realpath(inc_file_abs)),
-                dark_mode,
-            )
-
-        return temp_file
+            return "\n".join(self._readFileRec(inc.readlines(), os.path.dirname(os.path.realpath(inc_file_abs))))
 
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#extendmarkdown

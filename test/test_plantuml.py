@@ -3,9 +3,12 @@ import re
 
 import markdown
 import tempfile
-from unittest import TestCase, SkipTest
 import mock
 import os
+
+from unittest import TestCase, SkipTest
+from httpservermock import MethodName, MockHTTPResponse, ServedBaseHTTPServerMock
+
 
 class PlantumlTest(TestCase):
 
@@ -537,3 +540,42 @@ A --&gt; B
      |&#192;&#210;&#200;&#201;&#204;&#217;|          |A|
      `------'          `-'
 </code></pre>''', self.md.convert(text))
+
+    def test_include(self):
+        tempdir = tempfile.gettempdir()
+        defs_file = os.path.join(tempdir, 'local-file.puml')
+        # preparing a file to include
+        with open(defs_file, 'w') as f:
+            f.write('A --> B')
+
+        with ServedBaseHTTPServerMock() as myserver_mock:
+            myserver_mock.responses[MethodName.GET].append(
+                MockHTTPResponse(status_code=200, headers={}, reason_phrase='', body=b"first include")
+            )
+            myserver_mock.responses[MethodName.GET].append(
+                MockHTTPResponse(status_code=200, headers={}, reason_phrase='', body=b"second include")
+            )
+            text = self.text_builder.diagram(f"""
+@startuml
+!define myserver {myserver_mock.url}
+!$my_other_server = "{myserver_mock.url}"
+!include myserver/first_include.puml
+!include $my_other_server/second_include.puml
+!include local-file.puml
+
+dummy   'the plantuml response is mocked, any text is good
+@enduml        
+                    """).format('txt').build()
+
+            with ServedBaseHTTPServerMock() as plantumlserver_mock:
+                plantumlserver_mock.responses[MethodName.GET].append(
+                    MockHTTPResponse(status_code=200, headers={}, reason_phrase='', body=b"A -> B -> C")
+                )
+                self.md = markdown.Markdown(extensions=['plantuml_markdown'],
+                                            extension_configs={
+                                                'plantuml_markdown': {
+                                                    'server': plantumlserver_mock.url,
+                                                    'base_dir': tempdir
+                                                }
+                                            })
+                self.assertEqual('<pre><code class="text">A -&gt; B -&gt; C</code></pre>', self.md.convert(text))
