@@ -1,4 +1,3 @@
 Markdown
-plantuml
 requests
 six

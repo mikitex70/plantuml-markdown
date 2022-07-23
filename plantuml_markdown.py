@@ -58,6 +58,8 @@
 import os
 import re
 import base64
+import zlib
+import string
 from subprocess import Popen, PIPE
 from typing import Dict, List, Optional
 from zlib import adler32
@@ -73,6 +75,9 @@ from xml.etree import ElementTree as etree
 
 # use markdown_py with -v to enable warnings, or with --noisy to enable debug logs
 logger = logging.getLogger('MARKDOWN')
+plantuml_alphabet = string.digits + string.ascii_uppercase + string.ascii_lowercase + '-_'
+base64_alphabet = string.ascii_uppercase + string.ascii_lowercase + string.digits + '+/'
+b64_to_plantuml = bytes.maketrans(base64_alphabet.encode('utf-8'), plantuml_alphabet.encode('utf-8'))
 
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#blockparser
@@ -371,13 +376,20 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                     return r.content
 
         if http_method == "GET" or post_failed:
-            image_url = PlantUML("%s/%s/" % (self.config['server'], img_format)).get_url(temp_file)
+            image_url = self.config['server']+"/"+img_format+"/"+self._deflate_and_encode(temp_file)
 
             with requests.get(image_url) as r:
                 if not r.ok:
                     logger.warning('WARNING in "uml" directive: remote server has returned error %d on GET' % r.status_code)
 
             return r.content
+
+    @staticmethod
+    def _deflate_and_encode(source: str) -> str:
+        # algorithm borrowed from the plantuml package
+        zlibbed_str = zlib.compress(source.encode('utf-8'))
+
+        return base64.b64encode(zlibbed_str[2:-4]).translate(b64_to_plantuml).decode('utf-8')
 
 
 class PlantUMLIncluder:
