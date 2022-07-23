@@ -1,7 +1,7 @@
 # Changelog
 
 
-## development (unreleased)
+## 3.6.1 (2022-07-22)
 
 ### Changes
 
@@ -11,6 +11,8 @@
   and the only small used method was imported in the sources.
 
 ### Fix
+
+* Fixed typos in `CHANGELOG.md` [Michele Tessaro]
 
 * Fixed external inclusions (fixes #71) [Michele Tessaro]
 
