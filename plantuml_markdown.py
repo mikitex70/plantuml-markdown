@@ -38,7 +38,7 @@
    You need to install [PlantUML][] (see the site for details) and [Graphviz][] 2.26.3 or later.
    The plugin expects a program `plantuml` in the classpath. If not installed by your package
    manager, you can create a shell script and place it somewhere in the classpath. For example,
-   save te following into `/usr/local/bin/plantuml` (supposing [PlantUML][] installed into
+   save the following into `/usr/local/bin/plantuml` (supposing [PlantUML][] installed into
    `/opt/plantuml`):
 
        #!/bin/bash
