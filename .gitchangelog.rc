@@ -135,6 +135,10 @@ section_regexps = [
 #body_process = noop
 body_process = (ReSub(r'((^|\n)[A-Z]\w+(-\w+)*: .*(\n\s+.*)*)+$', r'') |
     ReSub(r' @\d+(h|m|min)?', r'') |
+    ReSub(r'Thi breaks compatibility', r'This breaks compatibility') |
+    ReSub(r'shrinked keeping', r'shrunk keeping') |
+    ReSub(r'there is not enought space in the page fot the', r'there is not enough space in the page for the') |
+    ReSub(r'mispelled to', r'misspelled to') |
     strip)
 
 
@@ -148,6 +152,8 @@ subject_process = (strip |
     ReSub(r'^([cC]hg|[fF]ix|[nN]ew)\s*:\s*((dev|use?r|pkg|test|doc)\s*:\s*)?(.*)$', r'\4') |
     ReSub(r' @\d+(h|m|min)?', r'') |
     ReSub(r'includepp postvget theme dockertest', r'added support for themes (implements #50)') |
+    ReSub(r'changelog fot the', r'changelog for the') |
+    ReSub(r'diable image', r'disable image') |
     ucfirst | final_dot)
 
 
