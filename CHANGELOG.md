@@ -1,9 +1,18 @@
 # Changelog
 
 
-## 3.6.1 (2022-07-22)
+## 3.6.2 (2022-07-25)
+
+### Fix
+
+* Removed unused `plantuml` import. [Michele Tessaro]
+
+
+## 3.6.1 (2022-07-23)
 
 ### Changes
+
+* Regenerated the `CHANGELOG.md` [Michele Tessaro]
 
 * Removed dependency from plantuml package (refs #70) [Michele Tessaro]
 

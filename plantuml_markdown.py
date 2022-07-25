@@ -64,7 +64,6 @@ from subprocess import Popen, PIPE
 from typing import Dict, List, Optional
 from zlib import adler32
 
-from plantuml import PlantUML
 import logging
 import markdown
 import uuid
