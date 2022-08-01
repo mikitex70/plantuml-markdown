@@ -1,6 +1,15 @@
 # Changelog
 
 
+## 3.6.3 (2022-08-01)
+
+### Fix
+
+* Removed unused `plantuml` import. [Michele Tessaro]
+
+* Doc: fix typos. [Kian-Meng Ang]
+
+
 ## 3.6.2 (2022-07-25)
 
 ### Fix
