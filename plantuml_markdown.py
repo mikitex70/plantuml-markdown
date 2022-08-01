@@ -411,22 +411,22 @@ class PlantUMLIncluder:
         result: List[str] = []
 
         for line in lines:
-            line = line.strip()
+            line_striped = line.strip()
 
             # preprocessor, define variable, new syntax
-            match = re.search(r'!(?P<varname>\$?\w+)\s+=\s+"(?P<value>.*)"', line)
+            match = re.search(r'!(?P<varname>\$?\w+)\s+=\s+"(?P<value>.*)"', line_striped)
 
             if not match:
                 # preprocessor, define variable, old syntax
-                match = re.search(r'^!define (?P<varname>\w+)\s+(?P<value>.*)', line)
+                match = re.search(r'^!define (?P<varname>\w+)\s+(?P<value>.*)', line_striped)
 
             if match:
                 # variable definition, save the mapping as the value can be used in !include directives
                 self._definitions[match.group('varname')] = match.group('value')
                 result.append(line)
-            elif line.startswith("!include"):
-                result.append(self._readInclLine(line, directory))
-            elif line.startswith("@startuml") or line.startswith("@enduml"):
+            elif line_striped.startswith("!include"):
+                result.append(self._readInclLine(line_striped, directory))
+            elif line_striped.startswith("@startuml") or line_striped.startswith("@enduml"):
                 # remove startuml and enduml tags as plantuml POST method doesn't like it in include files
                 # we will wrap the whole combined text between start and end tags at the end
                 continue

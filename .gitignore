@@ -59,3 +59,4 @@ env_test
 .env
 .eggs
 .env*
+/config.yaml

@@ -515,6 +515,31 @@ A --&gt; B
                color          Red  
 </code></pre>''', self.md.convert(text))
 
+#     def test_yaml(self):
+#         """
+#         Verify that spaces are not removed
+#         """
+#         text = self.text_builder.diagram('''
+# @startyaml
+# fruit: Apple
+# size: Large
+# color:
+#   background: Red
+#   foreground: Green
+#   other:
+#     data1: 1
+#     data2:
+#       - x
+#       - y
+# @endyaml
+#         ''').format("png").build()
+#         generated = self.md.convert(text)
+#
+#         with open('/tmp/test.html', 'w') as f:
+#             f.write(generated)
+#
+#         self.assertEqual(self._load_file('yaml_diagram.html'), generated)
+
     def test_source(self):
         include_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
         configs = {
