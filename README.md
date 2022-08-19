@@ -36,7 +36,7 @@ The option value may be enclosed in single or double quotes.
 Supported values for `format` parameter are:
 
 * `png`: HTML `img` tag with embedded png image
-* `svg`: HTML `img` tag with embedded svg image (links are not navigable)
+* `svg`: HTML `img` tag with embedded svg image (links are not navigable with [image tags](https://www.scaler.com/topics/html/html-image-tag/))
 * `svg_object`: HTML `object` tag with embedded svg image (links are navigable)
 * `svg_inline`: HTML5 `svg` tag with inline svg image source (links are navigable, can be manipulated with CSS rules)
 * `txt`: plain text diagrams.
