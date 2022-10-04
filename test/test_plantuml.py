@@ -386,6 +386,25 @@ class PlantumlTest(TestCase):
 </map></p>""" % self.FAKE_IMAGE),
             self.UUID_REGEX.sub('"test"', self.COORDS_REGEX.sub(' coords="1,2,3,4"', self._stripImageData(self.md.convert(text)))))
 
+    def test_plantuml_map_disabled(self):
+        """
+        Test map markup is not generated when disabled
+        """
+        include_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+        configs = {
+            'plantuml_markdown': {
+                'base_dir': include_path,
+                'image_maps': 'false'
+            }
+        }
+        self.md = markdown.Markdown(extensions=['markdown.extensions.fenced_code',
+                                                'pymdownx.snippets', 'plantuml_markdown'],
+                                    extension_configs=configs)
+
+        text = self.text_builder.diagram('A --> B [[https://www.google.fr]]').build()
+        result = self._stripImageData(self.md.convert(text))
+        self.assertFalse("<map " in result)
+
     def test_multidiagram(self):
         """
         Test for the definition of multiple diagrams on the same document

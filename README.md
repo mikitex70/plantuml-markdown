@@ -212,6 +212,7 @@ The plugin has several configuration option:
 * `fallback_to_get`: Fallback to `GET` if `POST` fails. Defaults to True
 * `format`: format of image to generate (`png`, `svg`, `svg_object`, `svg_inline` or `txt`). Defaults to `png` (See example section above for further explanations of the values for `format`)
 * `http_method`: Http Method for server - `GET` or `POST`. "Defaults to `GET`
+* `image_maps`: generate image maps if format is `png` and the diagram has hyperlinks; `true`, `on`, `yes` or `1` activates image maps, everything else disables it. Defaults to `true` 
 * `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `30`
 * `puml_notheme_cmdlist`: theme will not be set if listed commands present. Default list is  `['version', 'listfonts', 'stdlib', 'license']`. **If modifying please copy the default list provided and append**
 * `server`: PlantUML server url, for remote rendering. Defaults to `''`, use local command

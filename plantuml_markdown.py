@@ -218,16 +218,18 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 data = 'data:image/png;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
                 img = etree.Element('img')
                 img.attrib['src'] = data
-                # Check for hyperlinks
-                map_data = self._render_diagram(code, 'map', base_dir).decode("utf-8")
-                if map_data.startswith('<map '):
-                    # There are hyperlinks, add the image map
-                    unique_id = str(uuid.uuid4())
-                    map = etree.fromstring(map_data)
-                    map.attrib['id'] = unique_id
-                    map.attrib['name'] = unique_id
-                    map_tag = etree.tostring(map, short_empty_elements=self_closed).decode()
-                    img.attrib['usemap'] = '#' + unique_id
+
+                if str(self.config['image_maps']).lower() in ['true', 'on', 'yes', '1']:
+                    # Check for hyperlinks
+                    map_data = self._render_diagram(code, 'map', base_dir).decode("utf-8")
+                    if map_data.startswith('<map '):
+                        # There are hyperlinks, add the image map
+                        unique_id = str(uuid.uuid4())
+                        map = etree.fromstring(map_data)
+                        map.attrib['id'] = unique_id
+                        map.attrib['name'] = unique_id
+                        map_tag = etree.tostring(map, short_empty_elements=self_closed).decode()
+                        img.attrib['usemap'] = '#' + unique_id
 
             styles = []
             if 'style' in img.attrib and img.attrib['style'] != '':
@@ -480,6 +482,8 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'title': ["", "Tooltip for the diagram"],
             'server': ["", "PlantUML server url, for remote rendering. Defaults to '', use local command."],
             'cachedir': ["", "Directory for caching of diagrams. Defaults to '', no caching"],
+            'image_maps': ["true", "Enable generation of PNG image maps, allowing to use hyperlinks with PNG images."
+                                   "Defaults to true"],
             'priority': ["30", "Extension priority. Higher values means the extension is applied sooner than others. "
                                "Defaults to 30"],
             'base_dir': [".", "Base directory for external files inclusion"],
