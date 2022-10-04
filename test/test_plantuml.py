@@ -149,7 +149,7 @@ class PlantumlTest(TestCase):
         from test.markdown_builder import MarkdownBuilder
         from plantuml_markdown import PlantUMLPreprocessor
 
-        # mcking a method to capture the generated PlantUML source code
+        # mocking a method to capture the generated PlantUML source code
         with mock.patch.object(PlantUMLPreprocessor, '_render_diagram',
                             return_value='testing'.encode('utf8')) as mocked_plugin:
             text = self.text_builder.diagram("--8<-- \"" + defs_file + "\"").build()
@@ -623,3 +623,24 @@ dummy   'the plantuml response is mocked, any text is good
                                                 }
                                             })
                 self.assertEqual('<pre><code class="text">A -&gt; B -&gt; C</code></pre>', self.md.convert(text))
+
+    def test_kroki(self):
+        """
+        Test calling a kroki server for rendering
+        """
+        with ServedBaseHTTPServerMock() as kroki_server_mock:
+            kroki_server_mock.responses[MethodName.GET].append(
+                MockHTTPResponse(status_code=200, headers={}, reason_phrase='', body=b"dummy")
+            )
+            self.md = markdown.Markdown(extensions=['plantuml_markdown'],
+                                        extension_configs={
+                                            'plantuml_markdown': {
+                                                'kroki_server': kroki_server_mock.url,
+                                            }
+                                        })
+            text = self.text_builder.diagram('A -> B').format('png').build()
+
+            self.assertEqual(self._stripImageData(self._load_file('png_diag.html')),
+                             self._stripImageData(self.md.convert(text)))
+            req = kroki_server_mock.requests[MethodName.GET].pop(0)
+            self.assertTrue(req.path.startswith('/plantuml/png/'))

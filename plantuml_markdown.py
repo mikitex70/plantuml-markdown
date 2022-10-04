@@ -219,7 +219,9 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 img = etree.Element('img')
                 img.attrib['src'] = data
 
-                if str(self.config['image_maps']).lower() in ['true', 'on', 'yes', '1']:
+                # image maps are not supported by Kroki
+                if not self.config['kroki_server'] and \
+                        str(self.config['image_maps']).lower() in ['true', 'on', 'yes', '1']:
                     # Check for hyperlinks
                     map_data = self._render_diagram(code, 'map', base_dir).decode("utf-8")
                     if map_data.startswith('<map '):
@@ -277,7 +279,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         # if cache not found create the diagram
         code = self._set_theme(code)
 
-        if self.config['server']:
+        if self.config['server'] or self.config['kroki_server']:
             diagram = self._render_remote_uml_image(code, requested_format, base_dir)
         else:
             diagram = self._render_local_uml_image(code, requested_format)
@@ -361,10 +363,11 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
     
         # Use GET if preferred, use POST with GET as fallback if POST fails
         post_failed = False
+        server = self.config['kroki_server'] if self.config['kroki_server'] else self.config['server']
 
         if http_method == "POST":
             # image_url for POST attempt first
-            image_url = "%s/%s/" % (self.config['server'], img_format)
+            image_url = "%s/%s/" % (server, img_format)
             # download manually the image to be able to continue in case of errors
 
             with requests.post(image_url, data=temp_file, headers={"Content-Type": 'text/plain; charset=utf-8'}) as r:
@@ -377,7 +380,12 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                     return r.content
 
         if http_method == "GET" or post_failed:
-            image_url = self.config['server']+"/"+img_format+"/"+self._deflate_and_encode(temp_file)
+            if self.config['kroki_server']:
+                with open('/tmp/test/diag.puml', 'w') as f:
+                    f.write(temp_file)
+                image_url = server + "/plantuml/" + img_format + "/" + self._compress_and_encode(temp_file)
+            else:
+                image_url = server+"/"+img_format+"/"+self._deflate_and_encode(temp_file)
 
             with requests.get(image_url) as r:
                 if not r.ok:
@@ -391,6 +399,11 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         zlibbed_str = zlib.compress(source.encode('utf-8'))
 
         return base64.b64encode(zlibbed_str[2:-4]).translate(b64_to_plantuml).decode('utf-8')
+
+    @staticmethod
+    def _compress_and_encode(source: str) -> str:
+        # diagram encoding for Kroki
+        return base64.urlsafe_b64encode(zlib.compress(source.encode('utf-8'), 9)).decode('utf-8')
 
 
 class PlantUMLIncluder:
@@ -406,7 +419,7 @@ class PlantUMLIncluder:
         lines = plantuml_code.splitlines()
         # Wrap the whole combined text between startuml and enduml tags as recursive processing would have removed them
         # This is necessary for it to work correctly with plamtuml POST processing
-        return "@startuml\n" + "\n".join(self._readFileRec(lines, directory)) + "@enduml\n"
+        return "@startuml\n" + "\n".join(self._readFileRec(lines, directory)) + "\n@enduml\n"
 
     # Reads the file recursively
     def _readFileRec(self, lines: List[str], directory: str) -> List[str]:
@@ -481,6 +494,8 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'format': ["png", "Format of image to generate (png, svg or txt). Defaults to 'png'."],
             'title': ["", "Tooltip for the diagram"],
             'server': ["", "PlantUML server url, for remote rendering. Defaults to '', use local command."],
+            'kroki_server': ["", "Kroki server url, as alternative to 'server' for remote rendering (image maps not "
+                                 "supported). Defaults to '', use PlantUML server if defined"],
             'cachedir': ["", "Directory for caching of diagrams. Defaults to '', no caching"],
             'image_maps': ["true", "Enable generation of PNG image maps, allowing to use hyperlinks with PNG images."
                                    "Defaults to true"],
