@@ -61,7 +61,7 @@ import base64
 import zlib
 import string
 from subprocess import Popen, PIPE
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from zlib import adler32
 
 import logging
@@ -186,87 +186,91 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         code += m.group('code')
 
         # Extract diagram source end convert it (if not external)
-        diagram = self._render_diagram(code, requested_format, base_dir)
-        self_closed = True  # tags are always self closing
-        map_tag = ''
+        diagram, err = self._render_diagram(code, requested_format, base_dir)
 
-        if img_format == 'txt':
-            # logger.debug(diagram)
-            img = etree.Element('pre')
-            code = etree.SubElement(img, 'code')
-            code.attrib['class'] = 'text'
-            code.text = AtomicString(diagram.decode('UTF-8'))
+        if err:
+            # there is an error message: create a nice tag to show it
+            diag_tag = f'<div style="color: red">{err}</div>'
         else:
-            # These are images
-            if img_format == 'svg_inline':
-                data = self.ADAPT_SVG_REGEX.sub('<svg \\1\\2>', diagram.decode('UTF-8'))
-                img = etree.fromstring(data.encode('UTF-8'))
-                # remove width and height in style attribute
-                img.attrib['style'] = re.sub(r'\b(?:width|height):\d+px;', '', img.attrib['style'])
-            elif img_format == 'svg':
-                # Firefox handles only base64 encoded SVGs
-                data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
-                img = etree.Element('img')
-                img.attrib['src'] = data
-            elif img_format == 'svg_object':
-                # Firefox handles only base64 encoded SVGs
-                data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
-                img = etree.Element('object')
-                img.attrib['data'] = data
-                self_closed = False  # object tag must be explicitly closed
-            else:  # png format, explicitly set or as a default when format is not recognized
-                data = 'data:image/png;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
-                img = etree.Element('img')
-                img.attrib['src'] = data
+            self_closed = True  # tags are always self-closing
+            map_tag = ''
 
-                # image maps are not supported by Kroki
-                if not self.config['kroki_server'] and \
-                        str(self.config['image_maps']).lower() in ['true', 'on', 'yes', '1']:
-                    # Check for hyperlinks
-                    map_data = self._render_diagram(code, 'map', base_dir).decode("utf-8")
-                    if map_data.startswith('<map '):
-                        # There are hyperlinks, add the image map
-                        unique_id = str(uuid.uuid4())
-                        map = etree.fromstring(map_data)
-                        map.attrib['id'] = unique_id
-                        map.attrib['name'] = unique_id
-                        map_tag = etree.tostring(map, short_empty_elements=self_closed).decode()
-                        img.attrib['usemap'] = '#' + unique_id
+            if img_format == 'txt':
+                # logger.debug(diagram)
+                img = etree.Element('pre')
+                code = etree.SubElement(img, 'code')
+                code.attrib['class'] = 'text'
+                code.text = AtomicString(diagram.decode('UTF-8'))
+            else:
+                # These are images
+                if img_format == 'svg_inline':
+                    data = self.ADAPT_SVG_REGEX.sub('<svg \\1\\2>', diagram.decode('UTF-8'))
+                    img = etree.fromstring(data.encode('UTF-8'))
+                    # remove width and height in style attribute
+                    img.attrib['style'] = re.sub(r'\b(?:width|height):\d+px;', '', img.attrib['style'])
+                elif img_format == 'svg':
+                    # Firefox handles only base64 encoded SVGs
+                    data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
+                    img = etree.Element('img')
+                    img.attrib['src'] = data
+                elif img_format == 'svg_object':
+                    # Firefox handles only base64 encoded SVGs
+                    data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
+                    img = etree.Element('object')
+                    img.attrib['data'] = data
+                    self_closed = False  # object tag must be explicitly closed
+                else:  # png format, explicitly set or as a default when format is not recognized
+                    data = 'data:image/png;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
+                    img = etree.Element('img')
+                    img.attrib['src'] = data
 
-            styles = []
-            if 'style' in img.attrib and img.attrib['style'] != '':
-                styles.append(re.sub(r';$', '', img.attrib['style']))
-            if width:
-                styles.append("max-width:"+width)
-            if height:
-                styles.append("max-height:"+height)
+                    # check if image maps are enabled
+                    if str(self.config['image_maps']).lower() in ['true', 'on', 'yes', '1']:
+                        # Check for hyperlinks
+                        map_data, err = self._render_diagram(code, 'map', base_dir)
+                        map_data = map_data.decode("utf-8")
 
-            if styles:
-                img.attrib['style'] = ";".join(styles)
-                img.attrib['width'] = '100%'
-                if 'height' in img.attrib:
-                    img.attrib.pop('height')
+                        if map_data.startswith('<map '):
+                            # There are hyperlinks, add the image map
+                            unique_id = str(uuid.uuid4())
+                            map = etree.fromstring(map_data)
+                            map.attrib['id'] = unique_id
+                            map.attrib['name'] = unique_id
+                            map_tag = etree.tostring(map, short_empty_elements=self_closed).decode()
+                            img.attrib['usemap'] = '#' + unique_id
 
-            img.attrib['class'] = classes
-            img.attrib['alt'] = alt
-            img.attrib['title'] = title
+                styles = []
+                if 'style' in img.attrib and img.attrib['style'] != '':
+                    styles.append(re.sub(r';$', '', img.attrib['style']))
+                if width:
+                    styles.append("max-width:"+width)
+                if height:
+                    styles.append("max-height:"+height)
 
-        diag_tag = etree.tostring(img, short_empty_elements=self_closed).decode()
-        diag_tag = diag_tag + map_tag
+                if styles:
+                    img.attrib['style'] = ";".join(styles)
+                    img.attrib['width'] = '100%'
+                    if 'height' in img.attrib:
+                        img.attrib.pop('height')
+
+                img.attrib['class'] = classes
+                img.attrib['alt'] = alt
+                img.attrib['title'] = title
+
+            diag_tag = etree.tostring(img, short_empty_elements=self_closed).decode()
+            diag_tag = diag_tag + map_tag
 
         return text[:m.start()] + m.group('indent') + diag_tag + text[m.end():], \
                m.start() + len(m.group('indent')) + len(diag_tag)
 
-    def _render_diagram(self, code, requested_format, base_dir):
+    def _render_diagram(self, code: str, requested_format: str, base_dir: str) -> Tuple[any, Optional[str]]:
         cached_diagram_file = None
         diagram = None
 
         if self.config['cachedir']:
             diagram_hash = "%08x" % (adler32(code.encode('UTF-8')) & 0xffffffff)
             cached_diagram_file = os.path.expanduser(
-                    os.path.join(
-                        self.config['cachedir'],
-                        diagram_hash + '.' + requested_format))
+                    os.path.join(self.config['cachedir'], diagram_hash + '.' + requested_format))
 
             if os.path.isfile(cached_diagram_file):
                 with open(cached_diagram_file, 'rb') as f:
@@ -274,21 +278,21 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         if diagram:
             # if cache found then end this function here
-            return diagram
+            return diagram, None
 
         # if cache not found create the diagram
         code = self._set_theme(code)
 
         if self.config['server'] or self.config['kroki_server']:
-            diagram = self._render_remote_uml_image(code, requested_format, base_dir)
+            diagram, err = self._render_remote_uml_image(code, requested_format, base_dir)
         else:
-            diagram = self._render_local_uml_image(code, requested_format)
+            diagram, err = self._render_local_uml_image(code, requested_format)
 
-        if self.config['cachedir']:
+        if not err and self.config['cachedir']:
             with open(cached_diagram_file, 'wb') as f:
                 f.write(diagram)
 
-        return diagram
+        return diagram, err
 
     def _set_theme(self, code):
         theme = self.config['theme'].strip()
@@ -337,7 +341,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         return code
 
     @staticmethod
-    def _render_local_uml_image(plantuml_code, img_format):
+    def _render_local_uml_image(plantuml_code: str, img_format: str) -> Tuple[any, Optional[str]]:
         plantuml_code = plantuml_code.encode('utf8')
         cmdline = ['plantuml', '-pipemap' if img_format == 'map' else '-p', "-t" + img_format]
 
@@ -345,7 +349,6 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             # On Windows run batch files through a shell so the extension can be resolved
             p = Popen(cmdline, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=(os.name == 'nt'))
             out, err = p.communicate(input=plantuml_code)
-
         except Exception as exc:
             raise Exception('Failed to run plantuml: %s' % exc)
         else:
@@ -353,9 +356,9 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 # plantuml returns a nice image in case of syntax error so log but still return out
                 logger.error('Error in "uml" directive: %s' % err)
 
-            return out
+            return out, None
 
-    def _render_remote_uml_image(self, plantuml_code, img_format, base_dir):
+    def _render_remote_uml_image(self, plantuml_code: str, img_format: str, base_dir: str) -> Tuple[any, Optional[str]]:
         # build the whole source diagram, executing include directives
         temp_file = PlantUMLIncluder(False).readFile(plantuml_code, base_dir)
         http_method = self.config['http_method'].strip()
@@ -377,7 +380,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                         logger.error('Falling back to Get')
                         post_failed = True
                 if not post_failed:
-                    return r.content
+                    return r.content, None
 
         if http_method == "GET" or post_failed:
             if self.config['kroki_server']:
@@ -389,9 +392,10 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
             with requests.get(image_url) as r:
                 if not r.ok:
-                    logger.warning('WARNING in "uml" directive: remote server has returned error %d on GET' % r.status_code)
+                    logger.warning(f'WARNING in "uml" directive: remote server has returned error %d on GET: %s' % (r.status_code, r.content.decode('utf-8')))
+                    return None, r.content.decode('utf-8')
 
-            return r.content
+            return r.content, None
 
     @staticmethod
     def _deflate_and_encode(source: str) -> str:
@@ -494,8 +498,8 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'format': ["png", "Format of image to generate (png, svg or txt). Defaults to 'png'."],
             'title': ["", "Tooltip for the diagram"],
             'server': ["", "PlantUML server url, for remote rendering. Defaults to '', use local command."],
-            'kroki_server': ["", "Kroki server url, as alternative to 'server' for remote rendering (image maps not "
-                                 "supported). Defaults to '', use PlantUML server if defined"],
+            'kroki_server': ["", "Kroki server url, as alternative to 'server' for remote rendering (image maps must "
+                                 "be disabled manually). Defaults to '', use PlantUML server if defined"],
             'cachedir': ["", "Directory for caching of diagrams. Defaults to '', no caching"],
             'image_maps': ["true", "Enable generation of PNG image maps, allowing to use hyperlinks with PNG images."
                                    "Defaults to true"],

@@ -151,7 +151,7 @@ class PlantumlTest(TestCase):
 
         # mocking a method to capture the generated PlantUML source code
         with mock.patch.object(PlantUMLPreprocessor, '_render_diagram',
-                            return_value='testing'.encode('utf8')) as mocked_plugin:
+                               return_value=('testing'.encode('utf8'), None)) as mocked_plugin:
             text = self.text_builder.diagram("--8<-- \"" + defs_file + "\"").build()
             self.md.convert(text)
             mocked_plugin.assert_called_with(expected, 'map', '.')
@@ -636,6 +636,7 @@ dummy   'the plantuml response is mocked, any text is good
                                         extension_configs={
                                             'plantuml_markdown': {
                                                 'kroki_server': kroki_server_mock.url,
+                                                'image_maps': 'no'
                                             }
                                         })
             text = self.text_builder.diagram('A -> B').format('png').build()
