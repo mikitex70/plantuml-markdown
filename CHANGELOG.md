@@ -1,9 +1,34 @@
 # Changelog
 
 
+## 3.7.0 (2022-10-05)
+
+### New
+
+* Exposed error messages from kroki (refs #75) [Michele Tessaro]
+
+  Error messages from Kroki server are rendered as text in the output.
+  This is to overcome the problem that Kroki does not render errors as
+  images as PluntUML does.
+
+* Added kroki as rendering server (refs #75) [Michele Tessaro]
+
+  With the plugin configuration `kroki_Server` is now possible to use a
+  Kroki server fore remote rendering.
+  Image maps are not supported by Kroki.
+
+* Added option to disable image maps (refs #74) [Michele Tessaro]
+
+### Changes
+
+* Regenerated changelog. [Michele Tessaro]
+
+
 ## 3.6.3 (2022-08-01)
 
 ### Fix
+
+* Fixed yaml renderingwith remote server (fixes #72) [Michele Tessaro]
 
 * Removed unused `plantuml` import. [Michele Tessaro]
 
