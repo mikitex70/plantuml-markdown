@@ -384,8 +384,6 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         if http_method == "GET" or post_failed:
             if self.config['kroki_server']:
-                with open('/tmp/test/diag.puml', 'w') as f:
-                    f.write(temp_file)
                 image_url = server + "/plantuml/" + img_format + "/" + self._compress_and_encode(temp_file)
             else:
                 image_url = server+"/"+img_format+"/"+self._deflate_and_encode(temp_file)
