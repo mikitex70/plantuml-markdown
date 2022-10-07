@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 3.7.1 (2022-10-07)
+
+### Fix
+
+* Do not create temp file with kroki (refs #77) [Nejc Habjan]
+
+
 ## 3.7.0 (2022-10-05)
 
 ### New
