@@ -69,6 +69,7 @@ import markdown
 import uuid
 import requests
 from markdown.util import AtomicString
+from requests.adapters import HTTPAdapter, Retry
 from xml.etree import ElementTree as etree
 
 
@@ -283,8 +284,11 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         # if cache not found create the diagram
         code = self._set_theme(code)
 
-        if self.config['server'] or self.config['kroki_server']:
-            diagram, err = self._render_remote_uml_image(code, requested_format, base_dir)
+        self._server = self.config['kroki_server'] or self.config['server']
+
+        if self._server:
+            with self._set_session() as session:
+                diagram, err = self._render_remote_uml_image(code, requested_format, base_dir, session)
         else:
             diagram, err = self._render_local_uml_image(code, requested_format)
 
@@ -293,6 +297,19 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 f.write(diagram)
 
         return diagram, err
+
+    def _set_session(self):
+        retries = Retry(
+            total=3,
+            backoff_factor=1,
+            respect_retry_after_header=True,
+            status_forcelist=[429, 500, 502, 503, 504])
+        adapter = HTTPAdapter(max_retries=retries)
+
+        session = requests.Session()
+        session.mount('http://', adapter)
+        session.mount('https://', adapter)
+        return session
 
     def _set_theme(self, code):
         theme = self.config['theme'].strip()
@@ -358,7 +375,9 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
             return out, None
 
-    def _render_remote_uml_image(self, plantuml_code: str, img_format: str, base_dir: str) -> Tuple[any, Optional[str]]:
+    def _render_remote_uml_image(
+            self, plantuml_code: str, img_format: str, base_dir: str, session: requests.Session
+        ) -> Tuple[any, Optional[str]]:
         # build the whole source diagram, executing include directives
         temp_file = PlantUMLIncluder(False).readFile(plantuml_code, base_dir)
         http_method = self.config['http_method'].strip()
@@ -366,32 +385,31 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
     
         # Use GET if preferred, use POST with GET as fallback if POST fails
         post_failed = False
-        server = self.config['kroki_server'] if self.config['kroki_server'] else self.config['server']
 
         if http_method == "POST":
             # image_url for POST attempt first
-            image_url = "%s/%s/" % (server, img_format)
+            image_url = "%s/%s/" % (self._server, img_format)
             # download manually the image to be able to continue in case of errors
 
-            with requests.post(image_url, data=temp_file, headers={"Content-Type": 'text/plain; charset=utf-8'}) as r:
-                if not r.ok:
-                    logger.warning('WARNING in "uml" directive: remote server has returned error %d on POST' % r.status_code)
-                    if fallback_to_get:
-                        logger.error('Falling back to Get')
-                        post_failed = True
-                if not post_failed:
-                    return r.content, None
+            r = session.post(image_url, data=temp_file, headers={"Content-Type": 'text/plain; charset=utf-8'})
+            if not r.ok:
+                logger.warning('WARNING in "uml" directive: remote server has returned error %d on POST' % r.status_code)
+                if fallback_to_get:
+                    logger.error('Falling back to Get')
+                    post_failed = True
+            if not post_failed:
+                return r.content, None
 
         if http_method == "GET" or post_failed:
             if self.config['kroki_server']:
-                image_url = server + "/plantuml/" + img_format + "/" + self._compress_and_encode(temp_file)
+                image_url = self._server + "/plantuml/" + img_format + "/" + self._compress_and_encode(temp_file)
             else:
-                image_url = server+"/"+img_format+"/"+self._deflate_and_encode(temp_file)
+                image_url = self._server+"/"+img_format+"/"+self._deflate_and_encode(temp_file)
 
-            with requests.get(image_url) as r:
-                if not r.ok:
-                    logger.warning(f'WARNING in "uml" directive: remote server has returned error %d on GET: %s' % (r.status_code, r.content.decode('utf-8')))
-                    return None, r.content.decode('utf-8')
+            r = session.get(image_url)
+            if not r.ok:
+                logger.warning(f'WARNING in "uml" directive: remote server has returned error %d on GET: %s' % (r.status_code, r.content.decode('utf-8')))
+                return None, r.content.decode('utf-8')
 
             return r.content, None
 
