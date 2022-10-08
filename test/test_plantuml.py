@@ -645,3 +645,28 @@ dummy   'the plantuml response is mocked, any text is good
                              self._stripImageData(self.md.convert(text)))
             req = kroki_server_mock.requests[MethodName.GET].pop(0)
             self.assertTrue(req.path.startswith('/plantuml/png/'))
+
+    def test_retries(self):
+        """
+        Test retrying on 429 responses
+        """
+        with ServedBaseHTTPServerMock() as plantumlserver_mock:
+            plantumlserver_mock.responses[MethodName.GET].append(
+                MockHTTPResponse(
+                    status_code=429,
+                    headers={"Retry-After": "1"},
+                    reason_phrase='Too many requests',
+                    body=b"")
+            )
+            plantumlserver_mock.responses[MethodName.GET].append(
+                MockHTTPResponse(status_code=200, headers={}, reason_phrase='', body=b"dummy")
+            )
+            self.md = markdown.Markdown(extensions=['plantuml_markdown'],
+                                        extension_configs={
+                                            'plantuml_markdown': {
+                                                'server': plantumlserver_mock.url,
+                                            }
+                                        })
+            text = self.text_builder.diagram('A -> B').format('txt').build()
+            self.assertEqual('<pre><code class="text">dummy</code></pre>',
+                             self.md.convert(text))
