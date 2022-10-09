@@ -6,7 +6,7 @@
    This plugin implements a block extension which can be used to specify a [PlantUML][] diagram which will be
    converted into an image and inserted in the document.
 
-   Syntax:
+   Syntax (as used in Pelican):
 
       ::uml:: [format="png|svg"] [classes="class1 class2 ..."] [alt="text for alt"]
           PlantUML script diagram
@@ -69,7 +69,8 @@ import markdown
 import uuid
 import requests
 from markdown.util import AtomicString
-from requests.adapters import HTTPAdapter, Retry
+from requests import Session
+from requests.adapters import HTTPAdapter, Retry, Response
 from xml.etree import ElementTree as etree
 
 
@@ -85,7 +86,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
     # Regular expression inspired from fenced_code
     BLOCK_RE = re.compile(r'''
         (?P<indent>[ ]*)
-        ::uml:: 
+        (?P<lang>::uml::) 
         # args
         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
@@ -101,8 +102,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
     FENCED_BLOCK_RE = re.compile(r'''
         (?P<indent>[ ]*)
-        (?P<fence>(?:~{3}|`{3}))[ ]*            # Opening ``` or ~~~
-        (\{?\.?(plant)?uml)[ ]*                 # Optional {, and lang
+        (?P<fence>(?:~{3}|`{3}))[ ]*               # Opening ``` or ~~~
+        (\{?\.?(?P<lang>((?:c4)?plant)?uml))[ ]*   # Optional {, and lang
         # args
         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
@@ -122,8 +123,24 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
     def __init__(self, md):
         super(PlantUMLPreprocessor, self).__init__(md)
+        self._cachedir: Optional[str] = None
+        self._plantuml_server: Optional[str] = None
+        self._kroki_server: Optional[str] = None
+        self._base_dir: Optional[str] = None
+        self._encoding: str = 'utf-8'
+        self._http_method: str = 'GET'
+        self._fallback_to_get: bool = True
 
-    def run(self, lines):
+    def run(self, lines: List[str]) -> List[str]:
+        # extract some configurations, to simplify code
+        self._cachedir = self.config['cachedir']
+        self._plantuml_server = self.config['server']
+        self._kroki_server = self.config['kroki_server']
+        self._base_dir = self.config['base_dir']
+        self._encoding = self.config['encoding'] or self._encoding
+        self._http_method = self.config['http_method'].strip()
+        self._fallback_to_get = bool(self.config['fallback_to_get'])
+
         text = '\n'.join(lines)
         idx = 0
 
@@ -135,10 +152,14 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         return text.split('\n')
 
+    @property
+    def _server(self) -> Optional[str]:
+        return self._kroki_server or self._plantuml_server
+
     # regex for removing some parts from the plantuml generated svg
     ADAPT_SVG_REGEX = re.compile(r'^<\?xml .*?\?><svg(.*?)xmlns=".*?" (.*?)>')
 
-    def _replace_block(self, text):
+    def _replace_block(self, text: str) -> Tuple[str, int]:
         # skip fenced code enclosing diagram
         m = self.FENCED_CODE_RE.search(text)
         if m:
@@ -157,12 +178,15 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         # Parse configuration params
         img_format = m.group('format') if m.group('format') else self.config['format']
-        classes = m.group('classes') if m.group('classes') else self.config['classes']
-        alt = m.group('alt') if m.group('alt') else self.config['alt']
-        title = m.group('title') if m.group('title') else self.config['title']
-        width = m.group('width') if m.group('width') else None
-        height = m.group('height') if m.group('height') else None
         source = m.group('source') if m.group('source') else None
+        self._lang: str = m.group('lang')
+        options = {
+            'classes': m.group('classes') if m.group('classes') else self.config['classes'],
+            'alt': m.group('alt') if m.group('alt') else self.config['alt'],
+            'title': m.group('title') if m.group('title') else self.config['title'],
+            'width': m.group('width') if m.group('width') else None,
+            'height': m.group('height') if m.group('height') else None,
+        }
 
         # Convert image type in PlantUML image format
         if img_format == 'png':
@@ -172,106 +196,139 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         elif img_format == 'txt':
             requested_format = "txt"
         else:
-            # logger.error("Bad uml image format '"+imgformat+"', using png")
             requested_format = "png"
 
         # Extract the PlantUML code.
         code = ""
-        base_dir = self.config['base_dir'] if self.config['base_dir'] else None
-        encoding = self.config['encoding'] if self.config['encoding'] else 'utf8'
         # Add external diagram source.
-        if source and base_dir:
-            with open(os.path.join(base_dir, source), 'r', encoding=encoding) as f:
+        if source and self._base_dir:
+            with open(os.path.join(self._base_dir, source), 'r', encoding=self._encoding) as f:
                 code += f.read()
         # Add extracted markdown diagram text.
         code += m.group('code')
 
-        # Extract diagram source end convert it (if not external)
-        diagram, err = self._render_diagram(code, requested_format, base_dir)
+        # Extract diagram source end convert it
+        diagram, err = self._render_diagram(code, requested_format)
 
         if err:
             # there is an error message: create a nice tag to show it
-            diag_tag = f'<div style="color: red">{err}</div>'
+            diag_tag = self._render_error(err)
         else:
-            self_closed = True  # tags are always self-closing
-            map_tag = ''
-
-            if img_format == 'txt':
-                # logger.debug(diagram)
-                img = etree.Element('pre')
-                code = etree.SubElement(img, 'code')
-                code.attrib['class'] = 'text'
-                code.text = AtomicString(diagram.decode('UTF-8'))
-            else:
-                # These are images
-                if img_format == 'svg_inline':
-                    data = self.ADAPT_SVG_REGEX.sub('<svg \\1\\2>', diagram.decode('UTF-8'))
-                    img = etree.fromstring(data.encode('UTF-8'))
-                    # remove width and height in style attribute
-                    img.attrib['style'] = re.sub(r'\b(?:width|height):\d+px;', '', img.attrib['style'])
-                elif img_format == 'svg':
-                    # Firefox handles only base64 encoded SVGs
-                    data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
-                    img = etree.Element('img')
-                    img.attrib['src'] = data
-                elif img_format == 'svg_object':
-                    # Firefox handles only base64 encoded SVGs
-                    data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
-                    img = etree.Element('object')
-                    img.attrib['data'] = data
-                    self_closed = False  # object tag must be explicitly closed
-                else:  # png format, explicitly set or as a default when format is not recognized
-                    data = 'data:image/png;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
-                    img = etree.Element('img')
-                    img.attrib['src'] = data
-
-                    # check if image maps are enabled
-                    if str(self.config['image_maps']).lower() in ['true', 'on', 'yes', '1']:
-                        # Check for hyperlinks
-                        map_data, err = self._render_diagram(code, 'map', base_dir)
-                        map_data = map_data.decode("utf-8")
-
-                        if map_data.startswith('<map '):
-                            # There are hyperlinks, add the image map
-                            unique_id = str(uuid.uuid4())
-                            map = etree.fromstring(map_data)
-                            map.attrib['id'] = unique_id
-                            map.attrib['name'] = unique_id
-                            map_tag = etree.tostring(map, short_empty_elements=self_closed).decode()
-                            img.attrib['usemap'] = '#' + unique_id
-
-                styles = []
-                if 'style' in img.attrib and img.attrib['style'] != '':
-                    styles.append(re.sub(r';$', '', img.attrib['style']))
-                if width:
-                    styles.append("max-width:"+width)
-                if height:
-                    styles.append("max-height:"+height)
-
-                if styles:
-                    img.attrib['style'] = ";".join(styles)
-                    img.attrib['width'] = '100%'
-                    if 'height' in img.attrib:
-                        img.attrib.pop('height')
-
-                img.attrib['class'] = classes
-                img.attrib['alt'] = alt
-                img.attrib['title'] = title
-
-            diag_tag = etree.tostring(img, short_empty_elements=self_closed).decode()
-            diag_tag = diag_tag + map_tag
+            diag_tag = self._image_tag(img_format, diagram, options, code)
 
         return text[:m.start()] + m.group('indent') + diag_tag + text[m.end():], \
                m.start() + len(m.group('indent')) + len(diag_tag)
 
-    def _render_diagram(self, code: str, requested_format: str, base_dir: str) -> Tuple[any, Optional[str]]:
+    def _image_tag(self, img_format: str, diagram: bytes, options: Dict[str, Optional[str]], code: str) -> str:
+        if img_format == 'txt':
+            return self._txt_code(diagram)
+        # These are images
+        elif img_format == 'svg_inline':
+            return self._inline_svg_image(diagram, options)
+        elif img_format == 'svg':
+            return self._svg_image(diagram, options)
+        elif img_format == 'svg_object':
+            return self._svg_object_image(diagram, options)
+        else:  # png format, explicitly set or as a default when format is not recognized
+            return self._png_image(diagram, options, code)
+
+    @staticmethod
+    def _txt_code(diagram: bytes) -> str:
+        # logger.debug(diagram)
+        img = etree.Element('pre')
+        code = etree.SubElement(img, 'code')
+        code.attrib['class'] = 'text'
+        code.text = AtomicString(diagram.decode('UTF-8'))
+        return etree.tostring(img, short_empty_elements=True).decode()
+
+    def _inline_svg_image(self, diagram: bytes, options: Dict[str, Optional[str]]) -> str:
+        data = self.ADAPT_SVG_REGEX.sub('<svg \\1\\2>', diagram.decode('UTF-8'))
+        img = etree.fromstring(data.encode('UTF-8'))
+        # remove width and height in style attribute
+        img.attrib['style'] = re.sub(r'\b(?:width|height):\d+px;', '', img.attrib['style'])
+        self._set_tag_attributes(img, options)
+        return etree.tostring(img, short_empty_elements=True).decode()
+
+    def _svg_image(self, diagram: bytes, options: Dict[str, Optional[str]]) -> str:
+        # Firefox handles only base64 encoded SVGs
+        data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
+        img = etree.Element('img')
+        img.attrib['src'] = data
+        self._set_tag_attributes(img, options)
+        return etree.tostring(img, short_empty_elements=True).decode()
+
+    def _svg_object_image(self, diagram: bytes, options: Dict[str, Optional[str]]) -> str:
+        # Firefox handles only base64 encoded SVGs
+        data = 'data:image/svg+xml;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
+        img = etree.Element('object')
+        img.attrib['data'] = data
+        self._set_tag_attributes(img, options)
+        # object tag must be explicitly closed
+        return etree.tostring(img, short_empty_elements=False).decode()
+
+    def _png_image(self, diagram: bytes, options: Dict[str, Optional[str]], code: str) -> str:
+        map_tag = ''
+        data = 'data:image/png;base64,{0}'.format(base64.b64encode(diagram).decode('ascii'))
+        img = etree.Element('img')
+        img.attrib['src'] = data
+
+        # check if image maps are enabled
+        if str(self.config['image_maps']).lower() in ['true', 'on', 'yes', '1']:
+            # Check for hyperlinks
+            map_data, err = self._render_diagram(code, 'map')
+
+            if err:
+                # there is an error message: create a nice tag to show it
+                return self._render_error(err)
+            else:
+                map_data = map_data.decode("utf-8")
+
+                if map_data.startswith('<map '):
+                    # There are hyperlinks, add the image map
+                    unique_id = str(uuid.uuid4())
+                    map = etree.fromstring(map_data)
+                    map.attrib['id'] = unique_id
+                    map.attrib['name'] = unique_id
+                    map_tag = etree.tostring(map, short_empty_elements=True).decode()
+                    img.attrib['usemap'] = '#' + unique_id
+
+        self._set_tag_attributes(img, options)
+        diag_tag = etree.tostring(img, short_empty_elements=True).decode()
+
+        return diag_tag + map_tag
+
+    @staticmethod
+    def _set_tag_attributes(img, options: Dict[str, Optional[str]]):
+        styles = []
+        if 'style' in img.attrib and img.attrib['style'] != '':
+            styles.append(re.sub(r';$', '', img.attrib['style']))
+        if options['width']:
+            styles.append("max-width:" + options['width'])
+        if options['height']:
+            styles.append("max-height:" + options['height'])
+
+        if styles:
+            img.attrib['style'] = ";".join(styles)
+            img.attrib['width'] = '100%'
+            if 'height' in img.attrib:
+                img.attrib.pop('height')
+
+        img.attrib['class'] = options['classes']
+        img.attrib['alt'] = options['alt']
+        img.attrib['title'] = options['title']
+
+    @staticmethod
+    def _render_error(self, msg: str) -> str:
+        return f'<div style="color: red">{msg}</div>'
+
+    def _render_diagram(self, code: str, requested_format: str) -> Tuple[Optional[bytes], Optional[str]]:
         cached_diagram_file = None
         diagram = None
 
-        if self.config['cachedir']:
+        if self._cachedir:
             diagram_hash = "%08x" % (adler32(code.encode('UTF-8')) & 0xffffffff)
             cached_diagram_file = os.path.expanduser(
-                    os.path.join(self.config['cachedir'], diagram_hash + '.' + requested_format))
+                    os.path.join(self._cachedir, diagram_hash + '.' + requested_format))
 
             if os.path.isfile(cached_diagram_file):
                 with open(cached_diagram_file, 'rb') as f:
@@ -284,21 +341,20 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         # if cache not found create the diagram
         code = self._set_theme(code)
 
-        self._server = self.config['kroki_server'] or self.config['server']
-
         if self._server:
             with self._set_session() as session:
-                diagram, err = self._render_remote_uml_image(code, requested_format, base_dir, session)
+                diagram, err = self._render_remote_uml_image(code, requested_format, session)
         else:
             diagram, err = self._render_local_uml_image(code, requested_format)
 
-        if not err and self.config['cachedir']:
+        if not err and self._cachedir:
             with open(cached_diagram_file, 'wb') as f:
                 f.write(diagram)
 
         return diagram, err
 
-    def _set_session(self):
+    @staticmethod
+    def _set_session() -> Session:
         retries = Retry(
             total=3,
             backoff_factor=1,
@@ -358,7 +414,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         return code
 
     @staticmethod
-    def _render_local_uml_image(plantuml_code: str, img_format: str) -> Tuple[any, Optional[str]]:
+    def _render_local_uml_image(plantuml_code: str, img_format: str) -> Tuple[Optional[bytes], Optional[str]]:
         plantuml_code = plantuml_code.encode('utf8')
         cmdline = ['plantuml', '-pipemap' if img_format == 'map' else '-p', "-t" + img_format]
 
@@ -367,51 +423,54 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             p = Popen(cmdline, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=(os.name == 'nt'))
             out, err = p.communicate(input=plantuml_code)
         except Exception as exc:
-            raise Exception('Failed to run plantuml: %s' % exc)
+            raise Exception(f'Failed to run plantuml: {exc}')
         else:
             if p.returncode != 0:
                 # plantuml returns a nice image in case of syntax error so log but still return out
-                logger.error('Error in "uml" directive: %s' % err)
+                logger.error(f'Error in "uml" directive: {err}')
 
             return out, None
 
     def _render_remote_uml_image(
-            self, plantuml_code: str, img_format: str, base_dir: str, session: requests.Session
-        ) -> Tuple[any, Optional[str]]:
+            self, plantuml_code: str, img_format: str, session: requests.Session
+        ) -> Tuple[Optional[bytes], Optional[str]]:
         # build the whole source diagram, executing include directives
-        temp_file = PlantUMLIncluder(False).readFile(plantuml_code, base_dir)
-        http_method = self.config['http_method'].strip()
-        fallback_to_get = self.config['fallback_to_get']
-    
-        # Use GET if preferred, use POST with GET as fallback if POST fails
-        post_failed = False
+        temp_file = PlantUMLIncluder(self._lang, not not self._kroki_server,
+                                     self.config['server_include_whitelist'],
+                                     False).readFile(plantuml_code, self._base_dir)
 
-        if http_method == "POST":
+        # Use GET if preferred, use POST with GET as fallback if POST fails
+        if self._http_method == "POST":
             # image_url for POST attempt first
             image_url = "%s/%s/" % (self._server, img_format)
             # download manually the image to be able to continue in case of errors
-
             r = session.post(image_url, data=temp_file, headers={"Content-Type": 'text/plain; charset=utf-8'})
-            if not r.ok:
-                logger.warning('WARNING in "uml" directive: remote server has returned error %d on POST' % r.status_code)
-                if fallback_to_get:
-                    logger.error('Falling back to Get')
-                    post_failed = True
-            if not post_failed:
+
+            if r.ok:
                 return r.content, None
 
-        if http_method == "GET" or post_failed:
-            if self.config['kroki_server']:
-                image_url = self._server + "/plantuml/" + img_format + "/" + self._compress_and_encode(temp_file)
+            logger.warning(f'WARNING in "uml" directive: remote server has returned error {r.status_code} on POST')
+            if self._fallback_to_get:
+                logger.warning('Falling back to GET')
             else:
-                image_url = self._server+"/"+img_format+"/"+self._deflate_and_encode(temp_file)
+                return self._handle_response(r)
 
-            r = session.get(image_url)
-            if not r.ok:
-                logger.warning(f'WARNING in "uml" directive: remote server has returned error %d on GET: %s' % (r.status_code, r.content.decode('utf-8')))
-                return None, r.content.decode('utf-8')
+        if self._kroki_server:
+            image_url = self._server + "/plantuml/" + img_format + "/" + self._compress_and_encode(temp_file)
+        else:
+            image_url = self._server+"/"+img_format+"/"+self._deflate_and_encode(temp_file)
 
-            return r.content, None
+        return self._handle_response(session.get(image_url))
+
+    def _handle_response(self, resp: Response) -> Tuple[Optional[bytes], Optional[str]]:
+        if not resp.ok and self._kroki_server:
+            # Kroki sends and HTTP 400 with a text description of the error
+            logger.warning(f'WARNING in "uml" directive: remote server has returned error {resp.status_code} on GET: '
+                           f'{resp.content.decode("utf-8")}')
+            return None, resp.content.decode('utf-8')
+
+        # the response is ok or the server is PlantUML, which sends always a valid image
+        return resp.content, None
 
     @staticmethod
     def _deflate_and_encode(source: str) -> str:
@@ -428,11 +487,15 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
 class PlantUMLIncluder:
 
-    def __init__(self, dark_mode: bool, light_theme: Optional[str] = None, dark_theme: Optional[str] = None):
+    def __init__(self, lang: str, kroki: bool, white_lists: List[str], dark_mode: bool,
+                 light_theme: Optional[str] = None, dark_theme: Optional[str] = None):
         self._dark_mode = dark_mode
         self._light_theme = light_theme
         self._dark_theme = dark_theme
         self._definitions: Dict[str, str] = {}
+        self._lang = lang
+        self._kroki = kroki
+        self._white_lists = white_lists
 
     # Given a PlantUML source, replace any "!include" directive with the included code, recursively
     def readFile(self, plantuml_code: str, directory: str) -> str:
@@ -471,13 +534,19 @@ class PlantUMLIncluder:
         return result
 
     def _readInclLine(self, line: str, directory: str) -> str:
-        # If includeurl is found, we do not have to do anything here. Server can handle that
+        # If includeurl is found, we do not have to do anything here. Server can handle that (if enabled)
         if "!includeurl" in line:
             return line
 
-        # on the ninth position starts the filename
-        inc_file = line[9:].rstrip()
+        # use line comment as a sort of "directive" for hinting that the file will be included by the server
+        if re.match(r"[^']+'\s*server.*$", line):  # ex: !include file.puml 'server-side include
+            return line  # include handled by server, return it untouched
 
+        # extract the file to include
+        line_match = re.match(r"^!include(?:_once|_many)?\s+(?P<filename>[^']+)(?:\s+'(?P<comment>.*))?$", line)
+        inc_file = line_match.group('filename')
+
+        # expand variables to be able to detect what kind of file/include is
         for varname, value in self._definitions.items():
             if inc_file.startswith(varname):
                 inc_file = inc_file.replace(varname, value)
@@ -489,19 +558,29 @@ class PlantUMLIncluder:
         # According to plantuml, simple !include can also have urls, or use the <> format to include stdlib files,
         # ignore that and continue
         if inc_file.startswith("http") or inc_file.startswith("<"):
-            return line
+            return line  # handled by the server
 
-        # Read contents of the included file
+        # At his point we have a file name/path; it may be handled by the server, or we need to execute the inclusion
+        if re.match(r".*'\s*local.*$", line):  # include hint, ex: !include file.puml 'local file
+            remote = False
+        else:
+            # if the filename matches the white list, then it can be included by te server
+            remote = any(re.match(r, inc_file) for r in self._white_lists)
+
+        if remote:
+            return line  # inclusion handled by the server
+        else:
+            # Read contents of the included file
+            return self._load_file(os.path.normpath(os.path.join(directory, inc_file)))
+
+    def _load_file(self, inc_file_abs: str):
         try:
-            inc_file_abs = os.path.normpath(os.path.join(directory, inc_file))
-            return self._read_incl_line_file(inc_file_abs)
-        except Exception as e1:
-            logger.error("Could not find include " + str(e1))
-            raise e1
-
-    def _read_incl_line_file(self, inc_file_abs: str):
-        with open(inc_file_abs, "r") as inc:
-            return "\n".join(self._readFileRec(inc.readlines(), os.path.dirname(os.path.realpath(inc_file_abs))))
+            with open(inc_file_abs, "r") as inc:
+                return "\n".join(
+                    self._readFileRec(inc.readlines(), os.path.dirname(os.path.realpath(inc_file_abs))))
+        except Exception as exc:
+            logger.error("Could not find include " + str(exc))
+            raise exc
 
 
 # For details see https://pythonhosted.org/Markdown/extensions/api.html#extendmarkdown
@@ -516,6 +595,9 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'server': ["", "PlantUML server url, for remote rendering. Defaults to '', use local command."],
             'kroki_server': ["", "Kroki server url, as alternative to 'server' for remote rendering (image maps must "
                                  "be disabled manually). Defaults to '', use PlantUML server if defined"],
+            'server_include_whitelist': [[r'^[Cc]4.*$'],
+                                         "List of regular expressions defining which include files are supported by "
+                                         "the server. Defaults to [r'^c4.*$']"],
             'cachedir': ["", "Directory for caching of diagrams. Defaults to '', no caching"],
             'image_maps': ["true", "Enable generation of PNG image maps, allowing to use hyperlinks with PNG images."
                                    "Defaults to true"],

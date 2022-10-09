@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+from typing import Union, Callable
 
 import markdown
 import tempfile
@@ -154,7 +155,7 @@ class PlantumlTest(TestCase):
                                return_value=('testing'.encode('utf8'), None)) as mocked_plugin:
             text = self.text_builder.diagram("--8<-- \"" + defs_file + "\"").build()
             self.md.convert(text)
-            mocked_plugin.assert_called_with(expected, 'map', '.')
+            mocked_plugin.assert_called_with(expected, 'map')
 
     def test_arg_title(self):
         """
@@ -585,44 +586,148 @@ A --&gt; B
      `------'          `-'
 </code></pre>''', self.md.convert(text))
 
-    def test_include(self):
+    def _server_render(self, filename: str, text: Union[str, Callable[[str], str]],
+                       expected='<pre><code class="text">A -&gt; B -&gt; C</code></pre>',
+                       server='server'):
+        """
+        Support method for simulating server rendering and keep tests simple.
+        :param filename: filename with diagram source to include
+        :param text: Markdown text, or lambda generating it
+        :param expected: expected HTML result
+        :param server: key for the server url to configure, `server` or `kroki_server`
+        """
         tempdir = tempfile.gettempdir()
-        defs_file = os.path.join(tempdir, 'local-file.puml')
+        defs_file = os.path.join(tempdir, filename)
         # preparing a file to include
         with open(defs_file, 'w') as f:
             f.write('A --> B')
 
-        with ServedBaseHTTPServerMock() as myserver_mock:
-            myserver_mock.responses[MethodName.GET].append(
-                MockHTTPResponse(status_code=200, headers={}, reason_phrase='', body=b"first include")
-            )
-            myserver_mock.responses[MethodName.GET].append(
-                MockHTTPResponse(status_code=200, headers={}, reason_phrase='', body=b"second include")
-            )
-            text = self.text_builder.diagram(f"""
+            with ServedBaseHTTPServerMock() as server_mock:
+                server_mock.responses[MethodName.GET].append(
+                    MockHTTPResponse(status_code=200, headers={}, reason_phrase='', body=b"A -> B -> C")
+                )
+                if callable(text):
+                    text = self.text_builder.diagram(text(server_mock.url)).format('txt').build()
+                else:
+                    text = self.text_builder.diagram(text).format('txt').build()
+
+                self.md = markdown.Markdown(extensions=['plantuml_markdown'],
+                                            extension_configs={
+                                                'plantuml_markdown': {
+                                                    server: server_mock.url,
+                                                    'base_dir': tempdir
+                                                }
+                                            })
+                self.assertEqual(expected, self.md.convert(text))
+
+    def test_include_local(self):
+        """
+        Test inclusion of local files.
+        """
+        self._server_render('local-file.puml', f"""
 @startuml
-!define myserver {myserver_mock.url}
-!$my_other_server = "{myserver_mock.url}"
-!include myserver/first_include.puml
-!include $my_other_server/second_include.puml
 !include local-file.puml
 
 dummy   'the plantuml response is mocked, any text is good
 @enduml        
-                    """).format('txt').build()
+        """)
 
-            with ServedBaseHTTPServerMock() as plantumlserver_mock:
-                plantumlserver_mock.responses[MethodName.GET].append(
-                    MockHTTPResponse(status_code=200, headers={}, reason_phrase='', body=b"A -> B -> C")
-                )
-                self.md = markdown.Markdown(extensions=['plantuml_markdown'],
-                                            extension_configs={
-                                                'plantuml_markdown': {
-                                                    'server': plantumlserver_mock.url,
-                                                    'base_dir': tempdir
-                                                }
-                                            })
-                self.assertEqual('<pre><code class="text">A -&gt; B -&gt; C</code></pre>', self.md.convert(text))
+    def test_include_local_forced(self):
+        """
+        Test inclusion of local files with a "hint" to force loading locally.
+        Otherwise, the c4_context.puml file would be included by the server.
+        """
+        self._server_render('c4_context.puml', f"""
+@startuml
+!include c4_context.puml 'local file
+
+dummy   'the plantuml response is mocked, any text is good
+@enduml        
+        """)
+
+    def test_include_server_forced(self):
+        """
+        Test inclusion of a server side file, with a "hint" to force it.
+        Otherwise, the file will be searched locally.
+        """
+        self._server_render('unused.puml', f"""
+@startuml
+!include my_server_include.puml 'server-side inclusion
+
+dummy   'the plantuml response is mocked, any text is good
+@enduml        
+        """)
+
+    def test_include_server_plantuml(self):
+        """
+        Test inclusion of auto-detected remote files when using a Kroki server.
+        """
+        self._server_render('c4_context.puml', f"""
+@startuml
+' This includes must be automatically supported by the server
+!include c4_component.puml
+!include c4_container.puml
+!include c4_context.puml
+!include c4_deployment.puml
+!include c4_dynamic.puml
+!include c4.puml
+
+dummy   'the plantuml response is mocked, any text is good
+@enduml        
+        """)
+
+    def test_include_server_kroki_automatic(self):
+        """
+        Test inclusion of auto-detected remote files when using a Kroki server.
+        """
+        self._server_render('c4_context.puml', f"""
+@startuml
+' This includes must be automatically supported by the server
+!include c4_component.puml
+!include c4_container.puml
+!include c4_context.puml
+!include c4_deployment.puml
+!include c4_dynamic.puml
+!include c4.puml
+
+dummy   'the plantuml response is mocked, any text is good
+@enduml        
+        """, server='kroki_server')
+
+    def test_include_server(self):
+        """
+        Test inclusion of server-side files.
+        """
+        self._server_render('unused.puml', f"""
+@startuml
+' This includes must be automatically supported by the server
+!includeurl 'some-url'
+!include http://some-server
+!include https://some-server
+!include_once http://some-server
+!include_many http://some-server
+!include <stdlib/file>
+
+dummy   'the plantuml response is mocked, any text is good
+@enduml        
+        """)
+
+    def test_include_with_variables(self):
+        """
+        Test inclusion of local files, with the use variables for substitutions.
+        :return:
+        """
+        self._server_render('local-file.puml', lambda server_url: f"""
+@startuml
+!define myserver {server_url}
+!$my_other_server = "{server_url}"
+!include myserver/first_include.puml
+!include $my_other_server/second_include.puml
+'!include local-file.puml
+
+dummy   'the plantuml response is mocked, any text is good
+@enduml        
+        """, '<pre><code class="text">A -&gt; B -&gt; C</code></pre>')
 
     def test_kroki(self):
         """

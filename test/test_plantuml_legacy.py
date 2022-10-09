@@ -12,7 +12,7 @@ class PlantumlTest_legacy(PlantumlTest):
         self.text_builder = MarkdownBuilder('::uml::')
 
     def test_multiple_fences(self):
-        pass  # this test has non sense with legacy diagram delimiter
+        pass  # this test has no sense with legacy diagram delimiter
 
 
 if __name__ == '__main__':

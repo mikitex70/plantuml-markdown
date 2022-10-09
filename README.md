@@ -3,8 +3,23 @@
 [PlantUML][] Extension for [Python-Markdown][]
 ==============================================
 
-This plugin implements a block extension which can be used to specify a [PlantUML][] diagram which will be
-converted into an image and inserted in the document.
+* [Introduction](#introduction)
+* [Installation](#installation)
+  * [Using a local plantUML binary](#using-a-local-plantuml-binary)
+  * [Using a remote server](#using-a-remote-server)
+    * [Using a PlantUML server](#using-a-plantuml-server)
+    * [Using a Kroki server](#using-a-kroki-server)
+    * [File inclusion management](#file-inclusion-management)
+* [Plugin options](#plugin-options)
+  * [A note on the `priority` configuration](#a-note-on-the-priority-configuration)
+* [Running tests](#running-tests)
+* [Running tests using Docker](#running-tests-using-docker)
+
+Introduction
+------------
+
+This plugin implements a block extension that can be used to specify a [PlantUML] diagram that will be converted into an
+image and inserted into the document.
 
 Syntax:
 
@@ -30,7 +45,8 @@ The GitLab/GitHub block syntax is also recognized. Example:
       Goofy <-- MickeyMouse: responds
     ```
 
-Options are optional (otherwise the wouldn't be options), but if present must be specified in the order `format`, `classes`, `alt`, `title`, `width`, `height`, and `source`.
+Options are optional (otherwise the wouldn't be options), but if present must be specified in the order 
+`format`, `classes`, `alt`, `title`, `width`, `height`, and `source`.
 The option value may be enclosed in single or double quotes.
 
 Supported values for `format` parameter are:
@@ -43,7 +59,8 @@ Supported values for `format` parameter are:
 
 The `width` and `height` options must include a [CSS unit](https://www.w3schools.com/cssref/css_units.asp).
 
-`source` parameter is used for inclusion of an external source diagram instead on an inline code. Here's an example in GitLab/GitHub block syntax.
+`source` parameter is used for inclusion of an external source diagram instead on an inline code. Here's an example in
+GitLab/GitHub block syntax.
 
 > basic.puml
 
@@ -148,9 +165,11 @@ For [Gentoo Linux][Gentoo] there is an ebuild at http://gpo.zugaina.org/dev-util
 the ebuild and the `files` subfolder or you can add the `zugaina` repository with [layman][]
 (recommended).
 
-### <a name="using-plantuml-server"></a>Using a PlantUML server
+### Using a remote server
 
-From version `2.0` a [PlantUML server](http://plantuml.com/server) can be used for rendering diagrams. This speedups a
+#### Using a PlantUML server
+
+From version `2.0` a [PlantUML server] can be used for rendering diagrams. This speedups a
 lot the diagrams rendering but needs to send the diagram source to a server.
 
 You can download the [war](http://sourceforge.net/projects/plantuml/files/plantuml.war/download) and deploy in a servlet
@@ -185,20 +204,31 @@ Then you need to specify the configuration file on the command line:
 
     markdown_py -x plantuml_markdown -c myconfig.yml mydoc.md > out.html
 
-### A note on the `priority` configuration
+#### Using a Kroki server
 
-With `markdownm_py` plugin extensions can conflict if they manipulate the same  block of text. 
-Examples are the [Fenced Code Blocks](https://python-markdown.github.io/extensions/fenced_code_blocks)
-or [Snippets](https://facelessuser.github.io/pymdown-extensions/extensions/snippets/).
+Starting from version `3.7.0` a [Kroki] server can be used as an alternative of [PlantUML server].
+The configuration is similar, only use the `server_kroki` configuration property instead of the `server` property.
 
-Every plugin has a priority configured, most wants to be run as te first or the last plugin in the chain. The
-`plantuml_markdown` plugin fits in the middle, trying to work as best without conflicting with other plugins.
+#### File inclusion management
 
-If you are getting strange behaviours in conjunction with other plugins, you can use the `priority` configuration to
-try to avoid the conflict, letting the plugin to be run before (higher value) or after other plugins (lower value).
+Usually, remote servers, for security reasons, do not allow arbitrary '!include' instructions to be executed.
 
-As an example of possible conflicts see issue #38.
-    
+To try to bypass this limitation, the plugin behaves as follows:
+* the inclusion of [stdlib](https://plantuml.com/stdlib) libraries is considered secure and managed by the server; 
+  example `!include <C4/C4_Container>`
+* if the source to be included starts with `http` or `https`, the inclusion can be handled by the server; be aware that 
+  the server may refuse to include them ([Kroki] in an example)
+* if the source name matches one of the regular expressions in the `server_include_whitelist` configuration, the file is
+  assumed to be safe for the server; an example is `!include C4/C4_Container.puml` with the server [Kroki], which has a
+  copy of the C4 library internally
+* otherwise, it is assumed that the file is local and that the `include` statement is replaced with the contents of the 
+  file before sending it to the remote server. This behavior can be changed by declaring an appropriate regular
+  expression in `server_include_whitelist` or by adding a comment to the line:
+    * if the comment begins with `local`, include is forced local; e.g. `!include C4/C4_Container.puml ' local file`
+      will search and read the local file `C4/C4_Container.puml`
+    * if the comment begins with `remote`, include is treated as a server side include;
+      for example `!include my_configuration.puml 'server-side include`
+
 Plugin options
 --------------
 
@@ -208,23 +238,45 @@ The plugin has several configuration option:
 * `base_dir`: path where to search for external diagrams files
 * `cachedir`: directory for caching of diagrams. Defaults to `''`, no caching
 * `classes`: space separated list of classes for the generated image. Defaults to `uml`
-* `encoding`: character encoding for external files (see `source` parameter); default encoding is `utf-8`. Please note that on Windows text files may use the `cp1252` as default encoding, so setting `encoding: cp1252` may fix incorrect characters rendering.
+* `encoding`: character encoding for external files (see `source` parameter); default encoding is `utf-8`. Please note 
+  that on Windows text files may use the `cp1252` as default encoding, so setting `encoding: cp1252` may fix incorrect 
+  characters rendering.
 * `fallback_to_get`: Fallback to `GET` if `POST` fails. Defaults to True
-* `format`: format of image to generate (`png`, `svg`, `svg_object`, `svg_inline` or `txt`). Defaults to `png` (See example section above for further explanations of the values for `format`)
+* `format`: format of image to generate (`png`, `svg`, `svg_object`, `svg_inline` or `txt`). Defaults to `png` (See 
+  example section above for further explanations of the values for `format`)
 * `http_method`: Http Method for server - `GET` or `POST`. "Defaults to `GET`
-* `image_maps`: generate image maps if format is `png` and the diagram has hyperlinks; `true`, `on`, `yes` or `1` activates image maps, everything else disables it. Defaults to `true`
-* `kroki_server`: Kroki server url, as alternative to `server` for remote rendering (image maps mus be disabled manually). Defaults to `''`, use PlantUML server if defined
+* `image_maps`: generate image maps if format is `png` and the diagram has hyperlinks; `true`, `on`, `yes` or `1` 
+  activates image maps, everything else disables it. Defaults to `true`
+* `kroki_server`: Kroki server url, as alternative to `server` for remote rendering (image maps mus be disabled 
+  manually). Defaults to `''`, use PlantUML server if defined
 * `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `30`
-* `puml_notheme_cmdlist`: theme will not be set if listed commands present. Default list is  `['version', 'listfonts', 'stdlib', 'license']`. **If modifying please copy the default list provided and append**
+* `puml_notheme_cmdlist`: theme will not be set if listed commands present. Default list is
+  `['version', 'listfonts', 'stdlib', 'license']`. **If modifying please copy the default list provided and append**
 * `server`: PlantUML server url, for remote rendering. Defaults to `''`, use local command
+* `server_include_whitelist`: List of regular expressions defining which include files are supported by the server. 
+  Defaults to `[r'^c4.*$']` (all files starting with `c4`). **See [Inclusion Management](#inclusion-management) for 
+  details**
 * `theme`: Default Theme to use, will be overridden  by !theme directive. Defaults to blank i.e. Plantuml `none` theme
 * `title`: tooltip for the diagram
-                                     
 
 For passing options to the `plantuml_plugin` see the documentation of the tool you are using.
 
 For `markdown_py`, simply write a YAML file with the configurations and use the `-c` option on the command line.
 See the [Using a PlantUML server](#using-plantuml-server) section for an example.
+
+### A note on the `priority` configuration
+
+With `markdownm_py` plugin extensions can conflict if they manipulate the same block of text. 
+Examples are the [Fenced Code Blocks](https://python-markdown.github.io/extensions/fenced_code_blocks)
+or [Snippets](https://facelessuser.github.io/pymdown-extensions/extensions/snippets/) extensions.
+
+Every plugin has a priority configured, most wants to be run as te first or the last plugin in the chain. The
+`plantuml_markdown` plugin fits in the middle, trying to work as best without conflicting with other plugins.
+
+If you are getting strange behaviours in conjunction with other plugins, you can use the `priority` configuration to
+try to avoid the conflict, letting the plugin run before (higher value) or after other plugins (lower value).
+
+As an example of possible conflicts see issue [#38](https://github.com/mikitex70/plantuml-markdown/issues/38).
 
 Running tests
 -------------
@@ -275,6 +327,8 @@ PTYHON_VER=3.9 MARKDOWN_VER=3.3.7 docker-compose build && docker-compose up
 
 [Python-Markdown]: https://python-markdown.github.io/
 [PlantUML]: http://plantuml.sourceforge.net/
+[PlantUML server]: http://plantuml.com/server
+[Kroki]: https://kroki.io/
 [Graphviz]: http://www.graphviz.org
 [Gentoo]: http://www.gentoo.org
 [layman]: http://wiki.gentoo.org/wiki/Layman

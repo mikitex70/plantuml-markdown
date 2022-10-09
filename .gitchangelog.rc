@@ -154,6 +154,7 @@ subject_process = (strip |
     ReSub(r'includepp postvget theme dockertest', r'added support for themes (implements #50)') |
     ReSub(r'changelog fot the', r'changelog for the') |
     ReSub(r'diable image', r'disable image') |
+    ReSub(r' renderingwith', r' rendering with') |
     ReSub(r'do not create temp file with kroki', r'do not create temp file with kroki (refs #77)') |
     ReSub(r'rate limits when rendering remotely', r'rate limits when rendering remotely (refs #79)') |
     ucfirst | final_dot)
