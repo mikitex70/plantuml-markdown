@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 3.7.2 (2022-10-10)
+
+### New
+
+* Retry on server errors or rate limits when rendering remotely (refs #79) [Nejc Habjan]
+
+
 ## 3.7.1 (2022-10-07)
 
 ### Fix
