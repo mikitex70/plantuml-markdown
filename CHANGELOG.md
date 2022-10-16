@@ -1,6 +1,18 @@
 # Changelog
 
 
+## 3.7.3 (2022-10-16)
+
+### New
+
+* Added support for server-side C4 includes (refs #76) [Michele Tessaro]
+
+  Added the `server_include_whilelist` configuration which is a list of
+  regular expressions used to define which files can be safely included
+  by the server.
+  Defaults to `[r'^[Cc]4.*$']`, all C4 include files.
+
+
 ## 3.7.2 (2022-10-10)
 
 ### New
@@ -42,7 +54,7 @@
 
 ### Fix
 
-* Fixed yaml renderingwith remote server (fixes #72) [Michele Tessaro]
+* Fixed yaml rendering with remote server (fixes #72) [Michele Tessaro]
 
 * Removed unused `plantuml` import. [Michele Tessaro]
 
