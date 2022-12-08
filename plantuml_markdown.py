@@ -244,8 +244,9 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
     def _inline_svg_image(self, diagram: bytes, options: Dict[str, Optional[str]]) -> str:
         data = self.ADAPT_SVG_REGEX.sub('<svg \\1\\2>', diagram.decode('UTF-8'))
         img = etree.fromstring(data.encode('UTF-8'))
-        # remove width and height in style attribute
-        img.attrib['style'] = re.sub(r'\b(?:width|height):\d+px;', '', img.attrib['style'])
+        if bool(self.config["remove_inline_svg_size"]):
+            # remove width and height in style attribute
+            img.attrib['style'] = re.sub(r'\b(?:width|height):\d+px;', '', img.attrib['style'])
         self._set_tag_attributes(img, options)
         return etree.tostring(img, short_empty_elements=True).decode()
 
@@ -591,6 +592,7 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'classes': ["uml", "Space separated list of classes for the generated image. Defaults to 'uml'."],
             'alt': ["uml diagram", "Text to show when image is not available. Defaults to 'uml diagram'"],
             'format': ["png", "Format of image to generate (png, svg or txt). Defaults to 'png'."],
+            'remove_inline_svg_size': [True, "Remove the width and height attributes of inline_svg diagrams", "Defaults to True"],
             'title': ["", "Tooltip for the diagram"],
             'server': ["", "PlantUML server url, for remote rendering. Defaults to '', use local command."],
             'kroki_server': ["", "Kroki server url, as alternative to 'server' for remote rendering (image maps must "
