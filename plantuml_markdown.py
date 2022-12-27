@@ -250,6 +250,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         if bool(self.config["remove_inline_svg_size"]):
             # remove width and height in style attribute
             img.attrib['style'] = re.sub(r'\b(?:width|height):\d+px;', '', img.attrib['style'])
+        img.attrib['preserveAspectRatio'] = 'xMaxYMax meet'
         self._set_tag_attributes(img, options)
         return etree.tostring(img, short_empty_elements=True).decode()
 
