@@ -25,6 +25,9 @@ class PlantumlTest(TestCase):
                 # fix for fences in Markdown 3.3
                 'markdown.extensions.fenced_code': {
                     'lang_prefix': ''
+                },
+                'markdown.extensions.plantuml_markdown': {
+                    'priority': 110
                 }
             }
         else:
@@ -52,6 +55,7 @@ class PlantumlTest(TestCase):
     FAKE_IMAGE = 'ABCDEF=='
     IMAGE_REGEX = re.compile(r'<(?:img|.*object)'
                              r'(?:( alt=".*?")|'
+                             r'( id=".*?")?|'
                              r'( class=".*?")|'
                              r'( title=".*?")|'
                              r'( style=".*?")|'
@@ -64,9 +68,10 @@ class PlantumlTest(TestCase):
     @classmethod
     def _stripImageData(cls, html):
         def sort_attributes(groups):
-            alt = next(x for x in groups if x.startswith(' alt='))
-            title = next(x for x in groups if x.startswith(' title='))
-            classes = next(x for x in groups if x.startswith(' class='))
+            elem_id = next(iter(x for x in groups if x and x.startswith(' id=')), '')
+            alt = next(x for x in groups if x and x.startswith(' alt='))
+            title = next(x for x in groups if x and x.startswith(' title='))
+            classes = next(x for x in groups if x and x.startswith(' class='))
             style = next(iter(x for x in groups if x and x.startswith(' style=')), None)
             src = next(iter(x for x in groups if x and x.startswith(' src=')), None)
             usemap = next(iter(x for x in groups if x and x.startswith(' usemap=')), None)
@@ -75,7 +80,7 @@ class PlantumlTest(TestCase):
             style = style if style and '""' not in style else ''
             src = src if src and '""' not in src else ''
 
-            html = "<img{}{}{}{}{}{}/>".format(alt, title, classes, style, src, usemap)
+            html = "<img{}{}{}{}{}{}/>".format(elem_id, alt, title, classes, style, src, usemap)
             return cls.BASE64_REGEX.sub(r'\1%s' % cls.FAKE_IMAGE, html)
 
         if html.startswith('<map id='):
@@ -156,6 +161,15 @@ class PlantumlTest(TestCase):
             text = self.text_builder.diagram("--8<-- \"" + defs_file + "\"").build()
             self.md.convert(text)
             mocked_plugin.assert_called_with(expected, 'map')
+
+    def test_arg_id(self):
+        """
+        Test for the correct parsing of the id argument
+        """
+        text = self.text_builder.diagram("A --> B").id("diag-test").build()
+        self.assertEqual(
+            self._stripImageData('<p><img id="diag-test" alt="uml diagram" class="uml" src="data:image/png;base64,%s" title=""/></p>' % self.FAKE_IMAGE),
+            self._stripImageData(self.md.convert(text)))
 
     def test_arg_title(self):
         """

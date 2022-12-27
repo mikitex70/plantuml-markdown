@@ -88,6 +88,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         (?P<indent>[ ]*)
         (?P<lang>::uml::) 
         # args
+        \s*(id=(?P<quot7>"|')(?P<id>[-\w]+?)(?P=quot7))?
         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
         \s*(alt=(?P<quot2>"|')(?P<alt>.*?)(?P=quot2))?
@@ -105,6 +106,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         (?P<fence>(?:~{3}|`{3}))[ ]*               # Opening ``` or ~~~
         (\{?\.?(?P<lang>((?:c4)?plant)?uml))[ ]*   # Optional {, and lang
         # args
+        \s*(id=(?P<quot7>"|')(?P<id>[-\w]+?)(?P=quot7))?
         \s*(format=(?P<quot>"|')(?P<format>\w+)(?P=quot))?
         \s*(classes=(?P<quot1>"|')(?P<classes>[\w\s]+)(?P=quot1))?
         \s*(alt=(?P<quot2>"|')(?P<alt>.*?)(?P=quot2))?
@@ -186,6 +188,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             'title': m.group('title') if m.group('title') else self.config['title'],
             'width': m.group('width') if m.group('width') else None,
             'height': m.group('height') if m.group('height') else None,
+            'id': m.group('id') if m.group('id') else None,
         }
 
         # Convert image type in PlantUML image format
@@ -317,6 +320,9 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         img.attrib['class'] = options['classes']
         img.attrib['alt'] = options['alt']
         img.attrib['title'] = options['title']
+
+        if options['id']:
+            img.attrib['id'] = options['id']
 
     @staticmethod
     def _render_error(self, msg: str) -> str:

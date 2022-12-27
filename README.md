@@ -40,13 +40,13 @@ Example:
 
 The GitLab/GitHub block syntax is also recognized. Example:
 
-    ```plantuml format="png" classes="uml myDiagram" alt="My super diagram placeholder" title="My super diagram" width="300px" height="300px"
+    ```plantuml id="myDiag" format="png" classes="uml myDiagram" alt="My super diagram placeholder" title="My super diagram" width="300px" height="300px"
       Goofy ->  MickeyMouse: calls
       Goofy <-- MickeyMouse: responds
     ```
 
 Options are optional (otherwise the wouldn't be options), but if present must be specified in the order 
-`format`, `classes`, `alt`, `title`, `width`, `height`, and `source`.
+`id`, `format`, `classes`, `alt`, `title`, `width`, `height`, and `source`.
 The option value may be enclosed in single or double quotes.
 
 Supported values for `format` parameter are:

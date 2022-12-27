@@ -14,6 +14,7 @@ class MarkdownBuilder:
         """
         Clears the current diagram definition
         """
+        self._id = ""
         self._format = ""
         self._class = ""
         self._alt = ""
@@ -30,7 +31,8 @@ class MarkdownBuilder:
         """
         if self._diagram_buffer:
             delim = re.sub(r'(\W{3,})(\w+)', r'\1{\2', self._delimiter) if self._extended_syntax else self._delimiter
-            args = self._format + self._class + self._alt + self._title + self._width + self._height + self._source
+            args = self._id + self._format + self._class + self._alt + self._title + self._width + self._height + \
+                   self._source
             self._buffer += (' '*self._indent)+delim+args+('}' if self._extended_syntax else '')
             self._buffer += "\n"+(' '*self._indent)+self._diagram_buffer+"\n"+(' '*self._indent)+self._end_delimiter+"\n"
 
@@ -43,6 +45,15 @@ class MarkdownBuilder:
         :return: The object itself
         """
         self._extended_syntax = extended
+        return self
+
+    def id(self, id_value):
+        """
+        Defines the value for the 'id' argument.
+        :param id_value: The text for the id argument
+        :return: The object itself
+        """
+        self._id = " id='%s'" % id_value
         return self
 
     def alt(self, alt_text):
