@@ -157,6 +157,7 @@ subject_process = (strip |
     ReSub(r' renderingwith', r' rendering with') |
     ReSub(r'do not create temp file with kroki', r'do not create temp file with kroki (refs #77)') |
     ReSub(r'rate limits when rendering remotely', r'rate limits when rendering remotely (refs #79)') |
+    ReSub(r"'remove_inline_svg_size'", r"`remove_inline_svg_size`") |
     ucfirst | final_dot)
 
 

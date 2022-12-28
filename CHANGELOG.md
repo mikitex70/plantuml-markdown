@@ -1,6 +1,22 @@
 # Changelog
 
 
+## development (unreleased)
+
+### New
+
+* Added `preserveAspectRatio` to inline SVG diagrams. [Michele Tessaro]
+
+* Added `id` diagram option. [Michele Tessaro]
+
+  When the `id` option is used, an `id` attribute will be generated for the
+  diagram.
+  This can be useful for referencing the diagram in CSS rules or
+  Javascript code.
+
+* Added `remove_inline_svg_size` config option. [Anders Norman]
+
+
 ## 3.7.3 (2022-10-16)
 
 ### New
