@@ -452,7 +452,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             # image_url for POST attempt first
             image_url = "%s/%s/" % (self._server, img_format)
             # download manually the image to be able to continue in case of errors
-            r = session.post(image_url, data=temp_file, headers={"Content-Type": 'text/plain; charset=utf-8'})
+            r = session.post(image_url, data=temp_file, headers={"Content-Type": 'text/plain; charset=utf-8'},
+                             verify=not self.config['insecure'])
 
             if r.ok:
                 return r.content, None
@@ -468,7 +469,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         else:
             image_url = self._server+"/"+img_format+"/"+self._deflate_and_encode(temp_file)
 
-        return self._handle_response(session.get(image_url))
+        return self._handle_response(session.get(image_url, verify=not self.config['insecure']))
 
     def _handle_response(self, resp: Response) -> Tuple[Optional[bytes], Optional[str]]:
         if not resp.ok and self._kroki_server:
@@ -607,6 +608,7 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'server_include_whitelist': [[r'^[Cc]4.*$'],
                                          "List of regular expressions defining which include files are supported by "
                                          "the server. Defaults to [r'^c4.*$']"],
+            'insecure': ["False", "Disable SSL certificates verification; set to True if you server uses self-signed certificates. Defaults to False"],
             'cachedir': ["", "Directory for caching of diagrams. Defaults to '', no caching"],
             'image_maps': ["true", "Enable generation of PNG image maps, allowing to use hyperlinks with PNG images."
                                    "Defaults to true"],

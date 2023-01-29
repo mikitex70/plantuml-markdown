@@ -181,6 +181,7 @@ In either cases you need to specify the URL of the server in a configuration fil
 plantuml_markdown:
   server: http://www.plantuml.com/plantuml  # PlantUML server, for remote rendering
   # other global options
+  insecure: False                           # set to True if the server uses self-signed certificates
   cachedir: /tmp                            # set a non-empty value to enable caching
   base_dir: .                               # where to search for diagrams to include
   format: png                               # default diagram image format
@@ -188,6 +189,7 @@ plantuml_markdown:
   encoding: utf-8                           # character encoding for external files (default utf-8)
   title: UML diagram                        # default title (tooltip) for diagram images
   alt: UML diagram image                    # default `alt` attribute for diagram images
+  image_maps: True                          # generate image maps when the format is png and there are hyperlinks
   priority: 30                              # plugin priority; the higher, the sooner will be applied (default 30)
   http_method: GET                          # GET or POST  - note that plantuml.com only supports GET (default GET)       
   fallback_to_get: True                     # When using POST, should GET be used as fallback (POST will fail if @startuml/@enduml tags not used) (default True)
@@ -247,8 +249,10 @@ The plugin has several configuration option:
 * `remove_inline_svg_size`: When `format` is `svg_inline`, remove the `width` and `height` attributes of the generated
   SVG. Defaults to True
 * `http_method`: Http Method for server - `GET` or `POST`. "Defaults to `GET`
-* `image_maps`: generate image maps if format is `png` and the diagram has hyperlinks; `true`, `on`, `yes` or `1` 
+* `image_maps`: generate image maps if format is `png` and the diagram has hyperlinks; `true`, `on`, `yes` or `1`
   activates image maps, everything else disables it. Defaults to `true`
+* `insecure`: if `True` do not validate SSL certificate of the PlantUML server; set to `True` when using a custom 
+  PlantUML installation with self-signed certificates. Defaults to `False`
 * `kroki_server`: Kroki server url, as alternative to `server` for remote rendering (image maps mus be disabled 
   manually). Defaults to `''`, use PlantUML server if defined
 * `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `30`
