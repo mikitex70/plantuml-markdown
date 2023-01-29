@@ -1,7 +1,18 @@
 # Changelog
 
 
-## development (unreleased)
+## 3.8.1 (2023-01-29)
+
+### New
+
+* Added option for disabling SSL checks (refs #83) [Michele Tessaro]
+
+  Added the `insecure` configuration option for disabling HTTPS SSL
+  certificate validation.
+  Set it to `True` when the PlantUML server uses self-signed certificates.
+
+
+## 3.8.0 (2022-12-28)
 
 ### New
 
