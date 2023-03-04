@@ -424,7 +424,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
     @staticmethod
     def _render_local_uml_image(plantuml_code: str, img_format: str) -> Tuple[Optional[bytes], Optional[str]]:
         plantuml_code = plantuml_code.encode('utf8')
-        cmdline = ['plantuml', '-pipemap' if img_format == 'map' else '-p', "-t" + img_format]
+        cmdline = ['plantuml', '-pipemap' if img_format == 'map' else '-p', "-t" + img_format, '-charset', 'UTF-8']
 
         try:
             # On Windows run batch files through a shell so the extension can be resolved
