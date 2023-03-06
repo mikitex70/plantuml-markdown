@@ -94,6 +94,7 @@ section_regexps = [
         r'^[fF]ix\s*:\s*((dev|use?r|pkg|doc)\s*:\s*)?([^\n]*)$',
         r'\b[fF]ix(ed|es)?\b',
         r'\b[cC]orrect\w*\b',
+        r'\bExplicitly\b',
      ]),
 
     ('Other', None ## Match all lines

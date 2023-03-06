@@ -1,6 +1,19 @@
 # Changelog
 
 
+## 3.8.2 (2023-03-06)
+
+### Changes
+
+* Updated CHANGELOG for the new release. [Michele Tessaro]
+
+### Fix
+
+* Explicitly pass charset to plantuml. [Victor Westerhuis]
+
+  The code is explicitly encoded to UTF-8, but plantuml gets to pick its own charset. On my Windows installation it picks codepage 1252 by default, leading to wrong characters in the output. UTF-8 should be available everywhere according to the [PlantUML documentation](https://plantuml.com/unicode).
+
+
 ## 3.8.1 (2023-01-29)
 
 ### New
