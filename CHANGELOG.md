@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 3.8.3 (2023-04-12)
+
+### Fix
+
+* Set default value for insecure setting as boolean (fixes #86) [Michele Tessaro]
+
+
 ## 3.8.2 (2023-03-06)
 
 ### Changes

@@ -608,7 +608,7 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'server_include_whitelist': [[r'^[Cc]4.*$'],
                                          "List of regular expressions defining which include files are supported by "
                                          "the server. Defaults to [r'^c4.*$']"],
-            'insecure': ["False", "Disable SSL certificates verification; set to True if you server uses self-signed certificates. Defaults to False"],
+            'insecure': [False, "Disable SSL certificates verification; set to True if you server uses self-signed certificates. Defaults to False"],
             'cachedir': ["", "Directory for caching of diagrams. Defaults to '', no caching"],
             'image_maps': ["true", "Enable generation of PNG image maps, allowing to use hyperlinks with PNG images."
                                    "Defaults to true"],
