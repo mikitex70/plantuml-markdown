@@ -542,11 +542,13 @@ A --&gt; B
         }
         @endjson
         ''').format("txt").build()
-        self.assertEqual('''<pre><code class="text">                                   
-               fruit          Apple
-               size           Large
-                                   
-               color          Red  
+        self.assertEqual('''<pre><code class="text">                                                                                                      
+                                                                                                      
+               fruit                                                                             Apple
+                                                                                                      
+               size                                                                              Large
+                                                                                                      
+               color                                                                             Red  
 </code></pre>''', self.md.convert(text))
 
 #     def test_yaml(self):
