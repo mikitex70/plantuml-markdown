@@ -231,6 +231,13 @@ To try to bypass this limitation, the plugin behaves as follows:
       will search and read the local file `C4/C4_Container.puml`
     * if the comment begins with `remote`, include is treated as a server side include;
       for example `!include my_configuration.puml 'server-side include`
+* includes are resolved recursively, as when used with a local PlantUML.
+
+If using a local PlantUML installation includes works out of the box only if includes are in the current directory. If 
+they are in other directories there are two possibilities:
+* use the directory in includes (ex: `!include includes/my-defs.puml`)
+* set the `base_dir` option in the plugin configuration (ex: `base_dir: includes`) **AND** change the default plantuml
+  command in something like `plantuml_cmd: java -Dplantuml.include.path=includes -jar path/to/plantuml.jar` 
 
 Plugin options
 --------------
@@ -242,7 +249,7 @@ The plugin has several configuration option:
 * `cachedir`: directory for caching of diagrams. Defaults to `''`, no caching
 * `classes`: space separated list of classes for the generated image. Defaults to `uml`
 * `config`: PlantUML config file, relative to `base_dir` (a PlantUML file included before every diagram, see
-  [PlantUML documentation](https://plantuml.com/command-line))
+  [PlantUML documentation](https://plantuml.com/command-line)). Defaults to `None`
 * `encoding`: character encoding for external files (see `source` parameter); default encoding is `utf-8`. Please note 
   that on Windows text files may use the `cp1252` as default encoding, so setting `encoding: cp1252` may fix incorrect 
   characters rendering.
@@ -250,14 +257,16 @@ The plugin has several configuration option:
 * `format`: format of image to generate (`png`, `svg`, `svg_object`, `svg_inline` or `txt`). Defaults to `png` (See 
   example section above for further explanations of the values for `format`)
 * `remove_inline_svg_size`: When `format` is `svg_inline`, remove the `width` and `height` attributes of the generated
-  SVG. Defaults to True
+  SVG. Defaults to `True`
 * `http_method`: Http Method for server - `GET` or `POST`. "Defaults to `GET`
 * `image_maps`: generate image maps if format is `png` and the diagram has hyperlinks; `true`, `on`, `yes` or `1`
-  activates image maps, everything else disables it. Defaults to `true`
+  activates image maps, everything else disables it. Defaults to `True`
 * `insecure`: if `True` do not validate SSL certificate of the PlantUML server; set to `True` when using a custom 
   PlantUML installation with self-signed certificates. Defaults to `False`
 * `kroki_server`: Kroki server url, as alternative to `server` for remote rendering (image maps mus be disabled 
   manually). Defaults to `''`, use PlantUML server if defined
+* `plantuml_cmd`: command to run for executing PlantUML locally; for example, if you need to set the include directory
+  the value can be `java -Dplantuml.include.path=includes -jar plantuml.jar`. Defaults to `plantuml` (the system script)
 * `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `30`
 * `puml_notheme_cmdlist`: theme will not be set if listed commands present. Default list is
   `['version', 'listfonts', 'stdlib', 'license']`. **If modifying please copy the default list provided and append**

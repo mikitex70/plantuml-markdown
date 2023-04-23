@@ -425,7 +425,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
     def _render_local_uml_image(self, plantuml_code: str, img_format: str) -> Tuple[Optional[bytes], Optional[str]]:
         plantuml_code = plantuml_code.encode('utf8')
-        cmdline = ['plantuml', '-pipemap' if img_format == 'map' else '-p', "-t" + img_format, '-charset', 'UTF-8']
+        cmdline = self.config['plantuml_cmd'].split(' ')
+        cmdline.extend(['-pipemap' if img_format == 'map' else '-p', "-t" + img_format, '-charset', 'UTF-8'])
 
         if self._config_path:
             full_path = os.path.join(self._base_dir, self._config_path) if self._base_dir else self._config_path
@@ -638,7 +639,9 @@ class PlantUMLMarkdownExtension(markdown.Extension):
                                      ], 
                                      "theme will not be set if listed commands present (default list),",
                                      "Defaults to the before mentioned list"
-                                    ]
+                                    ],
+            "plantuml_cmd": ["plantuml", "Command executed when using local plantuml (ex: 'java -Dplantuml.include.path="
+                                         ". -jar plantuml.jar')", "Defaults to 'plantuml'."]
         }
 
         # Fix to make links navigable in SVG diagrams
