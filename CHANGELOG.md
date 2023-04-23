@@ -1,11 +1,25 @@
 # Changelog
 
 
+## 3.9.0 (2023-04-23)
+
+### New
+
+* Added support for other plantuml diagrams. [Michele Tessaro]
+
+  Now can be used other kind of diagrams, like `startgantt`,
+  `startmindmap`, `startjson` and many others.
+
+* Added option for overriding plantuml command (resolves #87) [Michele Tessaro]
+
+* Added plantuml config option (implements #88) [Michele Tessaro]
+
+
 ## 3.8.3 (2023-04-12)
 
 ### Fix
 
-* Set default value for insecure setting as boolean (fixes #86) [Michele Tessaro]
+* Set default value for unsecure setting as boolean (fixes #86) [Michele Tessaro]
 
 
 ## 3.8.2 (2023-03-06)
