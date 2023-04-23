@@ -515,13 +515,14 @@ class PlantUMLIncluder:
         self._lang = lang
         self._kroki = kroki
         self._white_lists = white_lists
+        self._diagram_type = 'uml'
 
     # Given a PlantUML source, replace any "!include" directive with the included code, recursively
     def readFile(self, plantuml_code: str, directory: str) -> str:
         lines = plantuml_code.splitlines()
         # Wrap the whole combined text between startuml and enduml tags as recursive processing would have removed them
         # This is necessary for it to work correctly with plamtuml POST processing
-        return "@startuml\n" + "\n".join(self._readFileRec(lines, directory)) + "\n@enduml\n"
+        return "@start"+self._diagram_type+"\n" + "\n".join(self._readFileRec(lines, directory)) + "\n@end"+self._diagram_type+"\n"
 
     # Reads the file recursively
     def _readFileRec(self, lines: List[str], directory: str) -> List[str]:
@@ -543,7 +544,12 @@ class PlantUMLIncluder:
                 result.append(line)
             elif line_striped.startswith("!include"):
                 result.append(self._readInclLine(line_striped, directory))
-            elif line_striped.startswith("@startuml") or line_striped.startswith("@enduml"):
+            elif line_striped.startswith("@start"):
+                # remove startuml as plantuml POST method doesn't like it in include files
+                # we will wrap the whole combined text between start and end tags at the end
+                self._diagram_type = line_striped[len("@start"):]  # save the type of plantuml diagram
+                continue
+            elif line_striped.startswith("@end"):
                 # remove startuml and enduml tags as plantuml POST method doesn't like it in include files
                 # we will wrap the whole combined text between start and end tags at the end
                 continue
