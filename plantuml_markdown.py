@@ -328,7 +328,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             img.attrib['id'] = options['id']
 
     @staticmethod
-    def _render_error(self, msg: str) -> str:
+    def _render_error(msg: str) -> str:
         return f'<div style="color: red">{msg}</div>'
 
     def _render_diagram(self, code: str, requested_format: str) -> Tuple[Optional[bytes], Optional[str]]:
