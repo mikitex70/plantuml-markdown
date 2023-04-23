@@ -132,6 +132,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         self._encoding: str = 'utf-8'
         self._http_method: str = 'GET'
         self._fallback_to_get: bool = True
+        self._config_path: Optional[str] = None
 
     def run(self, lines: List[str]) -> List[str]:
         # extract some configurations, to simplify code
@@ -142,6 +143,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         self._encoding = self.config['encoding'] or self._encoding
         self._http_method = self.config['http_method'].strip()
         self._fallback_to_get = bool(self.config['fallback_to_get'])
+        self._config_path = self.config['config']
 
         text = '\n'.join(lines)
         idx = 0
@@ -421,10 +423,13 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         return code
 
-    @staticmethod
-    def _render_local_uml_image(plantuml_code: str, img_format: str) -> Tuple[Optional[bytes], Optional[str]]:
+    def _render_local_uml_image(self, plantuml_code: str, img_format: str) -> Tuple[Optional[bytes], Optional[str]]:
         plantuml_code = plantuml_code.encode('utf8')
         cmdline = ['plantuml', '-pipemap' if img_format == 'map' else '-p', "-t" + img_format, '-charset', 'UTF-8']
+
+        if self._config_path:
+            full_path = os.path.join(self._base_dir, self._config_path) if self._base_dir else self._config_path
+            cmdline.extend(['-config', full_path])
 
         try:
             # On Windows run batch files through a shell so the extension can be resolved
@@ -442,6 +447,10 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
     def _render_remote_uml_image(
             self, plantuml_code: str, img_format: str, session: requests.Session
         ) -> Tuple[Optional[bytes], Optional[str]]:
+        if self._config_path:
+            # insert an include directive for the config file as the first statement
+            plantuml_code = re.sub(r'^\s*(@start\w+\n)?', r'\1!include '+self._config_path+'\n', plantuml_code)
+
         # build the whole source diagram, executing include directives
         temp_file = PlantUMLIncluder(self._lang, not not self._kroki_server,
                                      self.config['server_include_whitelist'],
@@ -602,6 +611,8 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'format': ["png", "Format of image to generate (png, svg or txt). Defaults to 'png'."],
             'remove_inline_svg_size': [True, "Remove the width and height attributes of inline_svg diagrams", "Defaults to True"],
             'title': ["", "Tooltip for the diagram"],
+            'config': ["", "Path for a PlantUML configuration file (relative to base_dir), included before every "
+                           "diagram", "Defaults to blank, no config file"],
             'server': ["", "PlantUML server url, for remote rendering. Defaults to '', use local command."],
             'kroki_server': ["", "Kroki server url, as alternative to 'server' for remote rendering (image maps must "
                                  "be disabled manually). Defaults to '', use PlantUML server if defined"],
