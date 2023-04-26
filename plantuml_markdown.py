@@ -60,6 +60,7 @@ import re
 import base64
 import zlib
 import string
+import urllib3
 from subprocess import Popen, PIPE
 from typing import Dict, List, Optional, Tuple
 from zlib import adler32
@@ -456,6 +457,13 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         temp_file = PlantUMLIncluder(self._lang, not not self._kroki_server,
                                      self.config['server_include_whitelist'],
                                      False).readFile(plantuml_code, self._base_dir)
+        ssl_verify = not self.config['insecure']
+
+        if not ssl_verify:
+            # urllib3 gives a warning is an insecure connection is made, and the warning is included in the output page
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            # alternative solution
+            # requests.packages.urllib3.disable_warnings()
 
         # Use GET if preferred, use POST with GET as fallback if POST fails
         if self._http_method == "POST":
@@ -463,7 +471,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             image_url = "%s/%s/" % (self._server, img_format)
             # download manually the image to be able to continue in case of errors
             r = session.post(image_url, data=temp_file, headers={"Content-Type": 'text/plain; charset=utf-8'},
-                             verify=not self.config['insecure'])
+                             verify=ssl_verify)
 
             if r.ok:
                 return r.content, None
@@ -479,7 +487,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         else:
             image_url = self._server+"/"+img_format+"/"+self._deflate_and_encode(temp_file)
 
-        return self._handle_response(session.get(image_url, verify=not self.config['insecure']))
+        return self._handle_response(session.get(image_url, verify=ssl_verify))
 
     def _handle_response(self, resp: Response) -> Tuple[Optional[bytes], Optional[str]]:
         if not resp.ok and self._kroki_server:
