@@ -461,6 +461,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         if not ssl_verify:
             # urllib3 gives a warning is an insecure connection is made, and the warning is included in the output page
+            # not the best solution, but it works
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             # alternative solution
             # requests.packages.urllib3.disable_warnings()
@@ -530,7 +531,8 @@ class PlantUMLIncluder:
         lines = plantuml_code.splitlines()
         # Wrap the whole combined text between startuml and enduml tags as recursive processing would have removed them
         # This is necessary for it to work correctly with plamtuml POST processing
-        return "@start"+self._diagram_type+"\n" + "\n".join(self._readFileRec(lines, directory)) + "\n@end"+self._diagram_type+"\n"
+        all_lines = self._readFileRec(lines, directory)
+        return "@start"+self._diagram_type+"\n" + "\n".join(all_lines) + "\n@end"+self._diagram_type+"\n"
 
     # Reads the file recursively
     def _readFileRec(self, lines: List[str], directory: str) -> List[str]:
