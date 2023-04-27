@@ -1,6 +1,23 @@
 # Changelog
 
 
+## 3.9.1 (2023-04-27)
+
+### Fix
+
+* Fixed handle of other diagram types with plantuml server. [Michele Tessaro]
+
+  When using a PlantUML server the handling of non-uml diagrams
+  (`startmindmap`, `startjson`, etc.) was building wrong open/close tags.
+
+* Fixed urllib3 warning in output page (fixes #89) [Michele Tessaro]
+
+  `urllib3` gives a warning when an insecure connection is used, and the
+  warning is included in the output page.
+  Now the warning is disabled if an insecure connection to a PlantUML
+  server is used.
+
+
 ## 3.9.0 (2023-04-23)
 
 ### New
