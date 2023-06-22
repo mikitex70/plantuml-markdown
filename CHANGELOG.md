@@ -1,7 +1,18 @@
 # Changelog
 
 
+## 3.9.2 (2023-06-22)
+
+### Fix
+
+* Fixed corrupted inline svg images (fixes #90) [Michele Tessaro]
+
+
 ## 3.9.1 (2023-04-27)
+
+### Changes
+
+* Updated the changelog. [Michele Tessaro]
 
 ### Fix
 

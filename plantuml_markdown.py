@@ -238,14 +238,13 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         else:  # png format, explicitly set or as a default when format is not recognized
             return self._png_image(diagram, options, code)
 
-    @staticmethod
-    def _txt_code(diagram: bytes) -> str:
+    def _txt_code(self, diagram: bytes) -> str:
         # logger.debug(diagram)
         img = etree.Element('pre')
         code = etree.SubElement(img, 'code')
         code.attrib['class'] = 'text'
         code.text = AtomicString(diagram.decode('UTF-8'))
-        return etree.tostring(img, short_empty_elements=True).decode()
+        return self.md.htmlStash.store(etree.tostring(img, short_empty_elements=True).decode())
 
     def _inline_svg_image(self, diagram: bytes, options: Dict[str, Optional[str]]) -> str:
         data = self.ADAPT_SVG_REGEX.sub('<svg \\1\\2>', diagram.decode('UTF-8'))
@@ -255,7 +254,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             img.attrib['style'] = re.sub(r'\b(?:width|height):\d+px;', '', img.attrib['style'])
         img.attrib['preserveAspectRatio'] = 'xMaxYMax meet'
         self._set_tag_attributes(img, options)
-        return etree.tostring(img, short_empty_elements=True).decode()
+
+        return self.md.htmlStash.store(etree.tostring(img, short_empty_elements=True).decode())
 
     def _svg_image(self, diagram: bytes, options: Dict[str, Optional[str]]) -> str:
         # Firefox handles only base64 encoded SVGs
