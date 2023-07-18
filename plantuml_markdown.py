@@ -48,8 +48,8 @@
    the ebuild and the `files` subfolder or you can add the `zugaina` repository with [layman][]
    (recommended).
 
-   [Python-Markdown]: http://pythonhosted.org/Markdown/
-   [PlantUML]: http://plantuml.sourceforge.net/
+   [Python-Markdown]: https://python-markdown.github.io
+   [PlantUML]: https://plantuml.com
    [Graphviz]: http://www.graphviz.org
    [Gentoo]: http://www.gentoo.org
    [layman]: http://wiki.gentoo.org/wiki/Layman
@@ -82,7 +82,7 @@ base64_alphabet = string.ascii_uppercase + string.ascii_lowercase + string.digit
 b64_to_plantuml = bytes.maketrans(base64_alphabet.encode('utf-8'), plantuml_alphabet.encode('utf-8'))
 
 
-# For details see https://pythonhosted.org/Markdown/extensions/api.html#blockparser
+# For details see https://python-markdown.github.io/extensions/api/#blockparser
 class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
     # Regular expression inspired from fenced_code
     BLOCK_RE = re.compile(r'''
@@ -618,9 +618,9 @@ class PlantUMLIncluder:
             raise exc
 
 
-# For details see https://pythonhosted.org/Markdown/extensions/api.html#extendmarkdown
+# For details see https://python-markdown.github.io/extensions/api/#extendmarkdown
 class PlantUMLMarkdownExtension(markdown.Extension):
-    # For details see https://pythonhosted.org/Markdown/extensions/api.html#configsettings
+    # For details see https://python-markdown.github.io/extensions/api/#configsettings
     def __init__(self, **kwargs):
         self.config = {
             'classes': ["uml", "Space separated list of classes for the generated image. Defaults to 'uml'."],
