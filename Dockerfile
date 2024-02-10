@@ -14,6 +14,6 @@ RUN apk update && \
         font-noto-cjk \
         wget && \
     rm -rf /var/cache/apk/* && \
-    sed "s/Markdown/Markdown==$MARKDOWN_VER/" requirements.txt > /tmp/requirements.txt && \
+    sed "s/Markdown.*/Markdown==$MARKDOWN_VER/" requirements.txt > /tmp/requirements.txt && \
     cat test-requirements.txt >> /tmp/requirements.txt && \
     pip install -r /tmp/requirements.txt
