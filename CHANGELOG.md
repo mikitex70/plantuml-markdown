@@ -1,6 +1,21 @@
 # Changelog
 
 
+## 3.9.2 (2024-02-10)
+
+### Other
+
+* Chore: add source tarball with requirements.txt at the root, for publishing to https://pypi.org/project/plantuml-markdown/#files. [Nick Boldt]
+
+* Update README.md. [Mark Moretto]
+
+  Aiming to clear-up some of the installation instructions.
+
+* Update plantuml_markdown.py. [Mark Moretto]
+
+  Updated `https://pythonhosted.org/..` URLs within file to `https://python-markdown.github.io/...`
+
+
 ## 3.9.2 (2023-06-22)
 
 ### Fix
