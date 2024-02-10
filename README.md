@@ -82,34 +82,35 @@ GitLab/GitHub block syntax.
 Installation
 ------------
 
-To use the plugin with [Python-Markdown][] you have these choices:
+To use the plugin with [Python-Markdown][] you have the following options.  Please note that before using the package, you will need to configure which [PlantUML] binary to use: a local binary, or a remote server (see below for further details).
 
-* with `pip`, do a simple `pip install plantuml-markdown`, and the plugin should be ready to be used
-* on Windows you can use [Chocolatey](https://chocolatey.org/), a package manager for Windows: do a 
-  `choco install plantuml` and you are ready to work (this command will install all dependencies, Java and Graphviz
-   included, see https://chocolatey.org/packages/plantuml for details)
-* copy the file `plantuml-markdown.py` in the `extensions` folder of [Python-Markdown][]. For example, for Python 2.7
-  you must do:
-  
+1. [Linux] Use Python's `pip` package manager and run the following command.  After running, the package should be ready to use.
+    ```console
+    $ pip install plantuml-markdown
+    ```
+1. [Windows] You can use [Chocolatey](https://chocolatey.org/), a package manager for Windows.
+   From an elevated terminal, run the following command:
+    ```console
+    >>> choco install plantuml
+    ```
+    (__Note__: This command will install all dependencies, Java and Graphviz included, see [https://chocolatey.org/packages/plantuml](https://chocolatey.org/packages/plantuml) for details.)
+1. Copy the file `./plantuml-markdown.py` into the `extensions` folder of [Python-Markdown][]. For example, for Python 2.7, you must do:
+    ```console
+    $ sudo cp plantuml-markdown.py /usr/lib/python27/site-packages/markdown/extensions/
+    ```
+1. Copy the file somewhere in your home. A good choice may be the `user-site` path.  For example, on Linux using `bash`:
+   ```console
+   $ export INSTALLPATH="`python -m site --user-site`/plantuml-markdown"
+   $ mkdir -p "$INSTALLPATH"
+   $ cp plantuml-markdown.py "$INSTALLPATH/mdx_plantuml-markdown.py"
+   $ export PYTHONPATH="${PYTHONPATH}:${INSTALLPATH}"
+    ```
+  You must export `PYTHONPATH` before running `markdown_py`, or you can put the definition in a bash config file (eg - `~/.bashrc`), then restart the terminal or use `source ~/.bashrc` or `. ~/.bashrc` to update the variable without closing the terminal.
+
+After the package is installed, you can use this plugin by activating it in the `markdown_py` command. For example:
   ```console
-  $ sudo cp plantuml-markdown.py /usr/lib/python27/site-packages/markdown/extensions/
+  $ markdown_py -x plantuml_markdown mydoc.md > out.html
   ```
-* copy the file somewhere in your home. A good choice may be the `user-site` path, for example (`bash` syntax):
-
-  ```console
-  $ export INSTALLPATH="`python -m site --user-site`/plantuml-markdown"
-  $ mkdir -p "$INSTALLPATH"
-  $ cp plantuml-markdown.py "$INSTALLPATH/mdx_plantuml-markdown.py"
-  $ export PYTHONPATH="$INSTALLPATH"
-  ```
-  
-  You must export `PYTHONPATH` before running `markdown_py`, or you can put the definition in `~/.bashrc`.
-
-After installed, you can use this plugin by activating it in the `markdown_py` command. For example:
-
-    markdown_py -x plantuml_markdown mydoc.md > out.html
-
-But before to use it, you need to configure which [PlantUML] binary to use: a local binary, or a remote server.
 
 ### Using a local PlantUML binary
 
