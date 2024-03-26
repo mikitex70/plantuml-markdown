@@ -1,7 +1,16 @@
 # Changelog
 
 
-## 3.9.2 (2024-02-10)
+## 3.9.4 (2023-03-26)
+
+### Other
+
+* Change packaging style to avoid having to do copying on installation. [Paul Harrison]
+
+  the package registers itself as an extension from its pip installed location
+
+
+## 3.9.3 (2024-02-10)
 
 ### Other
 
