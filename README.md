@@ -94,18 +94,7 @@ To use the plugin with [Python-Markdown][] you have the following options.  Plea
     >>> choco install plantuml
     ```
     (__Note__: This command will install all dependencies, Java and Graphviz included, see [https://chocolatey.org/packages/plantuml](https://chocolatey.org/packages/plantuml) for details.)
-1. Copy the file `./plantuml-markdown.py` into the `extensions` folder of [Python-Markdown][]. For example, for Python 2.7, you must do:
-    ```console
-    $ sudo cp plantuml-markdown.py /usr/lib/python27/site-packages/markdown/extensions/
-    ```
-1. Copy the file somewhere in your home. A good choice may be the `user-site` path.  For example, on Linux using `bash`:
-   ```console
-   $ export INSTALLPATH="`python -m site --user-site`/plantuml-markdown"
-   $ mkdir -p "$INSTALLPATH"
-   $ cp plantuml-markdown.py "$INSTALLPATH/mdx_plantuml-markdown.py"
-   $ export PYTHONPATH="${PYTHONPATH}:${INSTALLPATH}"
-    ```
-  You must export `PYTHONPATH` before running `markdown_py`, or you can put the definition in a bash config file (eg - `~/.bashrc`), then restart the terminal or use `source ~/.bashrc` or `. ~/.bashrc` to update the variable without closing the terminal.
+
 
 After the package is installed, you can use this plugin by activating it in the `markdown_py` command. For example:
   ```console
@@ -296,6 +285,7 @@ If you are getting strange behaviours in conjunction with other plugins, you can
 try to avoid the conflict, letting the plugin run before (higher value) or after other plugins (lower value).
 
 As an example of possible conflicts see issue [#38](https://github.com/mikitex70/plantuml-markdown/issues/38).
+
 
 Running tests
 -------------

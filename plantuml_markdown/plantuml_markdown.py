@@ -75,6 +75,7 @@ from requests.adapters import HTTPAdapter, Retry, Response
 from xml.etree import ElementTree as etree
 
 
+
 # use markdown_py with -v to enable warnings, or with --noisy to enable debug logs
 logger = logging.getLogger('MARKDOWN')
 plantuml_alphabet = string.digits + string.ascii_uppercase + string.ascii_lowercase + '-_'
@@ -666,6 +667,7 @@ class PlantUMLMarkdownExtension(markdown.Extension):
         super(PlantUMLMarkdownExtension, self).__init__(**kwargs)
 
     def extendMarkdown(self, md):
+        md.registerExtension(self)
         blockprocessor = PlantUMLPreprocessor(md)
         blockprocessor.config = self.getConfigs()
         # need to go before both fenced_code_block and things like retext's PosMapMarkPreprocessor.

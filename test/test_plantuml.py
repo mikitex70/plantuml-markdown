@@ -157,7 +157,7 @@ class PlantumlTest(TestCase):
             f.write('A --> B')
 
         # from test.markdown_builder import MarkdownBuilder
-        from plantuml_markdown import PlantUMLPreprocessor
+        from plantuml_markdown.plantuml_markdown import PlantUMLPreprocessor
 
         # mocking a method to capture the generated PlantUML source code
         with mock.patch.object(PlantUMLPreprocessor, '_render_diagram',

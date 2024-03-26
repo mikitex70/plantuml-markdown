@@ -7,8 +7,7 @@ services:
       args:
         - MARKDOWN_VER=${MARKDOWN_VER:-3.4.1}
         - PYTHON_VER=${PYTHON_VER:-3.10}
-    command: ['/bin/sh', '-c', 'nose2 --verbose -F']
+    command: ['/bin/sh', '-c', 'pip3 install --force-reinstall /plantuml_markdown && nose2 --verbose -F']
     volumes:
       - .:/plantuml_markdown
-      - ./plantuml_markdown.py:/usr/local/lib/python${PYTHON_VER:-3.10}/site-packages/plantuml_markdown.py
       - ./test:/plantuml-markdown/test
