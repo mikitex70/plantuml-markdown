@@ -346,7 +346,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
                 with open(cached_diagram_file, 'rb') as f:
                     diagram = f.read()
 
-        if diagram:
+        if diagram is not None:
             # if cache found then end this function here
             return diagram, None
 

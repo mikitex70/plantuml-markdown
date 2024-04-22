@@ -1,7 +1,22 @@
 # Changelog
 
 
-## 3.9.4 (2023-03-26)
+## 3.9.5 (2024-04-22)
+
+### Fix
+
+* Fixed caching with png diagrams with no links (fixes #27) [Michele Tessaro]
+
+### Other
+
+* @łip. [Michele Tessaro]
+
+
+## 3.9.4 (2024-03-26)
+
+### Changes
+
+* Updated the CHANGELOG.md. [Michele Tessaro]
 
 ### Other
 
