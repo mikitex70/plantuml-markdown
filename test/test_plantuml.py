@@ -795,3 +795,20 @@ dummy   'the plantuml response is mocked, any text is good
             text = self.text_builder.diagram('A -> B').format('txt').build()
             self.assertEqual('<pre><code class="text">dummy</code></pre>',
                              self.md.convert(text))
+
+    def test_cachedir(self):
+        """
+        Verify that `cachedir` is created if it does not exist
+        """
+        temp_dir = tempfile.TemporaryDirectory()
+        cache_dir = os.path.join(temp_dir.name, 'cache', 'dir')
+        self.md = markdown.Markdown(extensions=['plantuml_markdown'],
+                                    extension_configs={
+                                        'plantuml_markdown': {
+                                            'cachedir': cache_dir,
+                                        }
+                                    })
+        text = self.text_builder.diagram("A --> B").build()
+        self.md.convert(text)
+        self.assertTrue(os.path.exists(cache_dir))
+        temp_dir.cleanup()
