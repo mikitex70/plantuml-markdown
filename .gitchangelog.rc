@@ -95,6 +95,7 @@ section_regexps = [
         r'\b[fF]ix(ed|es)?\b',
         r'\b[cC]orrect\w*\b',
         r'\bExplicitly\b',
+        r'Don\'t add newlines in included files',
      ]),
 
     ('Other', None ## Match all lines

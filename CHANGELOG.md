@@ -1,11 +1,22 @@
 # Changelog
 
 
+## 3.9.7 (2024-05-09)
+
+### Fix
+
+* Don't add newlines in included files. [Daum Alexander (DCL ATV SC D RAD CSFW FW)]
+
+
 ## 3.9.6 (2024-04-24)
 
 ### New
 
 * `cachedir` is auto-created if missing (implements #96) [Michele Tessaro]
+
+### Changes
+
+* Updated changelog. [Michele Tessaro]
 
 
 ## 3.9.5 (2024-04-22)
