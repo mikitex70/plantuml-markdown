@@ -553,9 +553,9 @@ class PlantUMLIncluder:
             if match:
                 # variable definition, save the mapping as the value can be used in !include directives
                 self._definitions[match.group('varname')] = match.group('value')
-                result.append(line)
+                result.append(line_striped)
             elif line_striped.startswith("!include"):
-                result.append(self._readInclLine(line_striped, directory))
+                result.append(self._readInclLine(line_striped, directory).strip())
             elif line_striped.startswith("@start"):
                 # remove startuml as plantuml POST method doesn't like it in include files
                 # we will wrap the whole combined text between start and end tags at the end
@@ -566,7 +566,7 @@ class PlantUMLIncluder:
                 # we will wrap the whole combined text between start and end tags at the end
                 continue
             else:
-                result.append(line)
+                result.append(line_striped)
 
         return result
 
