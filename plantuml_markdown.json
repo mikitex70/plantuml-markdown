@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "title": "Show PlantUML diagrams in Markdown",
+  "oneOf": [
+    {
+      "markdownDescription": "https://github.com/mikitex70/plantuml-markdown",
+      "const": "plantuml_markdown"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "plantuml_markdown": {
+          "markdownDescription": "https://github.com/mikitex70/plantuml-markdown",
+          "type": "object",
+          "properties": {
+            "alt": {
+              "title": "Text to show when image is not available. Defaults to `uml diagram`",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string"
+            },
+            "base_dir": {
+              "title": "Path where to search for external diagrams files",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string"
+            },
+            "cachedir": {
+              "title": "Directory for caching diagrams to speed up subsequent builds. Defaults to `''`, no caching",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string"
+            },
+            "classes": {
+              "title": "Space separated list of classes for the generated images. Defaults to `uml`",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string"
+            },
+            "config": {
+              "title": "PlantUML config file, relative to `base_dir`",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string"
+            },
+            "encoding": {
+              "title": "Character encoding for external files. Defaults to `utf-8`",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string"
+            },
+            "fallback_to_get": {
+              "title": "Fallback to `GET` if `POST` fails (only for server rendering)",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "boolean"
+            },
+            "format": {
+              "title": "Default format of generated images. Defaults to `png`",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string",
+              "$ref": "#/definitions/format_options"
+            },
+            "http_method": {
+              "title": "HTTP method when calling the rendering server. Defaults to `GET`",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string",
+              "$ref": "#/definitions/http_methods"
+            },
+            "image_maps": {
+              "title": "Generate image maps (sensitive images) if `format` is `png`. Defaults to `true`",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "boolean"
+            },
+            "insecure": {
+              "title": "Disable SSL certificate validation when calling rendering server. Defaults to `false`",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "boolean"
+            },
+            "kroki_server": {
+              "title": "Kroki server url, as alternative to `server` for remote rendering (please set `image_maps` to `false`)",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string"
+            },
+            "plantuml_cmd": {
+              "title": "Command to run for executing PlantUML locally",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string"
+            },
+            "priority": {
+              "title": "Plugin priority. Higher values means the plugin is applied sooner than others. Defaults to `30`",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "integer"
+            },
+            "puml_notheme_cmdlist": {
+              "title": "Theme will not be set if listed commands present. Default list is `['version', 'listfonts', 'stdlib', 'license']`",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string"
+            },
+            "remove_inline_svg_size": {
+              "title": "Remove `width` and `height` SVG attributes for the `svg_inline` format. Defaults to `true`",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "boolean"
+            },
+            "server": {
+              "title": "PlantUML server URL for remote rendering",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string"
+            },
+            "server_include_whitelist": {
+              "title": "List of regular expressions defining which include files are supported by the server. Defaults to `['^c4.*$']` (all files starting with `c4`)",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string"
+            },
+            "theme": {
+              "title": "Default theme to use, will be overridden by `!theme` directive",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string"
+            },
+            "title": {
+              "title": "Tooltip for the diagram",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  ],
+          "definitions": {
+            "format_options": {
+              "enum": [ "png", "svg", "svg_object", "svg_inline", "txt" ]
+            },
+            "http_methods": {
+              "enum": [ "GET", "POST" ]
+            }
+          }
+}
