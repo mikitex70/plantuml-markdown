@@ -200,7 +200,7 @@ Then you need to specify the configuration file on the command line:
 #### Using a Kroki server
 
 Starting from version `3.7.0` a [Kroki] server can be used as an alternative of [PlantUML server].
-The configuration is similar, only use the `server_kroki` configuration property instead of the `server` property.
+The configuration is similar, only use the `kroki_server` configuration property instead of the `server` property.
 
 #### File inclusion management
 
