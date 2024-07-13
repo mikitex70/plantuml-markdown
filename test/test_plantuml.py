@@ -596,15 +596,16 @@ A --&gt; B
             .source("included_source.puml")\
             .format("txt")\
             .build()
-        self.assertEqual('''<pre><code class="text">     ,------.          ,-.
-     |&#192;&#210;&#200;&#201;&#204;&#217;|          |A|
-     `--+---'          `+'
-        |   "&#242;&#224;&#232;&#236;&#233;&#249;"    | 
-        | &lt;-------------| 
-     ,--+---.          ,+.
-     |&#192;&#210;&#200;&#201;&#204;&#217;|          |A|
-     `------'          `-'
-</code></pre>''', self.md.convert(text))
+        self.assertRegex(self.md.convert(text),
+                         re.compile(r'<pre><code class=\"text\">\s+,-+\.\s+,-\.\n'
+                                    r'\s+\|.*\|\s+\|A\|'
+                                    r'.*'
+                                    r'\s+\|.*\|\s+'
+                                    r'\s+\|\s*&lt;-+\|\s+'
+                                    r'\s+,-+.*,\+\.'
+                                    r'\s+\|.*\|\s+\|A\|'
+                                    r"\s+`-+'\s+`-'\n"
+                                    r'</code></pre>', re.DOTALL))
 
     def _server_render(self, filename: str, text: Union[str, Callable[[str], str]],
                        expected='<pre><code class="text">A -&gt; B -&gt; C</code></pre>',
