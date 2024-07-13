@@ -163,7 +163,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         return self._kroki_server or self._plantuml_server
 
     # regex for removing some parts from the plantuml generated svg
-    ADAPT_SVG_REGEX = re.compile(r'^<\?xml .*?\?><svg(.*?)xmlns=".*?" (.*?)>')
+    ADAPT_SVG_REGEX = re.compile(r'^<\?xml .*?\?>')
+    # ADAPT_SVG_REGEX = re.compile(r'^<\?xml .*?\?><svg(.*?)xmlns=".*?" (.*?)>')
 
     def _replace_block(self, text: str) -> Tuple[str, int]:
         # skip fenced code enclosing diagram
@@ -248,7 +249,9 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         return self.md.htmlStash.store(etree.tostring(img, short_empty_elements=True).decode())
 
     def _inline_svg_image(self, diagram: bytes, options: Dict[str, Optional[str]]) -> str:
-        data = self.ADAPT_SVG_REGEX.sub('<svg \\1\\2>', diagram.decode('UTF-8'))
+        etree.register_namespace("", "http://www.w3.org/2000/svg")
+        data = self.ADAPT_SVG_REGEX.sub('', diagram.decode('UTF-8'))
+        # data = self.ADAPT_SVG_REGEX.sub('<svg \\1\\2>', diagram.decode('UTF-8'))
         img = etree.fromstring(data.encode('UTF-8'))
         if bool(self.config["remove_inline_svg_size"]):
             # remove width and height in style attribute
