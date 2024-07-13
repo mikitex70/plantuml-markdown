@@ -5,7 +5,7 @@
 
 * [Introduction](#introduction)
 * [Installation](#installation)
-  * [Using a local plantUML binary](#using-a-local-plantuml-binary)
+  * [Using a local PlantUML binary](#using-a-local-plantuml-binary)
   * [Using a remote server](#using-a-remote-server)
     * [Using a PlantUML server](#using-a-plantuml-server)
     * [Using a Kroki server](#using-a-kroki-server)

@@ -1,6 +1,23 @@
 # Changelog
 
 
+## 3.9.8 (2024-07-13)
+
+### New
+
+* Added JsonSchema file for MkDocs options validation (refs #98) [Michele Tessaro]
+
+  Added a JsonSchema file which may be used with schemas in
+  [MkDocs-Material](https://squidfunk.github.io/mkdocs-material/) to
+  validate the `mkdocs.yml` configuration file.
+
+### Fix
+
+* Fixed namespace inserted in inline svg. [Michele Tessaro]
+
+* Fixed wrong option name in documentation (fixes #99) [Michele Tessaro]
+
+
 ## 3.9.7 (2024-05-09)
 
 ### Fix
