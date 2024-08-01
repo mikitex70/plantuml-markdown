@@ -1,6 +1,16 @@
 # Changelog
 
 
+## 3.10.0 (2024-08-01)
+
+### Fix
+
+* Fixed inclusion from `mkdocs-multirepo-plugin` (refs #100) [Michele Tessaro]
+
+  Expanded the `base_dir` configuration to handle a list of paths where to
+  search for files to include.
+
+
 ## 3.9.8 (2024-07-13)
 
 ### New

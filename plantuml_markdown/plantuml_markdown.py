@@ -130,7 +130,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         self._cachedir: Optional[str] = None
         self._plantuml_server: Optional[str] = None
         self._kroki_server: Optional[str] = None
-        self._base_dir: Optional[str] = None
+        self._base_dir: Optional[str | List[str]] = None
         self._encoding: str = 'utf-8'
         self._http_method: str = 'GET'
         self._fallback_to_get: bool = True
@@ -141,11 +141,14 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         self._cachedir = self.config['cachedir']
         self._plantuml_server = self.config['server']
         self._kroki_server = self.config['kroki_server']
-        self._base_dir = self.config['base_dir']
         self._encoding = self.config['encoding'] or self._encoding
         self._http_method = self.config['http_method'].strip()
         self._fallback_to_get = bool(self.config['fallback_to_get'])
         self._config_path = self.config['config']
+        self._base_dir = self.config['base_dir']
+
+        if isinstance(self._base_dir, str):
+            self._base_dir = [self._base_dir]
 
         text = '\n'.join(lines)
         idx = 0
@@ -210,8 +213,17 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         code = ""
         # Add external diagram source.
         if source and self._base_dir:
-            with open(os.path.join(self._base_dir, source), 'r', encoding=self._encoding) as f:
-                code += f.read()
+            for base_dir in self._base_dir:
+                source = os.path.join(base_dir, source)
+
+                if os.path.exists(source):
+                    with open(source, 'r', encoding=self._encoding) as f:
+                        code += f.read()
+                    break
+            else:
+                diag_tag = self._render_error('Cannot find external diagram source: ' + source)
+                return (text[:m.start()] + m.group('indent') + diag_tag + text[m.end():], \
+                        m.start() + len(m.group('indent')) + len(diag_tag))
         # Add extracted markdown diagram text.
         code += m.group('code')
 
@@ -532,7 +544,18 @@ class PlantUMLIncluder:
         self._diagram_type = 'uml'
 
     # Given a PlantUML source, replace any "!include" directive with the included code, recursively
-    def readFile(self, plantuml_code: str, directory: str) -> str:
+    def readFile(self, plantuml_code: str, directory: List[str]) -> str:
+        """
+        Reads a PlantUML code and replaces any "!include" directives with the included code, recursively.
+
+        Args:
+            plantuml_code (str): The PlantUML code to process.
+            directory (List[str]): A list of directories to search for included files.
+
+        Returns:
+            str: The processed PlantUML code with all "!include" directives replaced.
+
+        """
         lines = plantuml_code.splitlines()
         # Wrap the whole combined text between startuml and enduml tags as recursive processing would have removed them
         # This is necessary for it to work correctly with plamtuml POST processing
@@ -540,7 +563,18 @@ class PlantUMLIncluder:
         return "@start"+self._diagram_type+"\n" + "\n".join(all_lines) + "\n@end"+self._diagram_type+"\n"
 
     # Reads the file recursively
-    def _readFileRec(self, lines: List[str], directory: str) -> List[str]:
+    def _readFileRec(self, lines: List[str], search_dirs: List[str]) -> List[str]:
+        """
+        Recursively reads a list of lines and replaces any "!include" directives with the included code.
+
+        Args:
+            lines (List[str]): The list of lines to process.
+            search_dirs (List[str]): A list of directories to search for included files.
+
+        Returns:
+            List[str]: The processed list of lines with all "!include" directives replaced.
+
+        """
         result: List[str] = []
 
         for line in lines:
@@ -558,7 +592,7 @@ class PlantUMLIncluder:
                 self._definitions[match.group('varname')] = match.group('value')
                 result.append(line_striped)
             elif line_striped.startswith("!include"):
-                result.append(self._readInclLine(line_striped, directory).strip())
+                result.append(self._readInclLine(line_striped, search_dirs).strip())
             elif line_striped.startswith("@start"):
                 # remove startuml as plantuml POST method doesn't like it in include files
                 # we will wrap the whole combined text between start and end tags at the end
@@ -573,7 +607,19 @@ class PlantUMLIncluder:
 
         return result
 
-    def _readInclLine(self, line: str, directory: str) -> str:
+    def _readInclLine(self, line: str, search_dirs: List[str]) -> str:
+        """
+        Reads the contents of an included file and returns its contents.
+
+        Args:
+            line (str): The line containing the !include directive.
+            search_dirs (List[str]): A list of directories to search for the included file.
+
+        Returns:
+            str: The processed line containing the included file contents, or the original line if the inclusion is
+            handled by the server.
+
+        """
         # If includeurl is found, we do not have to do anything here. Server can handle that (if enabled)
         if "!includeurl" in line:
             return line
@@ -611,16 +657,36 @@ class PlantUMLIncluder:
             return line  # inclusion handled by the server
         else:
             # Read contents of the included file
-            return self._load_file(os.path.normpath(os.path.join(directory, inc_file)))
+            return self._load_file(search_dirs, inc_file)
 
-    def _load_file(self, inc_file_abs: str):
-        try:
-            with open(inc_file_abs, "r") as inc:
-                return "\n".join(
-                    self._readFileRec(inc.readlines(), os.path.dirname(os.path.realpath(inc_file_abs))))
-        except Exception as exc:
-            logger.error("Could not find include " + str(exc))
-            raise exc
+    def _load_file(self, search_dirs: List[str], inc_file_abs: str):
+        """
+        Loads a file from a list of search directories.
+
+        Args:
+            search_dirs (List[str]): A list of directories to search for the file.
+            inc_file_abs (str): The absolute path of the file to load.
+
+        Returns:
+            str: The contents of the loaded file.
+
+        Raises:
+            FileNotFoundError: If the file is not found in any of the search directories.
+            Exception: If an error occurs while loading the file.
+        """
+        for inc_dir in search_dirs:
+            inc_file_abs = os.path.normpath(os.path.join(inc_dir, inc_file_abs))
+            if os.path.exists(inc_file_abs):
+                try:
+                    with open(inc_file_abs, "r") as inc:
+                        include_dirs = [os.path.dirname(os.path.realpath(inc_file_abs))]
+                        include_dirs.extend(search_dirs)
+                        return "\n".join(self._readFileRec(inc.readlines(), include_dirs))
+                except Exception as exc:
+                    logger.error("Could not find include " + str(exc))
+                    raise exc
+        else:
+            raise FileNotFoundError("Could not find include " + inc_file_abs)
 
 
 # For details see https://python-markdown.github.io/extensions/api/#extendmarkdown
@@ -647,7 +713,7 @@ class PlantUMLMarkdownExtension(markdown.Extension):
                                    "Defaults to true"],
             'priority': ["30", "Extension priority. Higher values means the extension is applied sooner than others. "
                                "Defaults to 30"],
-            'base_dir': [".", "Base directory for external files inclusion"],
+            'base_dir': [".", "Base directory for external files inclusion. Defaults to '.', can be a list of paths."],
             'encoding': ["utf8", "Default character encoding for external files (default: utf8)"],
             'http_method': ["GET", "Http Method for server - GET or POST", "Defaults to GET"],
             'fallback_to_get': [True, "Fallback to GET if POST fails", "Defaults to True"],
