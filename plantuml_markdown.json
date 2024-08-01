@@ -21,7 +21,10 @@
             "base_dir": {
               "title": "Path where to search for external diagrams files",
               "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
-              "type": "string"
+              "type": ["string", "array"],
+              "items": {
+                "type": "string"
+              }
             },
             "cachedir": {
               "title": "Directory for caching diagrams to speed up subsequent builds. Defaults to `''`, no caching",
@@ -120,12 +123,12 @@
       }
     }
   ],
-          "definitions": {
-            "format_options": {
-              "enum": [ "png", "svg", "svg_object", "svg_inline", "txt" ]
-            },
-            "http_methods": {
-              "enum": [ "GET", "POST" ]
-            }
-          }
+  "definitions": {
+    "format_options": {
+      "enum": [ "png", "svg", "svg_object", "svg_inline", "txt" ]
+    },
+    "http_methods": {
+      "enum": [ "GET", "POST" ]
+    }
+  }
 }

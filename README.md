@@ -173,7 +173,7 @@ plantuml_markdown:
   # other global options
   insecure: False                           # set to True if the server uses self-signed certificates
   cachedir: /tmp                            # set a non-empty value to enable caching
-  base_dir: .                               # where to search for diagrams to include
+  base_dir: .                               # where to search for diagrams to include (can be a list)
   config:                                   # PlantUML config file, relative to base_dir (a PlantUML file included in every diagram)
   format: png                               # default diagram image format
   classes: class1,class2                    # default diagram classes
@@ -235,7 +235,7 @@ Plugin options
 The plugin has several configuration option:
 
 * `alt`: text to show when image is not available. Defaults to `uml diagram`
-* `base_dir`: path where to search for external diagrams files
+* `base_dir`: path where to search for external diagrams files. Defaults to `.`, can be a list of paths
 * `cachedir`: directory for caching of diagrams. Defaults to `''`, no caching
 * `classes`: space separated list of classes for the generated image. Defaults to `uml`
 * `config`: PlantUML config file, relative to `base_dir` (a PlantUML file included before every diagram, see
