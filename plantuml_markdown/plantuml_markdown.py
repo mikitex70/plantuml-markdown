@@ -130,7 +130,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         self._cachedir: Optional[str] = None
         self._plantuml_server: Optional[str] = None
         self._kroki_server: Optional[str] = None
-        self._base_dir: Optional[str | List[str]] = None
+        self._base_dir: Optional[List[str]] = None
         self._encoding: str = 'utf-8'
         self._http_method: str = 'GET'
         self._fallback_to_get: bool = True
@@ -144,11 +144,22 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         self._encoding = self.config['encoding'] or self._encoding
         self._http_method = self.config['http_method'].strip()
         self._fallback_to_get = bool(self.config['fallback_to_get'])
-        self._config_path = self.config['config']
         self._base_dir = self.config['base_dir']
 
         if isinstance(self._base_dir, str):
             self._base_dir = [self._base_dir]
+
+        self._config_path = self.config['config']
+
+        if self.config['config']:
+            # try to find config file
+            for search_dir in self._base_dir:
+                if os.path.isfile(os.path.join(search_dir, self.config['config'])):
+                    self._config_path = os.path.join(search_dir, self.config['config'])
+                    break
+            else:
+                logger.error(f'Could not find config file {self._config_path} in any of {self._base_dir}')
+                return [self._render_error(f'Could not find config file {self._config_path} in any of {self._base_dir}')]
 
         text = '\n'.join(lines)
         idx = 0
@@ -447,8 +458,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         cmdline.extend(['-pipemap' if img_format == 'map' else '-p', "-t" + img_format, '-charset', 'UTF-8'])
 
         if self._config_path:
-            full_path = os.path.join(self._base_dir, self._config_path) if self._base_dir else self._config_path
-            cmdline.extend(['-config', full_path])
+            cmdline.extend(['-config', self._config_path])
 
         try:
             # On Windows run batch files through a shell so the extension can be resolved
