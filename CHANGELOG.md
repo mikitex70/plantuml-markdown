@@ -1,6 +1,17 @@
 # Changelog
 
 
+## 3.10.1 (2024-08-03)
+
+### Changes
+
+* Added a warning on `plantuml` script output (see end of #63) [Michele Tessaro]
+
+### Fix
+
+* Fixed plantuml config file path with local rendering (fixes #101) [Michele Tessaro]
+
+
 ## 3.10.0 (2024-08-01)
 
 ### Fix
