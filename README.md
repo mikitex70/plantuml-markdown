@@ -151,6 +151,10 @@ java %PLANTUML_JAVAOPTS% -jar %mypath%\plantuml.jar %*
 
 Make sure the `plantuml.bat` is on the path.
 
+**IMPORTANT NOTE**: the whole output of the script `plantuml` (or `plantuml.bat` in Windows) is captured and saved as 
+image, so be sure no other output is done by the script, even blank lines. For example, the first line of the 
+`plantuml.bat` script **MUST** be `@echo off`.
+
 For [Gentoo Linux][Gentoo] there is an ebuild at http://gpo.zugaina.org/dev-util/plantuml/RDep: you can download
 the ebuild and the `files` subfolder or you can add the `zugaina` repository with [layman][]
 (recommended).
