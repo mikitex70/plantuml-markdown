@@ -225,15 +225,15 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         # Add external diagram source.
         if source and self._base_dir:
             for base_dir in self._base_dir:
-                source = os.path.join(base_dir, source)
+                source_path = os.path.join(base_dir, source)
 
-                if os.path.exists(source):
-                    with open(source, 'r', encoding=self._encoding) as f:
+                if os.path.exists(source_path):
+                    with open(source_path, 'r', encoding=self._encoding) as f:
                         code += f.read()
                     break
             else:
                 diag_tag = self._render_error('Cannot find external diagram source: ' + source)
-                return (text[:m.start()] + m.group('indent') + diag_tag + text[m.end():], \
+                return (text[:m.start()] + m.group('indent') + diag_tag + text[m.end():],
                         m.start() + len(m.group('indent')) + len(diag_tag))
         # Add extracted markdown diagram text.
         code += m.group('code')

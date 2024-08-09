@@ -584,7 +584,10 @@ A --&gt; B
         include_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
         configs = {
             'plantuml_markdown': {
-                'base_dir': include_path,
+                'base_dir': [
+                    '/tmp',        # fake path where file to include is not present
+                    include_path,
+                ],
                 'encoding': 'cp1252'
             }
         }
