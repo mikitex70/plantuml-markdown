@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 3.10.2 (2024-08-09)
+
+### Fix
+
+* Fixed source search in `base_dir` paths (fixes #102) [Michele Tessaro]
+
+
 ## 3.10.1 (2024-08-03)
 
 ### Changes
