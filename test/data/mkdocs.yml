@@ -1,0 +1,6 @@
+site_name: MkDocs test
+
+docs_dir: data/docs
+markdown_extensions:
+  - plantuml_markdown:
+      base_dir: !relative $docs_dir

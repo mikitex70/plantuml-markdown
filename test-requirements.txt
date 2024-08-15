@@ -1,4 +1,5 @@
 httpservermock
+mkdocs
 mock
 nose2
 pymdown-extensions

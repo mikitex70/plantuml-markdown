@@ -9,6 +9,8 @@ import os
 
 from unittest import TestCase, SkipTest
 from httpservermock import MethodName, MockHTTPResponse, ServedBaseHTTPServerMock
+from mkdocs.config.defaults import MkDocsConfig
+from mkdocs.utils.yaml import DocsDirPlaceholder
 
 
 class PlantumlTest(TestCase):
@@ -608,6 +610,42 @@ A --&gt; B
                                     r'\s+,-+.*,\+\.'
                                     r'\s+\|.*\|\s+\|A\|'
                                     r"\s+`-+'\s+`-'\n"
+                                    r'</code></pre>', re.DOTALL))
+
+    def test_source_mkdocs(self):
+        """
+        Test that source works with MkDocs config directives like `!relative`
+        """
+        include_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+        mkdocs_config = MkDocsConfig()
+        # load the MkDocs config
+        with open(os.path.join(include_path, 'mkdocs.yml'), 'r') as f:
+            mkdocs_config.load_file(f)
+
+        configs = {
+            'plantuml_markdown': {
+                'base_dir': [
+                    '/tmp',                             # fake path where file to include is not present
+                    DocsDirPlaceholder(mkdocs_config),  # passes the `!relative $docs_dir`
+                ]
+            }
+        }
+        self.md = markdown.Markdown(extensions=['plantuml_markdown'],
+                                    extension_configs=configs)
+
+        text = self.text_builder.diagram(" ")\
+            .source("example.puml")\
+            .format("txt")\
+            .build()
+        self.assertRegex(self.md.convert(text),
+                         re.compile(r'<pre><code class="text">\s+,-+\.\s+,-\.\n'
+                                    r'\s+\|.*\|\s+\|B\|'
+                                    r'.*'
+                                    r'\s+\|.*\|\s+'
+                                    r'\s+\|\s*-+&gt;\|\s+'
+                                    r'.*'
+                                    r'\s+\|.*\|\s+\|B\|'
+                                    r'.*'
                                     r'</code></pre>', re.DOTALL))
 
     def _server_render(self, filename: str, text: Union[str, Callable[[str], str]],
