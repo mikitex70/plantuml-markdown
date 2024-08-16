@@ -122,7 +122,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         (?P=indent)(?P=fence)[ ]*$
         ''', re.MULTILINE | re.DOTALL | re.VERBOSE)
     # (?P<indent>[ ]*)(?P<fence>(?:~{3}|`{3}))[ ]*(\{?\.?(plant)?uml)[ ]*\n(?P<code>.*?)(?<=\n)(?P=indent)(?P=fence)$
-    FENCED_CODE_RE = re.compile(r'(?P<fence>(?:~{4,}|`{4,})).*?(?P=fence)',
+    FENCED_CODE_RE = re.compile(r'(?P<fence>(~{4,}|`{4,})).*?(?P=fence)',
                                 re.MULTILINE | re.DOTALL | re.VERBOSE)
 
     def __init__(self, md):
@@ -146,8 +146,11 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         self._fallback_to_get = bool(self.config['fallback_to_get'])
         self._base_dir = self.config['base_dir']
 
-        if isinstance(self._base_dir, str):
+        if not isinstance(self._base_dir, list):
             self._base_dir = [self._base_dir]
+
+        # make sure they are strings (can be DocsDirPlaceholder is !relative is used in mkdocs.yml)
+        self._base_dir = [str(v) for v in self._base_dir]
 
         self._config_path = self.config['config']
 
