@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 3.10.3 (2024-08-16)
+
+### Fix
+
+* Handled MkDocs path directives in configurations (fixes #103) [Michele Tessaro]
+
+
 ## 3.10.2 (2024-08-09)
 
 ### Fix
