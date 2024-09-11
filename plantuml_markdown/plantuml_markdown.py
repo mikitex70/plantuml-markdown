@@ -672,13 +672,13 @@ class PlantUMLIncluder:
             # Read contents of the included file
             return self._load_file(search_dirs, inc_file)
 
-    def _load_file(self, search_dirs: List[str], inc_file_abs: str):
+    def _load_file(self, search_dirs: List[str], inc_file_rel: str):
         """
         Loads a file from a list of search directories.
 
         Args:
             search_dirs (List[str]): A list of directories to search for the file.
-            inc_file_abs (str): The absolute path of the file to load.
+            inc_file_rel (str): The relative path of the file to load.
 
         Returns:
             str: The contents of the loaded file.
@@ -688,7 +688,7 @@ class PlantUMLIncluder:
             Exception: If an error occurs while loading the file.
         """
         for inc_dir in search_dirs:
-            inc_file_abs = os.path.normpath(os.path.join(inc_dir, inc_file_abs))
+            inc_file_abs = os.path.normpath(os.path.join(inc_dir, inc_file_rel))
             if os.path.exists(inc_file_abs):
                 try:
                     with open(inc_file_abs, "r") as inc:
@@ -699,7 +699,7 @@ class PlantUMLIncluder:
                     logger.error("Could not find include " + str(exc))
                     raise exc
         else:
-            raise FileNotFoundError("Could not find include " + inc_file_abs)
+            raise FileNotFoundError("Could not find include " + inc_file_rel)
 
 
 # For details see https://python-markdown.github.io/extensions/api/#extendmarkdown
