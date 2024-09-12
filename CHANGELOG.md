@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 3.10.4 (2024-09-12)
+
+### Fix
+
+* Correctly handle multiple search_dirs in PlantUMLIncluder. [Daum Alexander (DCL ATV SC D RAD CSFW FW)]
+
+
 ## 3.10.3 (2024-08-16)
 
 ### Fix
