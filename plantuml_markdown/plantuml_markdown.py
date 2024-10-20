@@ -127,24 +127,26 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
     def __init__(self, md):
         super(PlantUMLPreprocessor, self).__init__(md)
-        self._cachedir: Optional[str] = None
-        self._plantuml_server: Optional[str] = None
-        self._kroki_server: Optional[str] = None
+        self._cache_dir: Optional[str] = None
+        self._plantuml_servers: list[dict[str, str | bool]] = []
+        self._kroki_server: bool = False
         self._base_dir: Optional[List[str]] = None
         self._encoding: str = 'utf-8'
         self._http_method: str = 'GET'
         self._fallback_to_get: bool = True
         self._config_path: Optional[str] = None
+        self._image_maps: bool = False
 
     def run(self, lines: List[str]) -> List[str]:
         # extract some configurations, to simplify code
-        self._cachedir = self.config['cachedir']
-        self._plantuml_server = self.config['server']
-        self._kroki_server = self.config['kroki_server']
+        self._cache_dir = self.config['cachedir']
         self._encoding = self.config['encoding'] or self._encoding
         self._http_method = self.config['http_method'].strip()
         self._fallback_to_get = bool(self.config['fallback_to_get'])
         self._base_dir = self.config['base_dir']
+        self._image_maps = str(self.config['image_maps']).lower() in ['true', 'on', 'yes', '1']
+
+        self.__setup_servers()
 
         if not isinstance(self._base_dir, list):
             self._base_dir = [self._base_dir]
@@ -152,9 +154,8 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         # make sure they are strings (can be DocsDirPlaceholder is !relative is used in mkdocs.yml)
         self._base_dir = [str(v) for v in self._base_dir]
 
-        self._config_path = self.config['config']
-
         if self.config['config']:
+            self._config_path = self.config['config']
             # try to find config file
             for search_dir in self._base_dir:
                 if os.path.isfile(os.path.join(search_dir, self.config['config'])):
@@ -163,7 +164,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             else:
                 logger.error(f'Could not find config file {self._config_path} in any of {self._base_dir}')
                 return [self._render_error(f'Could not find config file {self._config_path} in any of {self._base_dir}')]
-
+        # start parsing
         text = '\n'.join(lines)
         idx = 0
 
@@ -175,9 +176,45 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
 
         return text.split('\n')
 
-    @property
-    def _server(self) -> Optional[str]:
-        return self._kroki_server or self._plantuml_server
+    def __setup_servers(self):
+        if 'servers' in self.config and isinstance(self.config['servers'], list):
+            self._plantuml_servers = self.config['servers']
+
+        # get the remote server, for compatibility: it overrides the `servers` configuration
+        if not isinstance(self.config['server'], list):
+            self._plantuml_servers = [self.config['server']]
+        elif self.config['server'] != '':
+            self._plantuml_servers = self.config['server']
+
+        # handle the kroki server, for compatibility
+        if isinstance(self.config['kroki_server'], bool):                         # new configuration
+            self._kroki_server = self.config['kroki_server']
+        elif self.config['kroki_server'] in ('True', 'False', 'true', 'false'):   # needed to parse the default value
+            self._kroki_server = self.config['kroki_server'] in ['True', 'true']
+        else:                                                                     # old configuration, it holds an url
+            self._kroki_server = True
+            self._plantuml_servers.insert(0, str(self.config['kroki_server']))
+
+        # fix urls if needed
+        servers = []
+        for entry in self._plantuml_servers:
+            kroki = None  # default is autodetect
+            if isinstance(entry, dict):
+                # check if it is a kroki server
+                kroki = entry['kroki'] in ('true', 'True', True) if 'kroki' in entry else None
+                url = str(entry['url']) if 'url' in entry else None
+            else:
+                url = entry
+            if url:
+                if kroki is None:
+                    kroki = 'kroki' in url            # autodetect kroki from the url
+                if kroki and '/plantuml' not in url:  # kroki urls MUST have a `/plantuml` suffix
+                    url += '/plantuml/'
+                if not url.endswith('/'):             # make sure the url ends with a `/`
+                    url += '/'
+                servers.append({'url': url, 'kroki': kroki})
+
+        self._plantuml_servers = servers
 
     # regex for removing some parts from the plantuml generated svg
     ADAPT_SVG_REGEX = re.compile(r'^<\?xml .*?\?>')
@@ -311,7 +348,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         img.attrib['src'] = data
 
         # check if image maps are enabled
-        if str(self.config['image_maps']).lower() in ['true', 'on', 'yes', '1']:
+        if self._image_maps:
             # Check for hyperlinks
             map_data, err = self._render_diagram(code, 'map')
 
@@ -366,11 +403,11 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         cached_diagram_file = None
         diagram = None
 
-        if self._cachedir:
-            os.makedirs(self._cachedir, exist_ok=True)
+        if self._cache_dir:
+            os.makedirs(self._cache_dir, exist_ok=True)
             diagram_hash = "%08x" % (adler32(code.encode('UTF-8')) & 0xffffffff)
             cached_diagram_file = os.path.expanduser(
-                    os.path.join(self._cachedir, diagram_hash + '.' + requested_format))
+                    os.path.join(self._cache_dir, diagram_hash + '.' + requested_format))
 
             if os.path.isfile(cached_diagram_file):
                 with open(cached_diagram_file, 'rb') as f:
@@ -383,13 +420,15 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
         # if cache not found create the diagram
         code = self._set_theme(code)
 
-        if self._server:
+        if self._plantuml_servers:
+            # remote rendering
             with self._set_session() as session:
                 diagram, err = self._render_remote_uml_image(code, requested_format, session)
         else:
+            # local rendering
             diagram, err = self._render_local_uml_image(code, requested_format)
 
-        if not err and self._cachedir:
+        if not err and self._cache_dir:
             with open(cached_diagram_file, 'wb') as f:
                 f.write(diagram)
 
@@ -468,11 +507,11 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             p = Popen(cmdline, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=(os.name == 'nt'))
             out, err = p.communicate(input=plantuml_code)
         except Exception as exc:
-            raise Exception(f'Failed to run plantuml: {exc}')
+            raise Exception(f'[plantuml_markdown] Failed to run plantuml: {exc}')
         else:
             if p.returncode != 0:
                 # plantuml returns a nice image in case of syntax error so log but still return out
-                logger.error(f'Error in "uml" directive: {err}')
+                logger.error(f'[plantuml_markdown] Error in "uml" directive: {err}')
 
             return out, None
 
@@ -484,7 +523,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             plantuml_code = re.sub(r'^\s*(@start\w+\n)?', r'\1!include '+self._config_path+'\n', plantuml_code)
 
         # build the whole source diagram, executing include directives
-        temp_file = PlantUMLIncluder(self._lang, not not self._kroki_server,
+        temp_file = PlantUMLIncluder(self._lang, self._kroki_server,
                                      self.config['server_include_whitelist'],
                                      False).readFile(plantuml_code, self._base_dir)
         ssl_verify = not self.config['insecure']
@@ -496,39 +535,55 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             # alternative solution
             # requests.packages.urllib3.disable_warnings()
 
-        # Use GET if preferred, use POST with GET as fallback if POST fails
-        if self._http_method == "POST":
-            # image_url for POST attempt first
-            image_url = "%s/%s/" % (self._server, img_format)
-            # download manually the image to be able to continue in case of errors
-            r = session.post(image_url, data=temp_file, headers={"Content-Type": 'text/plain; charset=utf-8'},
-                             verify=ssl_verify)
+        for srv in self._plantuml_servers:
+            try:
+                # Use GET if preferred, use POST with GET as fallback if POST fails
+                if self._http_method == "POST":
+                    # image_url for POST attempt first
+                    image_url = f"{srv['url']}/{img_format}/"
+                    # download manually the image to be able to continue in case of errors
+                    r = session.post(image_url, data=temp_file, headers={"Content-Type": 'text/plain; charset=utf-8'},
+                                     verify=ssl_verify)
 
-            if r.ok:
-                return r.content, None
+                    if r.ok:
+                        return r.content, None
+                    logger.warning(f"[plantuml_markdown] Remote server '{srv['url']}' has returned error {r.status_code} on POST")
+                    if self._fallback_to_get:
+                        logger.warning('[plantuml_markdown] Falling back to GET')
+                    else:
+                        continue  # try another server
 
-            logger.warning(f'WARNING in "uml" directive: remote server has returned error {r.status_code} on POST')
-            if self._fallback_to_get:
-                logger.warning('Falling back to GET')
-            else:
-                return self._handle_response(r)
+                # issue a GET request
+                if srv['kroki']:
+                    compressed_diag = self._compress_and_encode(temp_file)
+                else:
+                    compressed_diag = self._deflate_and_encode(temp_file)
+                content, err, stop = self._handle_response(session.get(f"{srv['url']}{img_format}/{compressed_diag}", verify=ssl_verify), srv)
 
-        if self._kroki_server:
-            image_url = self._server + "/plantuml/" + img_format + "/" + self._compress_and_encode(temp_file)
+                if stop:
+                    if srv['kroki']:
+                        self._image_maps = False  # Kroki does not support image maps
+                    return content, err  # no errors (return image) or unrecoverable error (return message)
+            except requests.exceptions.ConnectionError:
+                logger.warning(f"[plantuml_markdown] Connection error to url '{srv['url']}'")
         else:
-            image_url = self._server+"/"+img_format+"/"+self._deflate_and_encode(temp_file)
+            logger.error(f'[plantuml_markdown] No server available')
+            return None, '[uml directive] No server available'
 
-        return self._handle_response(session.get(image_url, verify=ssl_verify))
-
-    def _handle_response(self, resp: Response) -> Tuple[Optional[bytes], Optional[str]]:
-        if not resp.ok and self._kroki_server:
-            # Kroki sends and HTTP 400 with a text description of the error
-            logger.warning(f'WARNING in "uml" directive: remote server has returned error {resp.status_code} on GET: '
-                           f'{resp.content.decode("utf-8")}')
-            return None, resp.content.decode('utf-8')
+    def _handle_response(self, resp: Response, srv: dict) -> Tuple[Optional[bytes], Optional[str], Optional[bool]]:
+        if resp.status_code in (404, 500) :  # server error, report it so it can continue with another server
+            logger.warning(f"[plantuml_markdown] Remote server '{srv['url']}' not responding on GET")
+            return None, resp.text, False
+        elif resp.status_code != 200:
+        # if not resp.ok:
+            if srv['kroki']:
+                # Kroki sends and HTTP 400 with a text description of the error
+                logger.warning(f"[plantuml_markdown] Remote '{srv['url']}' server has returned error {resp.status_code} "
+                               f"on GET: {resp.content.decode("utf-8")}")
+                return None, resp.content.decode('utf-8'), True
 
         # the response is ok or the server is PlantUML, which sends always a valid image
-        return resp.content, None
+        return resp.content, None, True
 
     @staticmethod
     def _deflate_and_encode(source: str) -> str:
@@ -714,9 +769,14 @@ class PlantUMLMarkdownExtension(markdown.Extension):
             'title': ["", "Tooltip for the diagram"],
             'config': ["", "Path for a PlantUML configuration file (relative to base_dir), included before every "
                            "diagram", "Defaults to blank, no config file"],
-            'server': ["", "PlantUML server url, for remote rendering. Defaults to '', use local command."],
-            'kroki_server': ["", "Kroki server url, as alternative to 'server' for remote rendering (image maps must "
-                                 "be disabled manually). Defaults to '', use PlantUML server if defined"],
+            'server': ["", "PlantUML/Kroki server url, for remote rendering. Defaults to '', use local command."
+                           "DEPRECATED, use new new `servers` option instead"],
+            'kroki_server': ["False", "Use the `server` parameter as a Kroki server url for remote rendering (`/plantuml`"
+                                      " suffix is optional, image maps must be disabled manually). Defaults to `False`,"
+                                      " use PlantUML server if defined. DEPRECATED, use new new `servers` option instead"],
+            'servers': [[], "List of servers to render diagrams with. Each item can be a URL or a dictionary with the"
+                            "`url` and `kroki` keys, the first holding the URL and the second used to forcing it as a"
+                            " Kroki server. Defaults to []"],
             'server_include_whitelist': [[r'^[Cc]4.*$'],
                                          "List of regular expressions defining which include files are supported by "
                                          "the server. Defaults to [r'^c4.*$']"],

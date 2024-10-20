@@ -11,3 +11,38 @@ services:
     volumes:
       - .:/plantuml_markdown
       - ./test:/plantuml-markdown/test
+
+  kroki:
+        image: yuzutech/kroki
+        restart: "no"
+#        depends_on:
+#            - blockdiag
+        #deploy:
+            #restart_policy:
+                #condition: on-failure
+            #resources:
+                #limits:
+                    #memory: 128M
+#        volumes:
+#            - ./plantuml-includes:/mnt/includes:ro
+        networks:
+#            - kroki-net
+            - revproxy
+#        environment:
+            ## Elenco configurazioni: https://docs.kroki.io/kroki/setup/configuration/
+#            KROKI_SAFE_MODE: secure    # unsafe, safe, secure
+#            KROKI_PLANTUML_ALLOW_INCLUDE: "false"
+#            KROKI_PLANTUML_INCLUDE_PATH: /mnt/includes
+#            KROKI_BLOCKDIAG_HOST: blockdiag
+            ##- KROKI_MERMAID_HOST=mermaid
+        labels:
+            diun.enable: "true"
+            traefik.enable: "true"
+            traefik.docker.network: revproxy
+            traefik.http.routers.kroki.rule: PathPrefix(`/kroki`)
+            traefik.http.routers.kroki.middlewares: stripprefix@file
+            traefik.http.services.kroki.loadbalancer.server.port: 8000
+
+networks:
+    revproxy:
+        external: true

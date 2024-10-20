@@ -802,7 +802,7 @@ dummy   'the plantuml response is mocked, any text is good
             self.md = markdown.Markdown(extensions=['plantuml_markdown'],
                                         extension_configs={
                                             'plantuml_markdown': {
-                                                'kroki_server': kroki_server_mock.url,
+                                                'kroki_server': kroki_server_mock.url+'/kroki',
                                                 'image_maps': 'no'
                                             }
                                         })
@@ -811,7 +811,7 @@ dummy   'the plantuml response is mocked, any text is good
             self.assertEqual(self._stripImageData(self._load_file('png_diag.html')),
                              self._stripImageData(self.md.convert(text)))
             req = kroki_server_mock.requests[MethodName.GET].pop(0)
-            self.assertTrue(req.path.startswith('/plantuml/png/'))
+            self.assertTrue(req.path.startswith('/kroki/plantuml/png/'))
 
     def test_retries(self):
         """
