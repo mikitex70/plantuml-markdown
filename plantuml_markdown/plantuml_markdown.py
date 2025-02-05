@@ -181,7 +181,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             self._plantuml_servers = self.config['servers']
 
         # get the remote server, for compatibility: it overrides the `servers` configuration
-        if not isinstance(self.config['server'], list):
+        if self.config['server'] and not isinstance(self.config['server'], list):
             self._plantuml_servers = [self.config['server']]
         elif self.config['server'] != '':
             self._plantuml_servers = self.config['server']

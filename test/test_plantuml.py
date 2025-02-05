@@ -676,7 +676,10 @@ A --&gt; B
                 self.md = markdown.Markdown(extensions=['plantuml_markdown'],
                                             extension_configs={
                                                 'plantuml_markdown': {
-                                                    server: server_mock.url,
+                                                    'servers': [{
+                                                        'url': server_mock.url,
+                                                        'kroki': server != 'server'
+                                                    }],
                                                     'base_dir': tempdir
                                                 }
                                             })
