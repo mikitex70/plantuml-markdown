@@ -173,8 +173,8 @@ In either cases you need to specify the URL of the server in a configuration fil
 
 ```yaml
 plantuml_markdown:
-  servers: 
-    - url: http://www.plantuml.com/plantuml # PlantUML server, for remote rendering
+  servers:                                  # Servers to use for remote rendering, tried in order
+    - url: https://www.plantuml.com/plantuml 
       kroki: False
   # other global options
   insecure: False                           # set to True if the server uses self-signed certificates
@@ -206,7 +206,11 @@ Then you need to specify the configuration file on the command line:
 #### Using a Kroki server
 
 Starting from version `3.7.0` a [Kroki] server can be used as an alternative of [PlantUML server].
-The configuration is similar, only use the `kroki_server` configuration property instead of the `server` property.
+
+The server is autodetected if the word `kroki` is present in the URL, but may be forced using the `kroki` option on a
+`servers` entry (see example above.
+
+Please note that a [Kroki] server does not support image maps and that errors are reported as text instead of images.
 
 #### File inclusion management
 
@@ -260,7 +264,8 @@ The plugin has several configuration option:
 * `insecure`: if `True` do not validate SSL certificate of the PlantUML server; set to `True` when using a custom 
   PlantUML installation with self-signed certificates. Defaults to `False`
 * `kroki_server`: Kroki server url, as alternative to `server` for remote rendering (no image maps, errors reported as 
-  text instead of image). Defaults to `''`, use PlantUML server if defined. **DEPRECATED**, use the new `servers` option instead
+  text instead of image). Defaults to `''`, use PlantUML server if defined. **DEPRECATED**, use the new `servers` option 
+  instead
 * `plantuml_cmd`: command to run for executing PlantUML locally; for example, if you need to set the include directory
   the value can be `java -Dplantuml.include.path=includes -jar plantuml.jar`. Defaults to `plantuml` (the system script)
 * `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `30`
@@ -345,9 +350,9 @@ PTYHON_VER=3.9 MARKDOWN_VER=3.3.7 docker-compose build && docker-compose up
 
 
 [Python-Markdown]: https://python-markdown.github.io/
-[PlantUML]: http://plantuml.sourceforge.net/
-[PlantUML server]: http://plantuml.com/server
+[PlantUML]: https://plantuml.com/
+[PlantUML server]: https://www.plantuml.com/plantuml
 [Kroki]: https://kroki.io/
-[Graphviz]: http://www.graphviz.org
-[Gentoo]: http://www.gentoo.org
-[layman]: http://wiki.gentoo.org/wiki/Layman
+[Graphviz]: https://www.graphviz.org
+[Gentoo]: https://www.gentoo.org
+[layman]: https://wiki.gentoo.org/wiki/Layman

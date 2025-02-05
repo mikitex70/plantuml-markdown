@@ -1,6 +1,25 @@
 # Changelog
 
 
+## 3.11.0 (2025-02-05)
+
+### New
+
+* Added new `servers` configuration option (see #105) [Michele Tessaro]
+
+  Now the `server` and `kroki_server` options are deprecated, replaced by
+  the new `servers` option which can be used to define multiple servers to
+  try in order.
+
+### Changes
+
+* Updated documentation. [Michele Tessaro]
+
+### Fix
+
+* Fixed conflict between `servers`, `server` and `kroki_server` configurations. [Michele Tessaro]
+
+
 ## 3.10.4 (2024-09-12)
 
 ### Fix
