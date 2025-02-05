@@ -74,9 +74,9 @@
               "type": "boolean"
             },
             "kroki_server": {
-              "title": "Kroki server url, as alternative to `server` for remote rendering (please set `image_maps` to `false`)",
+              "title": "Use the `server` parameter as a Kroki server url for remote rendering (please set `image_maps` to `false`); the `/plantuml` suffix is optional. DEPRECATED, use the new `servers` option instead",
               "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
-              "type": "string"
+              "type": "boolean"
             },
             "plantuml_cmd": {
               "title": "Command to run for executing PlantUML locally",
@@ -99,9 +99,29 @@
               "type": "boolean"
             },
             "server": {
-              "title": "PlantUML server URL for remote rendering",
+              "title": "PlantUML server URL for remote rendering. DEPRECATED, use the new `servers` option instead",
               "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
               "type": "string"
+            },
+            "servers": {
+              "title": "List of PlantUML server URLs for remote rendering",
+              "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "title": "PlantUML/Kroki server URL",
+                    "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+                    "type": "string"
+                  },
+                  "kroki": {
+                    "title": "If True force use of `url` as a Kroki server, if False use it as a PlantUML server. Default autodetect from the `url`",
+                    "markdownDescription": "https://github.com/mikitex70/plantuml-markdown#plugin-options",
+                    "type": "boolean"
+                  }
+                }
+              }
             },
             "server_include_whitelist": {
               "title": "List of regular expressions defining which include files are supported by the server. Defaults to `['^c4.*$']` (all files starting with `c4`)",

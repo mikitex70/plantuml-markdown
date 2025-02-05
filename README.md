@@ -173,7 +173,9 @@ In either cases you need to specify the URL of the server in a configuration fil
 
 ```yaml
 plantuml_markdown:
-  server: http://www.plantuml.com/plantuml  # PlantUML server, for remote rendering
+  servers:                                  # Servers to use for remote rendering, tried in order
+    - url: https://www.plantuml.com/plantuml 
+      kroki: False
   # other global options
   insecure: False                           # set to True if the server uses self-signed certificates
   cachedir: /tmp                            # set a non-empty value to enable caching
@@ -204,7 +206,11 @@ Then you need to specify the configuration file on the command line:
 #### Using a Kroki server
 
 Starting from version `3.7.0` a [Kroki] server can be used as an alternative of [PlantUML server].
-The configuration is similar, only use the `kroki_server` configuration property instead of the `server` property.
+
+The server is autodetected if the word `kroki` is present in the URL, but may be forced using the `kroki` option on a
+`servers` entry (see example above.
+
+Please note that a [Kroki] server does not support image maps and that errors are reported as text instead of images.
 
 #### File inclusion management
 
@@ -257,14 +263,19 @@ The plugin has several configuration option:
   activates image maps, everything else disables it. Defaults to `True`
 * `insecure`: if `True` do not validate SSL certificate of the PlantUML server; set to `True` when using a custom 
   PlantUML installation with self-signed certificates. Defaults to `False`
-* `kroki_server`: Kroki server url, as alternative to `server` for remote rendering (image maps mus be disabled 
-  manually). Defaults to `''`, use PlantUML server if defined
+* `kroki_server`: Kroki server url, as alternative to `server` for remote rendering (no image maps, errors reported as 
+  text instead of image). Defaults to `''`, use PlantUML server if defined. **DEPRECATED**, use the new `servers` option 
+  instead
 * `plantuml_cmd`: command to run for executing PlantUML locally; for example, if you need to set the include directory
   the value can be `java -Dplantuml.include.path=includes -jar plantuml.jar`. Defaults to `plantuml` (the system script)
 * `priority`: extension priority. Higher values means the extension is applied sooner than others. Defaults to `30`
 * `puml_notheme_cmdlist`: theme will not be set if listed commands present. Default list is
   `['version', 'listfonts', 'stdlib', 'license']`. **If modifying please copy the default list provided and append**
-* `server`: PlantUML server url, for remote rendering. Defaults to `''`, use local command
+* `server`: PlantUML or Kroki server url, for remote rendering. In the case of a Kroki server url, the suffix `/plantuml`
+  can be omitted. Defaults to `''`, use the local command. **DEPRECATED**, use the new `servers` option instead
+* `servers`: List of servers to render diagrams with. Each item can be a URL (Kroki server autodetected) or a dictionary 
+  with the `url` and `kroki` keys, the first holding the URL and the second used to forcing it as a Kroki server. 
+  Defaults to `[]`
 * `server_include_whitelist`: List of regular expressions defining which include files are supported by the server. 
   Defaults to `[r'^c4.*$']` (all files starting with `c4`). **See [Inclusion Management](#inclusion-management) for 
   details**
@@ -339,9 +350,9 @@ PTYHON_VER=3.9 MARKDOWN_VER=3.3.7 docker-compose build && docker-compose up
 
 
 [Python-Markdown]: https://python-markdown.github.io/
-[PlantUML]: http://plantuml.sourceforge.net/
-[PlantUML server]: http://plantuml.com/server
+[PlantUML]: https://plantuml.com/
+[PlantUML server]: https://www.plantuml.com/plantuml
 [Kroki]: https://kroki.io/
-[Graphviz]: http://www.graphviz.org
-[Gentoo]: http://www.gentoo.org
-[layman]: http://wiki.gentoo.org/wiki/Layman
+[Graphviz]: https://www.graphviz.org
+[Gentoo]: https://www.gentoo.org
+[layman]: https://wiki.gentoo.org/wiki/Layman
