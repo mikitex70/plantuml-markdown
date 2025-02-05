@@ -579,7 +579,7 @@ class PlantUMLPreprocessor(markdown.preprocessors.Preprocessor):
             if srv['kroki']:
                 # Kroki sends and HTTP 400 with a text description of the error
                 logger.warning(f"[plantuml_markdown] Remote '{srv['url']}' server has returned error {resp.status_code} "
-                               f"on GET: {resp.content.decode("utf-8")}")
+                               f"on GET: {resp.content.decode('utf-8')}")
                 return None, resp.content.decode('utf-8'), True
 
         # the response is ok or the server is PlantUML, which sends always a valid image
