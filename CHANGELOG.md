@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 3.11.1 (2025-02-07)
+
+### Fix
+
+* Fix incorrect f-string format. [Sebastian Jegerås]
+
+
 ## 3.11.0 (2025-02-05)
 
 ### New
