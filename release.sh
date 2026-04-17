@@ -11,8 +11,8 @@ python setup.py bdist_wheel sdist --formats tar
 pushd dist >/dev/null || exit
     distrib=$(ls *.tar); distrib=${distrib/.tar/}
     mkdir -p ${distrib}
-        cp ../requirements.txt ${distrib}
-        tar rvf ${distrib}.tar ${distrib}/requirements.txt && gzip ${distrib}.tar
+        cp ../requirements.txt ../test-requirements.txt ${distrib}
+        tar rvf ${distrib}.tar ${distrib}/requirements.txt ${distrib}/test-requirements.txt && gzip ${distrib}.tar
     rm -fr ${distrib}
 popd >/dev/null || exit
 
