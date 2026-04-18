@@ -4,7 +4,7 @@
 [[ -d "dist"  ]] && rm -rf dist
 
 # Build package for Python 3
-. .env3*/bin/activate
+. .venv/bin/activate
 pip install setuptools twine wheel
 
 python setup.py bdist_wheel sdist --formats tar
