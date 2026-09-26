@@ -7,27 +7,29 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, "README.md")) as f:
     long_description = f.read()
 
-with open(path.join(here, 'requirements.txt')) as f:
+with open(path.join(here, "requirements.txt")) as f:
     install_requirements = f.read().splitlines()
 
-with open(path.join(here, 'test-requirements.txt')) as f:
+with open(path.join(here, "test-requirements.txt")) as f:
     test_requirements = f.read().splitlines()
 
 setuptools.setup(
     name="plantuml-markdown",
-    version="3.11.2",
+    version="3.11.3",
     author="Michele Tessaro",
     author_email="michele.tessaro.tex@gmail.com",
     description="A PlantUML plugin for Markdown",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    keywords=['Markdown', 'typesetting', 'include', 'plugin', 'extension'],
+    keywords=["Markdown", "typesetting", "include", "plugin", "extension"],
     url="https://github.com/mikitex70/plantuml-markdown",
-    packages=['plantuml_markdown'],
+    packages=["plantuml_markdown"],
     install_requires=install_requirements,
     tests_require=test_requirements,
     entry_points={
-        'markdown.extensions': ['plantuml_markdown = plantuml_markdown:PlantUMLMarkdownExtension']
+        "markdown.extensions": [
+            "plantuml_markdown = plantuml_markdown:PlantUMLMarkdownExtension"
+        ]
     },
     classifiers=[
         "Programming Language :: Python",
@@ -37,6 +39,6 @@ setuptools.setup(
         "Topic :: Software Development :: Documentation",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Text Processing :: Filters",
-        "Topic :: Text Processing :: Markup :: HTML"
+        "Topic :: Text Processing :: Markup :: HTML",
     ],
 )

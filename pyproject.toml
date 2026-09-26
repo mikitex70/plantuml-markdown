@@ -17,7 +17,7 @@ classifiers = [
     "Topic :: Text Processing :: Markup :: HTML"
 ]
 keywords = ['Markdown', 'typesetting', 'include', 'plugin', 'extension']
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dynamic = ["dependencies"]
 
 [tool.setuptools.dynamic]
