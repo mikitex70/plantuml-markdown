@@ -11,6 +11,236 @@
 
 ## 3.11.1 (2025-02-07)
 
+## 3.11.0 (2025-02-05)
+
+### Fix
+
+- usr: fixed conflict between `servers`, `server` and `kroki_server` configurations
+
+## 3.10.4 (2024-09-12)
+
+## 3.10.3 (2024-08-16)
+
+### Fix
+
+- usr: handled MkDocs path directives in configurations (fixes #103)
+
+## 3.10.2 (2024-08-09)
+
+### Fix
+
+- usr: fixed source search in `base_dir` paths (fixes #102)
+
+## 3.10.1 (2024-08-03)
+
+### Fix
+
+- usr: fixed plantuml config file path with local rendering (fixes #101)
+
+## 3.10.0 (2024-08-01)
+
+### Fix
+
+- usr: fixed inclusion from `mkdocs-multirepo-plugin` (refs #100)
+
+## 3.9.8 (2024-07-13)
+
+### Fix
+
+- test: Fixed test to make it more resilient with Plantuml versions
+- usr: fixed namespace inserted in inline svg
+- usr: fixed wrong option name in documentation (fixes #99)
+
+## 3.9.7 (2024-05-09)
+
+## 3.9.6 (2024-04-24)
+
+## 3.9.5 (2024-04-22)
+
+### Fix
+
+- usr: fixed caching with png diagrams without hyperlinks (fixes #27)
+
+## 3.9.4 (2024-03-26)
+
+### Fix
+
+- dev: fixed running tests with docker
+
+## 3.9.3 (2024-02-10)
+
+### Fix
+
+- test: fixed a test with the new snippets plugin
+- dev: managed requirements.txt version replace in Docker image
+
+## 3.9.2 (2023-06-22)
+
+### Fix
+
+- usr: fixed corrupted inline svg images (fixes #90)
+
+## 3.9.1 (2023-04-27)
+
+### Fix
+
+- usr: fixed handle of other diagram types with plantuml server
+- usr: fixed urllib3 warning in output page (fixes #89)
+
+## 3.9.0 (2023-04-23)
+
+### Fix
+
+- test: fixed tests with latest plantuml release
+- dev: fixed declaration of static method
+
+## 3.8.3 (2023-04-12)
+
+### Fix
+
+- usr: set default value for unsecure setting as boolean (fixes #86)
+
+## 3.8.2 (2023-03-06)
+
+## 3.8.1 (2023-01-29)
+
+## 3.8.0 (2022-12-28)
+
+## 3.7.3 (2022-10-16)
+
+## 3.7.2 (2022-10-10)
+
+## 3.7.1 (2022-10-07)
+
+### Fix
+
+- usr: do not create temp file with kroki
+
+## 3.7.0 (2022-10-05)
+
+## 3.6.3 (2022-08-01)
+
+### Fix
+
+- usr: fixed yaml renderingwith remote server (fixes #72)
+
+## 3.6.2 (2022-07-25)
+
+### Fix
+
+- usr: removed unused `plantuml` import
+- usr: removed unused `plantuml` import
+
+## 3.6.1 (2022-07-23)
+
+### Fix
+
+- doc: fixed typos in `CHANGELOG.md`
+- usr: fixed external inclusions (fixes #71)
+
+## 3.6.0 (2022-07-20)
+
+### Fix
+
+- dev: fixed build of docker image for tests
+- usr: fixed tests
+- dev: added missing dependency
+- dev: fixed missing method parameter
+- pkg: fixed license incoherence between setup.py e LICENSE
+
+## 3.5.3 (2022-05-28)
+
+### Fix
+
+- usr: fixed running on Windows (fixes #63)
+
+## 3.5.2 (2022-02-25)
+
+### Fix
+
+- usr: fixed error with external plantuml server (fixes #61)
+
+## 3.5.1 (2021-12-18)
+
+### Fix
+
+- usr: there is no need to install uuid since Python 2.5 (refs #60)
+
+## 3.5.0 (2021-11-23)
+
+### Fix
+
+- dev: image maps rendered only for local rendered diagrams
+- test: fixed coords check due to different plantuml versions
+
+## 3.4.4 (2021-10-24)
+
+### Fix
+
+- test: fixed tests execution with plantuml 1.2021.12
+- usr: fix progression of parser (#57)
+
+## 3.4.3 (2021-08-29)
+
+### Fix
+
+- usr: fixed read utf8 sources in Windows (refs #56)
+
+## 3.4.2 (2020-12-19)
+
+### Fix
+
+- test: fixed test with travis
+- usr: fixed working with Markdown 3.3 (fixes #39)
+- usr: fixed indentation handling (fixes #51)
+
+## 3.4.1 (2020-10-28)
+
+### Fix
+
+- usr: fixed multiple mixed code blocks (fixes #45)
+
+## 3.4.0 (2020-08-23)
+
+### Fix
+
+- usr: fixed uml code inside fenced code (fixes #45)
+
+## 3.3.0 (2020-06-18)
+
+### Fix
+
+- usr: fixed closing of object tag (fixes #44)
+- test: fixed failing tests
+- test: removed test support for Python 2.7
+
+## 3.2.2 (2020-03-04)
+
+### Fix
+
+- usr: removed forgotten log level set to debug (fixes #41)
+
+## 3.2.1 (2019-12-13)
+
+## 3.2.0 (2019-12-08)
+
+## 3.1.4 (2019-11-13)
+
+### Fix
+
+- usr: fixed special characters handling in alt and title (fixes #70)
+- doc: fix brackets
+
+## 3.11.3 (2026-09-26)
+
+### Fix
+
+- fixed dependencies (fixed #109)
+
+## 3.11.2 (2026-04-18)
+
+## 3.11.1 (2025-02-07)
+
 ### Fix
 
 * Fix incorrect f-string format. [Sebastian Jegerås]
