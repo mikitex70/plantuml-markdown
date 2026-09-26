@@ -17,7 +17,7 @@ classifiers = [
     "Topic :: Text Processing :: Markup :: HTML"
 ]
 keywords = ['Markdown', 'typesetting', 'include', 'plugin', 'extension']
-requires-python = ">=3.0"
+requires-python = ">=3.8"
 dynamic = ["dependencies"]
 
 [tool.setuptools.dynamic]
@@ -25,6 +25,12 @@ dependencies = {file = ["requirements.txt"]}
 
 [dependency-groups]
 dev = [
+    "commitizen>=3.0,<4.0",
+    "pre-commit>=3.0,<4.0",
     "setuptools>=44.1.1",
     "twine>=1.15.0",
 ]
+
+[tool.commitizen]
+version_provider = "pep621"
+tag_format = "$version"

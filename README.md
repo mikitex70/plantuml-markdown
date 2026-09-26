@@ -45,7 +45,7 @@ The GitLab/GitHub block syntax is also recognized. Example:
       Goofy <-- MickeyMouse: responds
     ```
 
-Options are optional (otherwise the wouldn't be options), but if present must be specified in the order 
+Options are optional (otherwise the wouldn't be options), but if present must be specified in the order
 `id`, `format`, `classes`, `alt`, `title`, `width`, `height`, and `source`.
 The option value may be enclosed in single or double quotes.
 
@@ -116,7 +116,7 @@ java $PLANTUML_JAVAOPTS -jar /opt/plantuml/plantuml.jar ${@}
 
 The `PLANTUML_JAVAOPTS` variable can be used to set specific Java options, such as memory tuning options,
 or to set system variable used by PlantUML, such as then include search path. This would avoid modifications of the
-`plantuml` script. 
+`plantuml` script.
 For example, with a diagram like:
 
 ````
@@ -151,8 +151,8 @@ java %PLANTUML_JAVAOPTS% -jar %mypath%\plantuml.jar %*
 
 Make sure the `plantuml.bat` is on the path.
 
-**IMPORTANT NOTE**: the whole output of the script `plantuml` (or `plantuml.bat` in Windows) is captured and saved as 
-image, so be sure no other output is done by the script, even blank lines. For example, the first line of the 
+**IMPORTANT NOTE**: the whole output of the script `plantuml` (or `plantuml.bat` in Windows) is captured and saved as
+image, so be sure no other output is done by the script, even blank lines. For example, the first line of the
 `plantuml.bat` script **MUST** be `@echo off`.
 
 For [Gentoo Linux][Gentoo] there is an ebuild at http://gpo.zugaina.org/dev-util/plantuml/RDep: you can download
@@ -174,7 +174,7 @@ In either cases you need to specify the URL of the server in a configuration fil
 ```yaml
 plantuml_markdown:
   servers:                                  # Servers to use for remote rendering, tried in order
-    - url: https://www.plantuml.com/plantuml 
+    - url: https://www.plantuml.com/plantuml
       kroki: False
   # other global options
   insecure: False                           # set to True if the server uses self-signed certificates
@@ -188,13 +188,13 @@ plantuml_markdown:
   alt: UML diagram image                    # default `alt` attribute for diagram images
   image_maps: True                          # generate image maps when the format is png and there are hyperlinks
   priority: 30                              # plugin priority; the higher, the sooner will be applied (default 30)
-  http_method: GET                          # GET or POST  - note that plantuml.com only supports GET (default GET)       
+  http_method: GET                          # GET or POST  - note that plantuml.com only supports GET (default GET)
   fallback_to_get: True                     # When using POST, should GET be used as fallback (POST will fail if @startuml/@enduml tags not used) (default True)
   theme: bluegray                           # theme to be set, can be overridden inside puml files, (default none)
-  puml_notheme_cmdlist: [                             
-                          'version', 
-                          'listfonts', 
-                          'stdlib', 
+  puml_notheme_cmdlist: [
+                          'version',
+                          'listfonts',
+                          'stdlib',
                           'license'
                         ]                   # theme will not be set if listed commands present (default as listed)
 ```
@@ -217,14 +217,14 @@ Please note that a [Kroki] server does not support image maps and that errors ar
 Usually, remote servers, for security reasons, do not allow arbitrary '!include' instructions to be executed.
 
 To try to bypass this limitation, the plugin behaves as follows:
-* the inclusion of [stdlib](https://plantuml.com/stdlib) libraries is considered secure and managed by the server; 
+* the inclusion of [stdlib](https://plantuml.com/stdlib) libraries is considered secure and managed by the server;
   example `!include <C4/C4_Container>`
-* if the source to be included starts with `http` or `https`, the inclusion can be handled by the server; be aware that 
+* if the source to be included starts with `http` or `https`, the inclusion can be handled by the server; be aware that
   the server may refuse to include them ([Kroki] in an example)
 * if the source name matches one of the regular expressions in the `server_include_whitelist` configuration, the file is
   assumed to be safe for the server; an example is `!include C4/C4_Container.puml` with the server [Kroki], which has a
   copy of the C4 library internally
-* otherwise, it is assumed that the file is local and that the `include` statement is replaced with the contents of the 
+* otherwise, it is assumed that the file is local and that the `include` statement is replaced with the contents of the
   file before sending it to the remote server. This behavior can be changed by declaring an appropriate regular
   expression in `server_include_whitelist` or by adding a comment to the line:
     * if the comment begins with `local`, include is forced local; e.g. `!include C4/C4_Container.puml ' local file`
@@ -233,11 +233,11 @@ To try to bypass this limitation, the plugin behaves as follows:
       for example `!include my_configuration.puml 'server-side include`
 * includes are resolved recursively, as when used with a local PlantUML.
 
-If using a local PlantUML installation includes works out of the box only if includes are in the current directory. If 
+If using a local PlantUML installation includes works out of the box only if includes are in the current directory. If
 they are in other directories there are two possibilities:
 * use the directory in includes (ex: `!include includes/my-defs.puml`)
 * set the `base_dir` option in the plugin configuration (ex: `base_dir: includes`) **AND** change the default plantuml
-  command in something like `plantuml_cmd: java -Dplantuml.include.path=includes -jar path/to/plantuml.jar` 
+  command in something like `plantuml_cmd: java -Dplantuml.include.path=includes -jar path/to/plantuml.jar`
 
 Plugin options
 --------------
@@ -250,21 +250,21 @@ The plugin has several configuration option:
 * `classes`: space separated list of classes for the generated image. Defaults to `uml`
 * `config`: PlantUML config file, relative to `base_dir` (a PlantUML file included before every diagram, see
   [PlantUML documentation](https://plantuml.com/command-line)). Defaults to `None`
-* `encoding`: character encoding for external files (see `source` parameter); default encoding is `utf-8`. Please note 
-  that on Windows text files may use the `cp1252` as default encoding, so setting `encoding: cp1252` may fix incorrect 
+* `encoding`: character encoding for external files (see `source` parameter); default encoding is `utf-8`. Please note
+  that on Windows text files may use the `cp1252` as default encoding, so setting `encoding: cp1252` may fix incorrect
   characters rendering.
 * `fallback_to_get`: Fallback to `GET` if `POST` fails. Defaults to True
-* `format`: format of image to generate (`png`, `svg`, `svg_object`, `svg_inline` or `txt`). Defaults to `png` (See 
+* `format`: format of image to generate (`png`, `svg`, `svg_object`, `svg_inline` or `txt`). Defaults to `png` (See
   example section above for further explanations of the values for `format`)
 * `remove_inline_svg_size`: When `format` is `svg_inline`, remove the `width` and `height` attributes of the generated
   SVG. Defaults to `True`
 * `http_method`: Http Method for server - `GET` or `POST`. "Defaults to `GET`
 * `image_maps`: generate image maps if format is `png` and the diagram has hyperlinks; `true`, `on`, `yes` or `1`
   activates image maps, everything else disables it. Defaults to `True`
-* `insecure`: if `True` do not validate SSL certificate of the PlantUML server; set to `True` when using a custom 
+* `insecure`: if `True` do not validate SSL certificate of the PlantUML server; set to `True` when using a custom
   PlantUML installation with self-signed certificates. Defaults to `False`
-* `kroki_server`: Kroki server url, as alternative to `server` for remote rendering (no image maps, errors reported as 
-  text instead of image). Defaults to `''`, use PlantUML server if defined. **DEPRECATED**, use the new `servers` option 
+* `kroki_server`: Kroki server url, as alternative to `server` for remote rendering (no image maps, errors reported as
+  text instead of image). Defaults to `''`, use PlantUML server if defined. **DEPRECATED**, use the new `servers` option
   instead
 * `plantuml_cmd`: command to run for executing PlantUML locally; for example, if you need to set the include directory
   the value can be `java -Dplantuml.include.path=includes -jar plantuml.jar`. Defaults to `plantuml` (the system script)
@@ -273,11 +273,11 @@ The plugin has several configuration option:
   `['version', 'listfonts', 'stdlib', 'license']`. **If modifying please copy the default list provided and append**
 * `server`: PlantUML or Kroki server url, for remote rendering. In the case of a Kroki server url, the suffix `/plantuml`
   can be omitted. Defaults to `''`, use the local command. **DEPRECATED**, use the new `servers` option instead
-* `servers`: List of servers to render diagrams with. Each item can be a URL (Kroki server autodetected) or a dictionary 
-  with the `url` and `kroki` keys, the first holding the URL and the second used to forcing it as a Kroki server. 
+* `servers`: List of servers to render diagrams with. Each item can be a URL (Kroki server autodetected) or a dictionary
+  with the `url` and `kroki` keys, the first holding the URL and the second used to forcing it as a Kroki server.
   Defaults to `[]`
-* `server_include_whitelist`: List of regular expressions defining which include files are supported by the server. 
-  Defaults to `[r'^c4.*$']` (all files starting with `c4`). **See [Inclusion Management](#inclusion-management) for 
+* `server_include_whitelist`: List of regular expressions defining which include files are supported by the server.
+  Defaults to `[r'^c4.*$']` (all files starting with `c4`). **See [Inclusion Management](#inclusion-management) for
   details**
 * `theme`: Default Theme to use, will be overridden  by !theme directive. Defaults to blank i.e. Plantuml `none` theme
 * `title`: tooltip for the diagram
@@ -289,7 +289,7 @@ See the [Using a PlantUML server](#using-plantuml-server) section for an example
 
 ### A note on the `priority` configuration
 
-With `markdownm_py` plugin extensions can conflict if they manipulate the same block of text. 
+With `markdownm_py` plugin extensions can conflict if they manipulate the same block of text.
 Examples are the [Fenced Code Blocks](https://python-markdown.github.io/extensions/fenced_code_blocks)
 or [Snippets](https://facelessuser.github.io/pymdown-extensions/extensions/snippets/) extensions.
 
@@ -305,15 +305,22 @@ As an example of possible conflicts see issue [#38](https://github.com/mikitex70
 Running tests
 -------------
 
-`plantuml-markdown` is tested with Python >= 3.6 and `Markdown >= 3.0.1`. Older versions of Python or `Markdown` may
+`plantuml-markdown` is tested with Python >= 3.8 and `Markdown >= 3.0.1`. Older versions of Python or `Markdown` may
 work, but if it doesn't I can't guarantee a fix as they are end-of-life versions.
 
-The test execution requires a specific version of [PlantUML] (the image generated can be different with different 
+The test execution requires a specific version of [PlantUML] (the image generated can be different with different
 [PlantUML] versions).
 
 Before to run tests, install the required dependencies:
 
 ```bash
+uv sync
+```
+
+or with pip:
+
+```bash
+pip install -r requirements.txt
 pip install -r test-requirements.txt
 ```
 
@@ -326,16 +333,22 @@ nose2 --verbose -F
 This command uses a custom version of the `plantuml` command which will download the expected version of [PlantUML] for
 tests execution without clobbering the system.
 
+**Pre-commit hooks:**
+
+```bash
+pre-commit install
+```
+
 
 Running tests using Docker
 -------------------------
 
 This requires `docker` and `docker-compose` to be installed
 
-First setup a small python alpine image with all the dependencies pre-installed. 
+First setup a small python alpine image with all the dependencies pre-installed.
 ```bash
 docker-compose build
-``` 
+```
 
 then run the container to automatically trigger tests and print the output mapping the contents of your workspace
 

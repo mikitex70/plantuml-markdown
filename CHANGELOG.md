@@ -1,6 +1,14 @@
 # Changelog
 
 
+## 3.11.3 (2026-09-26)
+
+### Fix
+
+- fixed dependencies (fixed #109)
+
+## 3.11.2 (2026-04-18)
+
 ## 3.11.1 (2025-02-07)
 
 ### Fix
@@ -863,5 +871,3 @@
   identify syntax errors in the source MD document
 
 * Initial commit. [Michele Tessaro]
-
-
