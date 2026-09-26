@@ -17,7 +17,7 @@ classifiers = [
     "Topic :: Text Processing :: Markup :: HTML"
 ]
 keywords = ['Markdown', 'typesetting', 'include', 'plugin', 'extension']
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dynamic = ["dependencies"]
 
 [tool.setuptools.dynamic]
@@ -26,6 +26,7 @@ dependencies = {file = ["requirements.txt"]}
 [dependency-groups]
 dev = [
     "commitizen>=3.0,<4.0",
+    "cryptography>=50.0.1",
     "pre-commit>=3.0,<4.0",
     "setuptools>=44.1.1",
     "twine>=1.15.0",
