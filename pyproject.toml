@@ -1,0 +1,30 @@
+[project]
+name = "plantuml-markdown"
+version = "3.11.2"
+description = "A PlantUML plugin for Markdown"
+authors = [
+    { name = "Michele Tessaro" }
+]
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Filters",
+    "Topic :: Text Processing :: Markup :: HTML"
+]
+keywords = ['Markdown', 'typesetting', 'include', 'plugin', 'extension']
+requires-python = ">=3.0"
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[dependency-groups]
+dev = [
+    "setuptools>=44.1.1",
+    "twine>=1.15.0",
+]
