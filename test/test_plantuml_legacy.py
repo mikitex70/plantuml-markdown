@@ -1,19 +1,12 @@
-import unittest
-
 from test.markdown_builder import MarkdownBuilder
-from test.test_plantuml import PlantumlTest
+from test.test_plantuml import TestPlantuml
 
 
-class PlantumlTest_legacy(PlantumlTest):
-
-    def setUp(self):
-        super(PlantumlTest_legacy, self).setUp()
+class TestPlantumlLegacy(TestPlantuml):
+    def setup_method(self):
+        super(TestPlantumlLegacy, self).setup_method()
         # Setup testing with old block delimiter (I don't remember where I've seen this syntax)
-        self.text_builder = MarkdownBuilder('::uml::')
+        self.text_builder = MarkdownBuilder("::uml::")
 
     def test_multiple_fences(self):
         pass  # this test has no sense with legacy diagram delimiter
-
-
-if __name__ == '__main__':
-    unittest.main()

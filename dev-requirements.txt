@@ -1,0 +1,5 @@
+commitizen>=3.0,<4.0
+cryptography>=50.0.1
+pre-commit>=3.0,<4.0
+setuptools>=83.0.1
+twine>=1.15.0

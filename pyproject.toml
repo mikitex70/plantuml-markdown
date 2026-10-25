@@ -31,6 +31,13 @@ dev = [
     "setuptools>=83.0.1",
     "twine>=1.15.0",
 ]
+test = [
+    "httpservermock",
+    "mkdocs",
+    "mock",
+    "pytest",
+    "pymdown-extensions",
+]
 
 [tool.commitizen]
 version_provider = "pep621"

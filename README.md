@@ -327,7 +327,13 @@ pip install -r test-requirements.txt
 To run the tests, execute the following command:
 
 ```bash
-nose2 --verbose -F
+pytest
+```
+
+For verbose output:
+
+```bash
+pytest -v
 ```
 
 This command uses a custom version of the `plantuml` command which will download the expected version of [PlantUML] for

@@ -10,9 +10,6 @@ with open(path.join(here, "README.md")) as f:
 with open(path.join(here, "requirements.txt")) as f:
     install_requirements = f.read().splitlines()
 
-with open(path.join(here, "test-requirements.txt")) as f:
-    test_requirements = f.read().splitlines()
-
 setuptools.setup(
     name="plantuml-markdown",
     version="3.11.3",
@@ -25,7 +22,6 @@ setuptools.setup(
     url="https://github.com/mikitex70/plantuml-markdown",
     packages=["plantuml_markdown"],
     install_requires=install_requirements,
-    tests_require=test_requirements,
     entry_points={
         "markdown.extensions": [
             "plantuml_markdown = plantuml_markdown:PlantUMLMarkdownExtension"
