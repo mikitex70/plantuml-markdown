@@ -1,14 +1,19 @@
 [project]
 name = "plantuml-markdown"
-version = "3.11.3"
+version = "3.11.4"
 description = "A PlantUML plugin for Markdown"
 authors = [
     { name = "Michele Tessaro" }
 ]
 readme = "README.md"
+license = "BSD-3-Clause"
 classifiers = [
     "Programming Language :: Python",
-    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent",
     "Development Status :: 5 - Production/Stable",
     "Topic :: Software Development :: Documentation",
@@ -19,6 +24,9 @@ classifiers = [
 keywords = ['Markdown', 'typesetting', 'include', 'plugin', 'extension']
 requires-python = ">=3.11"
 dynamic = ["dependencies"]
+
+[project.entry-points."markdown.extensions"]
+plantuml_markdown = "plantuml_markdown:PlantUMLMarkdownExtension"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
