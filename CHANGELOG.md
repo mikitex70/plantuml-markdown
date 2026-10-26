@@ -1,6 +1,23 @@
 # Changelog
 
 
+## 3.11.5 (2026-10-26)
+
+### Fix
+
+- **deps**: relaxed dependencies
+
+## 3.11.4 (2026-10-25)
+
+### Feat
+
+- modernized building wheels
+- **test**: moved test from nose2 to pytest
+
+### Fix
+
+- python version bump to 3.11 to fix vulnerabilities
+
 ## 3.11.3 (2026-09-26)
 
 ### Fix
