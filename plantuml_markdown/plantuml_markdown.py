@@ -698,6 +698,11 @@ class PlantUMLIncluder:
 
         # extract the file to include
         line_match = re.match(r"^!include(?:_once|_many)?\s+(?P<filename>[^']+)(?:\s+'(?P<comment>.*))?$", line)
+        if not line_match:
+            # Not a plain file include (e.g. a bare `!include` or a directive
+            # like `!includesub`): leave it for the server to handle instead
+            # of crashing on a missing match.
+            return line
         inc_file = line_match.group('filename')
 
         # expand variables to be able to detect what kind of file/include is
