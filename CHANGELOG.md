@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 3.11.6 (2026-11-10)
+
+### Fix
+
+- pass through non-file include directives instead of crashing
+- **deps**: relaxed dependencies
+
 ## 3.11.5 (2026-10-26)
 
 ### Fix
